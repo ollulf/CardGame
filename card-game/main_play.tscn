@@ -1,0 +1,18 @@
+[gd_scene load_steps=4 format=3 uid="uid://sho7nec3ufwc"]
+
+[ext_resource type="Script" uid="uid://de58tejav7kjs" path="res://scripts/game_manager.gd" id="1_lbikq"]
+[ext_resource type="Script" uid="uid://bqtm4pcvcl48u" path="res://scripts/ai_player.gd" id="2_shfjk"]
+[ext_resource type="Script" uid="uid://bnvbuen33moub" path="res://player_hand.gd" id="2_yo8lh"]
+
+[node name="GameManager" type="Node2D"]
+script = ExtResource("1_lbikq")
+
+[node name="PlayerHand" type="Node2D" parent="."]
+script = ExtResource("2_yo8lh")
+
+[node name="AI_Player_1" type="Node2D" parent="."]
+script = ExtResource("2_shfjk")
+
+[node name="AI_Player_2" type="Node2D" parent="."]
+script = ExtResource("2_shfjk")
+player_id = 2
