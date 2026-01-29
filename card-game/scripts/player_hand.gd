@@ -53,7 +53,6 @@ func _build_test_hand() -> void:
 
 
 func _render_hand() -> void:
-	print("Rendering Hand")
 	for n in card_nodes:
 		if is_instance_valid(n):
 			n.queue_free()
@@ -105,15 +104,17 @@ func _layout_cards() -> void:
 
 
 func _on_card_double_clicked(card_view: Card) -> void:
+	print( "Is it my turn? > " + str(is_my_turn))
 	if not is_my_turn:
 		return
 
 	var idx := _find_card_index(card_view.card_data)
 	if idx == -1:
 		return
-
+		
+	print("Player Submitting play")
 	GameManager.submit_play(player_id, hand[idx])
-
+	
 	hand.remove_at(idx)
 	_render_hand()
 

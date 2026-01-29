@@ -43,14 +43,17 @@ var turn_order: Array[int] = []
 var current_turn_index := 0
 
 func _ready() -> void:
-		suit_textures = {
-		"hearts": hearts_tex,
-		"diamonds": diamonds_tex,
-		"clubs": clubs_tex,
-		"spades": spades_tex,
-		"alk": alk_tex,
-		"smoke": smoke_tex
+	suit_textures = {
+	"hearts": hearts_tex,
+	"diamonds": diamonds_tex,
+	"clubs": clubs_tex,
+	"spades": spades_tex,
+	"alk": alk_tex,
+	"smoke": smoke_tex 
 	}
+	
+	await get_tree().process_frame
+	start_match(0)
 
 func start_match(starting_player_id: int = PLAYER_HUMAN) -> void:
 	match_over = false
@@ -65,6 +68,9 @@ func start_match(starting_player_id: int = PLAYER_HUMAN) -> void:
 
 
 func _start_new_round(starting_player_id: int) -> void:
+	
+	await get_tree().create_timer(3.0).timeout
+	
 	if match_over:
 		return
 
@@ -81,6 +87,8 @@ func _start_new_round(starting_player_id: int) -> void:
 	turn_order = _build_turn_order(starting_player_id)
 	current_turn_index = 0
 
+	print("Starting Player: " + str(current_starting_player))
+	
 	emit_signal("round_started", current_round, starting_player_id)
 
 	_request_current_player()
@@ -102,6 +110,7 @@ func _request_current_player() -> void:
 		return
 
 	var player_id := turn_order[current_turn_index]
+	print("Waiting for play of player: " + str(player_id))
 	emit_signal("request_play_card", player_id)
 
 
@@ -128,17 +137,12 @@ func _finish_round() -> void:
 		winner_id = current_starting_player
 
 	last_round_winner = winner_id
-
+	
 	emit_signal("round_completed", current_round, current_round_plays, winner_id)
-
+	print("Started new Round")
 	_start_new_round(winner_id)
 
 
 func calculate_round_winner(current_plays: Dictionary) -> int:
-	# TODO:
-	# Decide winner based on card rules
-	# Example:
-	# - highest rank
-	# - trump suit
-	# - special abilities
-	return -1
+	print("Player 0 won")
+	return 0

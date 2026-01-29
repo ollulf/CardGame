@@ -30,8 +30,8 @@ func _on_request_play_card(requested_player_id: int) -> void:
 	if hand.is_empty():
 		# If the AI has nothing, it still must respond.
 		# Submit a placeholder. You can change this behavior.
-		GameManager.submit_play(player_id, null)
 		print("Player " + str(player_id) + " played nothing")
+		GameManager.submit_play(player_id, null)
 		return
 
 	var index := randi() % hand.size()
