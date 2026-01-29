@@ -1,5 +1,5 @@
 extends Node
-class_name GameManager
+class_name GameManagerClass
 
 # --- Signals ---
 signal round_started(round_index: int, starting_player_id: int)
@@ -16,6 +16,18 @@ const PLAYER_AI_1 := 1
 const PLAYER_AI_2 := 2
 const PLAYERS := [PLAYER_HUMAN, PLAYER_AI_1, PLAYER_AI_2]
 
+# --- Cards ---
+var card_scene = preload("res://Card.tscn")
+
+# Suit textures: assign in Inspector (or preload in code if you prefer)
+@export var hearts_tex: Texture2D
+@export var diamonds_tex: Texture2D
+@export var clubs_tex: Texture2D
+@export var spades_tex: Texture2D
+@export var alk_tex: Texture2D
+@export var smoke_tex: Texture2D
+
+var suit_textures: Dictionary = {}
 
 # --- State ---
 var rounds_played := 0
@@ -30,6 +42,15 @@ var current_round_plays: Dictionary = {}
 var turn_order: Array[int] = []
 var current_turn_index := 0
 
+func _ready() -> void:
+		suit_textures = {
+		"hearts": hearts_tex,
+		"diamonds": diamonds_tex,
+		"clubs": clubs_tex,
+		"spades": spades_tex,
+		"alk": alk_tex,
+		"smoke": smoke_tex
+	}
 
 func start_match(starting_player_id: int = PLAYER_HUMAN) -> void:
 	match_over = false

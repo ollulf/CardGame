@@ -11,14 +11,16 @@ config_version=5
 [application]
 
 config/name="CardGame"
+run/main_scene="uid://sho7nec3ufwc"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [autoload]
 
-Game_Manager="*res://scripts/game_manager.gd"
+GameManager="*res://scripts/game_manager.gd"
 
 [rendering]
 
+textures/canvas_textures/default_texture_filter=0
 renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"

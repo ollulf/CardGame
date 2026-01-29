@@ -9,8 +9,8 @@ var hand: Array = []
 
 func _ready() -> void:
 	# Hook into the GameManager turn requests
-	Game_Manager.request_play_card.connect(_on_request_play_card)
-	Game_Manager.round_started.connect(_on_round_started)
+	GameManager.request_play_card.connect(_on_request_play_card)
+	GameManager.round_started.connect(_on_round_started)
 
 	# Optional: build a starter hand so it can play immediately
 	_build_test_hand()
@@ -30,24 +30,16 @@ func _on_request_play_card(requested_player_id: int) -> void:
 	if hand.is_empty():
 		# If the AI has nothing, it still must respond.
 		# Submit a placeholder. You can change this behavior.
-		Game_Manager.submit_play(player_id, null)
+		GameManager.submit_play(player_id, null)
+		print("Player " + str(player_id) + " played nothing")
 		return
 
 	var index := randi() % hand.size()
 	var chosen_card = hand[index]
 	hand.remove_at(index)
 
-	Game_Manager.submit_play(player_id, chosen_card)
+	GameManager.submit_play(player_id, chosen_card)
 
 
 func _build_test_hand() -> void:
-	# Example dummy cards: rank 1-10 and a suit
-	hand.clear()
-	var suits := ["hearts", "diamonds", "clubs", "spades"]
-
-	for rank in range(1, 11):
-		var card := {
-			"suit": suits[randi() % suits.size()],
-			"rank": rank
-		}
-		hand.append(card)
+	return
