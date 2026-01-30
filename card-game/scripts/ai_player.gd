@@ -42,4 +42,12 @@ func _on_request_play_card(requested_player_id: int) -> void:
 
 
 func _build_test_hand() -> void:
-	return
+	hand.clear()
+	var suits := ["hearts", "diamonds", "clubs", "spades", "alk", "smoke"]
+
+	for i in range(7):
+		var card := {
+			"suit": suits[randi() % suits.size()],
+			"rank": randi_range(1, 13)
+		}
+		hand.append(card)

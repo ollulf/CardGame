@@ -54,11 +54,7 @@ func _ready() -> void:
 		"alk": alk_tex,
 		"smoke": smoke_tex
 	}
-	
-	GameManager.set_table_root(%TableRoot)
-	
-	await get_tree().process_frame
-	start_match(0)
+
 
 func set_table_root(node: Node2D) -> void:
 	table_root = node
