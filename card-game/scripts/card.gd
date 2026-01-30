@@ -9,7 +9,7 @@ var card_data: Dictionary = {}
 @onready var rank_label: Label = $RankLabel
 
 
-func setup(data: Dictionary) -> void:
+func setup(data: Dictionary) -> void:	
 	card_data = data
 
 	var suit_key: String = str(card_data.get("suit"))
