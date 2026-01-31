@@ -104,22 +104,45 @@ func _layout_cards() -> void:
 
 
 func _on_card_double_clicked(card_view: Card) -> void:
-	print( "Is it my turn? > " + str(is_my_turn))
 	if not is_my_turn:
 		return
 
 	var idx := _find_card_index(card_view.card_data)
 	if idx == -1:
 		return
-		
-	print("Player Submitting play")
-	GameManager.submit_play(player_id, hand[idx])
-	
+
+	var chosen_card: Dictionary = hand[idx]
+
+	# --- Follow suit rule ---
+	var lead_suit := _get_lead_suit()
+
+	# If someone already led and you have that suit, you must follow suit
+	if lead_suit != "" and _has_suit_in_hand(lead_suit):
+		if chosen_card.get("suit", "") != lead_suit:
+			print("Illegal move: must follow suit:", lead_suit)
+			return
+
+	# Play is legal
+	GameManager.submit_play(player_id, chosen_card)
+
 	hand.remove_at(idx)
 	_render_hand()
-
 	is_my_turn = false
 
+func _get_lead_suit() -> String:
+	var leader_id: int = GameManager.current_starting_player
+	if GameManager.played_cards.has(leader_id):
+		var lead_card = GameManager.played_cards[leader_id]
+		if typeof(lead_card) == TYPE_DICTIONARY:
+			return str(lead_card.get("suit", ""))
+	return ""
+
+
+func _has_suit_in_hand(suit: String) -> bool:
+	for c in hand:
+		if c.get("suit", "") == suit:
+			return true
+	return false
 
 func _find_card_index(data: Dictionary) -> int:
 	for i in range(hand.size()):

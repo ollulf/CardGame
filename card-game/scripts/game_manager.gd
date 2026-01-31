@@ -147,7 +147,7 @@ func _show_played_card(player_id: int, card_data: Variant) -> void:
 	# If your Card scene uses the "Card" script with setup(card_data, suit_textures),
 	# keep this call. If it’s named differently, adjust the type/call.
 	if card_view.has_method("setup") && card_data != null:
-		card_view.call("setup", card_data)
+		card_view.call("setup", card_data, true)
 	
 	else: 
 		print("No card Data!")

@@ -65,7 +65,7 @@ func _get_lead_suit() -> String:
 
 	if GameManager.played_cards.has(leader_id):
 		var lead_card = GameManager.played_cards[leader_id]
-		if typeof(lead_card) == TYPE_DICTIONARY:
+		if lead_card is Dictionary:
 			return str(lead_card.get("suit", ""))
 
 	return ""
