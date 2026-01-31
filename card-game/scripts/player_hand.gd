@@ -64,7 +64,7 @@ func _render_hand() -> void:
 		add_child(card_view)
 		card_nodes.append(card_view)
 
-		card_view.setup(card_data)
+		card_view.setup(card_data, true)
 		card_view.double_clicked.connect(_on_card_double_clicked)
 
 	_layout_cards()

@@ -11,9 +11,11 @@ script = ExtResource("1_yo8lh")
 script = ExtResource("2_yo8lh")
 
 [node name="AI_Player_1" type="Node2D" parent="."]
+position = Vector2(56, 300)
 script = ExtResource("2_shfjk")
 
 [node name="AI_Player_2" type="Node2D" parent="."]
+position = Vector2(1090, 319)
 script = ExtResource("2_shfjk")
 player_id = 2
 

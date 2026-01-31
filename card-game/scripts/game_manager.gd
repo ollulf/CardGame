@@ -29,7 +29,8 @@ var suit_textures: Dictionary = {}
 
 var table_root: Node2D
 
-var played_card_nodes: Array[Node2D] = []
+var played_card_nodes: Dictionary = {} #player_id and Card
+var played_cards: Dictionary = {} #player_id and cardData
 
 # --- State ---
 var rounds_played := 0
@@ -164,7 +165,8 @@ func _show_played_card(player_id: int, card_data: Variant) -> void:
 			offset = Vector2(30, 0)
 
 	card_view.global_position = center + offset
-	played_card_nodes.append(card_view)
+	played_card_nodes[player_id] = card_view
+	played_cards[player_id] = card_data
 
 
 func _get_table_center_world() -> Vector2:
@@ -180,11 +182,12 @@ func _get_table_center_world() -> Vector2:
 
 
 func _clear_table_visuals() -> void:
-	for n in played_card_nodes:
+	for player_id in played_card_nodes.keys():
+		var n = played_card_nodes[player_id]
 		if is_instance_valid(n):
 			n.queue_free()
 	played_card_nodes.clear()
-
+	played_cards.clear()
 
 func _finish_round() -> void:
 	
@@ -204,5 +207,32 @@ func _finish_round() -> void:
 
 
 func calculate_round_winner(current_plays: Dictionary) -> int:
-	print("Player 0 won")
-	return 0
+	# Safety: starting player must have played
+	if not current_plays.has(current_starting_player):
+		push_warning("Starting player has no card – fallback winner used.")
+		return current_starting_player
+
+	var lead_card: Dictionary = current_plays[current_starting_player]
+	var lead_suit: String = lead_card["suit"]
+
+	var winning_player: int = current_starting_player
+	var highest_rank: int = lead_card["rank"]
+
+	for player_id in current_plays.keys():
+		var card: Dictionary = current_plays[player_id]
+
+		# Only cards of the lead suit can win
+		if card["suit"] != lead_suit:
+			continue
+
+		if card["rank"] > highest_rank:
+			highest_rank = card["rank"]
+			winning_player = player_id
+
+	print(
+		"Lead suit:", lead_suit,
+		"| Winner:", winning_player,
+		"| Rank:", highest_rank
+	)
+
+	return winning_player
