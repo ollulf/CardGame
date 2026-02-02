@@ -1,6 +1,22 @@
-[gd_scene load_steps=2 format=3 uid="uid://dfyq6nuwnii7j"]
+[gd_scene load_steps=3 format=3 uid="uid://dfyq6nuwnii7j"]
 
 [ext_resource type="Script" uid="uid://clo2qyitk7clu" path="res://scripts/turn_indicator.gd" id="1_qxm31"]
+[ext_resource type="Texture2D" uid="uid://j1p35h7lfn60" path="res://sprites/suit_Herz.png" id="2_gfj78"]
 
-[node name="TurnIndicator" type="Node2D"]
+[node name="TurnIndicator" type="Node2D" node_paths=PackedStringArray("player_0_sprite", "player_1_sprite", "player_2_sprite")]
 script = ExtResource("1_qxm31")
+player_0_sprite = NodePath("Sprite2D2")
+player_1_sprite = NodePath("Sprite2D")
+player_2_sprite = NodePath("Sprite2D3")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+position = Vector2(211, 376)
+texture = ExtResource("2_gfj78")
+
+[node name="Sprite2D2" type="Sprite2D" parent="."]
+position = Vector2(545, 570)
+texture = ExtResource("2_gfj78")
+
+[node name="Sprite2D3" type="Sprite2D" parent="."]
+position = Vector2(856, 358)
+texture = ExtResource("2_gfj78")

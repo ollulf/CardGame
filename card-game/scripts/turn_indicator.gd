@@ -6,22 +6,25 @@ class_name TurnIndicator
 @export var player_2_sprite: Sprite2D
 
 
-var last_player_id: int = -1
-
-
-func _ready() -> void:
-	_set_all(false)
-
-
 func _process(_delta: float) -> void:
 	var current_player_id := _get_current_player_id()
-
-	# Only update when it actually changes
-	if current_player_id == last_player_id:
-		return
-
-	last_player_id = current_player_id
-	_update_indicator(current_player_id)
+	match current_player_id:
+		-1:
+			player_0_sprite.visible = false
+			player_1_sprite.visible = false
+			player_2_sprite.visible = false
+		0: 
+			player_0_sprite.visible = true
+			player_1_sprite.visible = false
+			player_2_sprite.visible = false
+		1:
+			player_0_sprite.visible = false
+			player_1_sprite.visible = true
+			player_2_sprite.visible = false
+		2:
+			player_0_sprite.visible = false
+			player_1_sprite.visible = false
+			player_2_sprite.visible = true
 
 
 func _get_current_player_id() -> int:
@@ -36,13 +39,3 @@ func _get_current_player_id() -> int:
 		return -1
 
 	return GameManager.turn_order[GameManager.current_turn_index]
-
-
-func _update_indicator(player_id: int) -> void:
-	_set_all(false)
-
-
-func _set_all(value: bool) -> void:
-	player_0_sprite.visible = value
-	player_1_sprite.visible = value
-	player_2_sprite.visible = value

@@ -1,8 +1,10 @@
-[gd_scene load_steps=4 format=3 uid="uid://sho7nec3ufwc"]
+[gd_scene load_steps=6 format=3 uid="uid://sho7nec3ufwc"]
 
 [ext_resource type="Script" uid="uid://b1ufuvgq634xj" path="res://scripts/GameSetup.gd" id="1_yo8lh"]
 [ext_resource type="Script" uid="uid://bqtm4pcvcl48u" path="res://scripts/ai_player.gd" id="2_shfjk"]
 [ext_resource type="Script" uid="uid://bnvbuen33moub" path="res://scripts/player_hand.gd" id="2_yo8lh"]
+[ext_resource type="PackedScene" uid="uid://dfyq6nuwnii7j" path="res://scenes/turn_indicator.tscn" id="4_fwnfr"]
+[ext_resource type="PackedScene" uid="uid://bj87ioqol7050" path="res://scenes/won_rounds_ui.tscn" id="5_q6cnf"]
 
 [node name="GameManager" type="Node2D"]
 script = ExtResource("1_yo8lh")
@@ -13,13 +15,15 @@ script = ExtResource("2_yo8lh")
 [node name="AI_Player_1" type="Node2D" parent="."]
 position = Vector2(56, 300)
 script = ExtResource("2_shfjk")
-reveal_hand = true
 
 [node name="AI_Player_2" type="Node2D" parent="."]
 position = Vector2(1090, 319)
 script = ExtResource("2_shfjk")
 player_id = 2
-reveal_hand = true
 
 [node name="TableRoot" type="Node2D" parent="."]
 unique_name_in_owner = true
+
+[node name="TurnIndicator" parent="." instance=ExtResource("4_fwnfr")]
+
+[node name="WonRoundsUI" parent="." instance=ExtResource("5_q6cnf")]

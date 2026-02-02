@@ -43,20 +43,30 @@ func _on_request_play_card(requested_player_id: int) -> void:
 	_render_hand()
 	GameManager.submit_play(player_id, chosen_card)
 
-
 func _choose_card_index() -> int:
 	var lead_suit := _get_lead_suit()
 	if lead_suit == "":
 		return randi() % hand.size()
 
-	var follow_indices: Array[int] = []
+	# Find the highest card of the lead suit (if we have any)
+	var best_index := -1
+	var best_rank := -1
+
 	for i in range(hand.size()):
-		if hand[i].get("suit", "") == lead_suit:
-			follow_indices.append(i)
+		var c := hand[i]
+		if c.get("suit", "") != lead_suit:
+			continue
 
-	if not follow_indices.is_empty():
-		return follow_indices[randi() % follow_indices.size()]
+		var r: int = int(c.get("rank", -1))
+		if r > best_rank:
+			best_rank = r
+			best_index = i
 
+	# If we can follow suit, play the highest of that suit
+	if best_index != -1:
+		return best_index
+
+	# Otherwise play random
 	return randi() % hand.size()
 
 
