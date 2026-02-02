@@ -6,6 +6,7 @@ signal round_started(round_index: int, starting_player_id: int)
 signal request_play_card(player_id: int)
 signal round_completed(round_index: int, plays: Dictionary, winner_id: int)
 signal match_finished(winner_id: int)
+signal send_message(text: String)
 
 # --- Config ---
 const MAX_ROUNDS := 10
@@ -73,13 +74,13 @@ func start_match(starting_player_id: int = PLAYER_HUMAN) -> void:
 
 
 func _start_new_round(starting_player_id: int) -> void:
-	await get_tree().create_timer(3.0).timeout
 
 	if match_over:
 		return
 
 	if rounds_played >= MAX_ROUNDS:
 		match_over = true
+		message(str(PLAYERS[last_round_winner]) + " won the match!")
 		emit_signal("match_finished", last_round_winner)
 		return
 
@@ -115,7 +116,7 @@ func _request_current_player() -> void:
 		return
 
 	var player_id := turn_order[current_turn_index]
-	print("Waiting for play of player: " + str(player_id))
+	message(str(PLAYERS[player_id]) + "'s turn")
 	emit_signal("request_play_card", player_id)
 
 
@@ -135,7 +136,6 @@ func submit_play(player_id: int, card_data: Variant) -> void:
 	current_turn_index += 1
 
 	# Delay for requesting next player (nice pacing)
-	await get_tree().create_timer(1.0).timeout
 	_request_current_player()
 
 
@@ -201,8 +201,11 @@ func _finish_round() -> void:
 
 	last_round_winner = winner_id
 
+	message(str(PLAYERS[winner_id]) + " won the Round")
+	
+	await get_tree().create_timer(3.0).timeout
+	
 	emit_signal("round_completed", current_round, current_round_plays, winner_id)
-	print("Started new Round")
 	_start_new_round(winner_id)
 
 
@@ -236,3 +239,6 @@ func calculate_round_winner(current_plays: Dictionary) -> int:
 	)
 
 	return winning_player
+
+func message(text: String):
+	emit_signal("send_message", text)

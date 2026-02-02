@@ -31,6 +31,9 @@ func _on_request_play_card(requested_player_id: int) -> void:
 	if requested_player_id != player_id:
 		return
 
+	#Play Delay
+	await get_tree().create_timer(3.0).timeout
+
 	if hand.is_empty():
 		print("Player " + str(player_id) + " played nothing")
 		GameManager.submit_play(player_id, null)

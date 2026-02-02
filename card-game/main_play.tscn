@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3 uid="uid://sho7nec3ufwc"]
+[gd_scene load_steps=7 format=3 uid="uid://sho7nec3ufwc"]
 
 [ext_resource type="Script" uid="uid://b1ufuvgq634xj" path="res://scripts/GameSetup.gd" id="1_yo8lh"]
 [ext_resource type="Script" uid="uid://bqtm4pcvcl48u" path="res://scripts/ai_player.gd" id="2_shfjk"]
 [ext_resource type="Script" uid="uid://bnvbuen33moub" path="res://scripts/player_hand.gd" id="2_yo8lh"]
 [ext_resource type="PackedScene" uid="uid://dfyq6nuwnii7j" path="res://scenes/turn_indicator.tscn" id="4_fwnfr"]
 [ext_resource type="PackedScene" uid="uid://bj87ioqol7050" path="res://scenes/won_rounds_ui.tscn" id="5_q6cnf"]
+[ext_resource type="Script" uid="uid://dg7s8jonl23ai" path="res://message_ui.gd" id="6_bl2fu"]
 
 [node name="GameManager" type="Node2D"]
 script = ExtResource("1_yo8lh")
@@ -27,3 +28,24 @@ unique_name_in_owner = true
 [node name="TurnIndicator" parent="." instance=ExtResource("4_fwnfr")]
 
 [node name="WonRoundsUI" parent="." instance=ExtResource("5_q6cnf")]
+
+[node name="MessageUI" type="CanvasLayer" parent="."]
+script = ExtResource("6_bl2fu")
+
+[node name="MessageLabel" type="Label" parent="MessageUI"]
+unique_name_in_owner = true
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -200.0
+offset_top = 69.0
+offset_right = 200.0
+offset_bottom = 169.0
+grow_horizontal = 2
+grow_vertical = 2
+text = "This is the message text label that shows that happens in the game."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
