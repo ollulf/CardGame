@@ -3,7 +3,12 @@ class_name Hand
 
 @export var follow_speed: float = 12.0
 @export var max_distance: float = 500.0
-@export var slot_spacing: float = 26.0
+
+@onready var cig_finger := $BaseHand/SmokingFingerSprite
+# Assign up to THREE Node2D slots in the inspector
+@export var cigarette_slots: Array[Node2D] = []
+
+const MAX_CIGARETTES := 3
 
 # Store actual Cigarette nodes we hold
 var _cigs: Array[Cigarette] = []
@@ -32,11 +37,16 @@ func get_total_count() -> int:
 	return _cigs.size()
 
 
-func add_cigarette(cig: Cigarette, state: int) -> void:
+func add_cigarette(cig: Cigarette, state: int) -> bool:
+	# Hard limit: no more than three
+	if _cigs.size() >= MAX_CIGARETTES:
+		return false
+
 	add_child(cig)
 	_cigs.append(cig)
 	cig.set_state(state)
 	_layout()
+	return true
 
 
 func remove_one_unlit() -> bool:
@@ -84,16 +94,19 @@ func remove_all_stumps() -> int:
 
 
 func _layout() -> void:
-	# Arrange in a small row centered on hand
-	var n := _cigs.size()
-	if n <= 0:
+	if _cigs.is_empty():
+		cig_finger.visible = false
 		return
 
-	var total_w := (n - 1) * slot_spacing
-	var start_x := -total_w * 0.5
+	cig_finger.visible = true
+	# Enforce max visually as well
+	var count : int = min(_cigs.size(), cigarette_slots.size(), MAX_CIGARETTES)
 
-	for i in range(n):
+	for i in range(count):
 		var c := _cigs[i]
-		if is_instance_valid(c):
-			c.position = Vector2(start_x + i * slot_spacing, 0)
-			c.rotation = deg_to_rad(-10 + i * 10) # tiny fan for vibe
+		var slot := cigarette_slots[i]
+
+		if is_instance_valid(c) and is_instance_valid(slot):
+			c.visible = true
+			c.position = slot.position
+			c.rotation = slot.rotation

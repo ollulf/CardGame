@@ -3,7 +3,7 @@ extends Node
 var cigPack: CigPack
 var hand: Hand
 
-@export var cigarette_scene: PackedScene  # assign Cigarette.tscn here (or preload)
+@export var cigarette_scene:= preload("res://scenes/cigarette.tscn") 
 
 const MAX_IN_HAND := 3
 const BURN_SECONDS := 20.0
@@ -59,21 +59,12 @@ func usedAshTray() -> void:
 
 
 func addCigToHand() -> void:
-	if hand == null:
-		return
-
 	if hand.get_total_count() >= MAX_IN_HAND:
 		GameManager.message("Hand is full.")
 		return
 
-	if cigarette_scene == null:
-		push_error("InteractionManager: cigarette_scene not assigned.")
-		return
-
-	# Spawn cigarette and add to hand as UNLIT
 	var cig := cigarette_scene.instantiate() as Cigarette
 	hand.add_cigarette(cig, Cigarette.State.UNLIT)
-	GameManager.message("Picked up a cigarette.")
 
 
 func _return_one_unlit_to_pack() -> void:
