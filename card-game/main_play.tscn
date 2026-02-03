@@ -1,14 +1,54 @@
-[gd_scene load_steps=7 format=3 uid="uid://sho7nec3ufwc"]
+[gd_scene load_steps=11 format=3 uid="uid://sho7nec3ufwc"]
 
 [ext_resource type="Script" uid="uid://b1ufuvgq634xj" path="res://scripts/GameSetup.gd" id="1_yo8lh"]
 [ext_resource type="Script" uid="uid://bqtm4pcvcl48u" path="res://scripts/ai_player.gd" id="2_shfjk"]
 [ext_resource type="Script" uid="uid://bnvbuen33moub" path="res://scripts/player_hand.gd" id="2_yo8lh"]
+[ext_resource type="Script" uid="uid://cixtgg70qdal3" path="res://cig_pack.gd" id="3_el7dg"]
+[ext_resource type="Texture2D" uid="uid://xn2sqj61surv" path="res://sprites/Cigarettes_closed_icon.png" id="4_555rj"]
 [ext_resource type="PackedScene" uid="uid://dfyq6nuwnii7j" path="res://scenes/turn_indicator.tscn" id="4_fwnfr"]
+[ext_resource type="Texture2D" uid="uid://bd4p2ye1o2uc5" path="res://sprites/Cigarettes_icon.png" id="5_555rj"]
 [ext_resource type="PackedScene" uid="uid://bj87ioqol7050" path="res://scenes/won_rounds_ui.tscn" id="5_q6cnf"]
 [ext_resource type="Script" uid="uid://dg7s8jonl23ai" path="res://message_ui.gd" id="6_bl2fu"]
 
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_el7dg"]
+size = Vector2(26, 32)
+
 [node name="GameManager" type="Node2D"]
 script = ExtResource("1_yo8lh")
+
+[node name="CigPack" type="Area2D" parent="."]
+position = Vector2(878, 608)
+scale = Vector2(3, 3)
+script = ExtResource("3_el7dg")
+normal_texture = ExtResource("4_555rj")
+hover_texture = ExtResource("5_555rj")
+hover_offset = Vector2(0, -5)
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CigPack"]
+position = Vector2(0, 2)
+shape = SubResource("RectangleShape2D_el7dg")
+
+[node name="Sprite2D" type="Sprite2D" parent="CigPack"]
+z_index = 1
+texture = ExtResource("4_555rj")
+
+[node name="Amount" type="Label" parent="CigPack/Sprite2D"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -28.8334
+offset_top = -20.6667
+offset_right = 6.16665
+offset_bottom = 2.33333
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 13
+text = "99"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="PlayerHand" type="Node2D" parent="."]
 script = ExtResource("2_yo8lh")
