@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3 uid="uid://fd5u8drncj85"]
+
+[ext_resource type="Script" uid="uid://3xovqnwxhh0y" path="res://scenes/cigarette.gd" id="1_cpquw"]
+[ext_resource type="Texture2D" uid="uid://cs0ppqmgjo0yw" path="res://sprites/cigarettes/Cigarettes_1.png" id="2_tqdhk"]
+
+[node name="Cigarette" type="Area2D"]
+script = ExtResource("1_cpquw")
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("2_tqdhk")

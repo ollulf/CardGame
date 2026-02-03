@@ -1,4 +1,5 @@
 extends Area2D
+class_name CigPack
 
 @export var normal_texture: Texture2D
 @export var hover_texture: Texture2D
@@ -11,8 +12,9 @@ extends Area2D
 
 var _base_position: Vector2
 
-
 func _ready() -> void:
+	InteractionManager.cigPack = self
+	
 	_base_position = sprite.position
 
 	if normal_texture != null:
@@ -48,7 +50,7 @@ func _input_event(
 
 
 func on_clicked() -> void:
-	GameManager.message("Smoked a cigarette")
+	InteractionManager.pickedUpCig
 	cig_amount-= 1
 	update_label()
 

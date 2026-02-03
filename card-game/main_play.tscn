@@ -1,12 +1,16 @@
-[gd_scene load_steps=11 format=3 uid="uid://sho7nec3ufwc"]
+[gd_scene load_steps=15 format=3 uid="uid://sho7nec3ufwc"]
 
 [ext_resource type="Script" uid="uid://b1ufuvgq634xj" path="res://scripts/GameSetup.gd" id="1_yo8lh"]
 [ext_resource type="Script" uid="uid://bqtm4pcvcl48u" path="res://scripts/ai_player.gd" id="2_shfjk"]
+[ext_resource type="Script" uid="uid://cuvaebvqn4c7p" path="res://hand.gd" id="2_xxgwq"]
 [ext_resource type="Script" uid="uid://bnvbuen33moub" path="res://scripts/player_hand.gd" id="2_yo8lh"]
 [ext_resource type="Script" uid="uid://cixtgg70qdal3" path="res://cig_pack.gd" id="3_el7dg"]
+[ext_resource type="Texture2D" uid="uid://crx3f1kr5f5dh" path="res://sprites/Hand.png" id="3_r2isv"]
+[ext_resource type="Texture2D" uid="uid://cjyxhywobaqyl" path="res://sprites/Hand_finger.png" id="4_2ja4j"]
 [ext_resource type="Texture2D" uid="uid://xn2sqj61surv" path="res://sprites/Cigarettes_closed_icon.png" id="4_555rj"]
 [ext_resource type="PackedScene" uid="uid://dfyq6nuwnii7j" path="res://scenes/turn_indicator.tscn" id="4_fwnfr"]
 [ext_resource type="Texture2D" uid="uid://bd4p2ye1o2uc5" path="res://sprites/Cigarettes_icon.png" id="5_555rj"]
+[ext_resource type="Texture2D" uid="uid://bo05sg6rj5oqn" path="res://sprites/lighter.png" id="5_lcid1"]
 [ext_resource type="PackedScene" uid="uid://bj87ioqol7050" path="res://scenes/won_rounds_ui.tscn" id="5_q6cnf"]
 [ext_resource type="Script" uid="uid://dg7s8jonl23ai" path="res://message_ui.gd" id="6_bl2fu"]
 
@@ -15,6 +19,20 @@ size = Vector2(26, 32)
 
 [node name="GameManager" type="Node2D"]
 script = ExtResource("1_yo8lh")
+
+[node name="HandVisualisation" type="Node2D" parent="."]
+script = ExtResource("2_xxgwq")
+follow_speed = null
+max_distance = null
+
+[node name="BaseHand" type="Sprite2D" parent="HandVisualisation"]
+position = Vector2(203, 324)
+scale = Vector2(3, 3)
+texture = ExtResource("3_r2isv")
+
+[node name="SmokingFingerSprite" type="Sprite2D" parent="HandVisualisation/BaseHand"]
+visible = false
+texture = ExtResource("4_2ja4j")
 
 [node name="CigPack" type="Area2D" parent="."]
 position = Vector2(878, 608)
@@ -50,17 +68,23 @@ text = "99"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="Sprite2D2" type="Sprite2D" parent="CigPack"]
+position = Vector2(24.6666, -8.33333)
+texture = ExtResource("5_lcid1")
+
 [node name="PlayerHand" type="Node2D" parent="."]
 script = ExtResource("2_yo8lh")
 
 [node name="AI_Player_1" type="Node2D" parent="."]
 position = Vector2(56, 300)
 script = ExtResource("2_shfjk")
+reveal_hand = true
 
 [node name="AI_Player_2" type="Node2D" parent="."]
 position = Vector2(1090, 319)
 script = ExtResource("2_shfjk")
 player_id = 2
+reveal_hand = true
 
 [node name="TableRoot" type="Node2D" parent="."]
 unique_name_in_owner = true
