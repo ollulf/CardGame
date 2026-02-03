@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cjyxhywobaqyl"
-path="res://.godot/imported/Hand_finger.png-ffd6c66d22348e6fe83e1d1f057e8510.ctex"
+uid="uid://beanmjab43tki"
+path="res://.godot/imported/AshTray.png-98db5682262a4ae0a7af53f673639bbe.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://sprites/Hand_finger.png"
-dest_files=["res://.godot/imported/Hand_finger.png-ffd6c66d22348e6fe83e1d1f057e8510.ctex"]
+source_file="res://sprites/AshTray.png"
+dest_files=["res://.godot/imported/AshTray.png-98db5682262a4ae0a7af53f673639bbe.ctex"]
 
 [params]
 
