@@ -1,6 +1,6 @@
 [gd_scene load_steps=10 format=3 uid="uid://fd5u8drncj85"]
 
-[ext_resource type="Script" uid="uid://3xovqnwxhh0y" path="res://scenes/cigarette.gd" id="1_cpquw"]
+[ext_resource type="Script" uid="uid://3xovqnwxhh0y" path="res://scripts/cigarette.gd" id="1_cpquw"]
 [ext_resource type="Texture2D" uid="uid://cs0ppqmgjo0yw" path="res://sprites/cigarettes/Cigarettes_1.png" id="2_tqdhk"]
 [ext_resource type="Texture2D" uid="uid://d0pq0y0wv4nk0" path="res://sprites/cigarettes/Cigarettes_2.png" id="3_f8ih2"]
 [ext_resource type="Texture2D" uid="uid://c5jqiuu7lua07" path="res://sprites/cigarettes/Cigarettes_3.png" id="3_g4r81"]
@@ -10,11 +10,19 @@
 [ext_resource type="Texture2D" uid="uid://duapsherrni7e" path="res://sprites/cigarettes/Cigarettes_6.png" id="6_4a4k7"]
 [ext_resource type="Texture2D" uid="uid://bqkv63c1ey2cp" path="res://sprites/cigarettes/Cigarettes_7.png" id="7_syw6q"]
 
-[node name="Cigarette" type="Node2D"]
+[node name="Cigarette" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+mouse_behavior_recursive = 2
 script = ExtResource("1_cpquw")
 burn_textures = Array[Texture2D]([ExtResource("2_tqdhk"), ExtResource("3_f8ih2"), ExtResource("3_g4r81"), ExtResource("4_s7hch"), ExtResource("5_30jq8"), ExtResource("6_4a4k7"), ExtResource("7_syw6q"), ExtResource("4_jti3x")])
 
-[node name="Sprite2D" type="Sprite2D" parent="."]
-position = Vector2(0, -48)
+[node name="Sprite2D" type="TextureRect" parent="."]
+layout_mode = 0
+offset_left = -8.0
+offset_top = -96.0
+offset_right = -3.0
+offset_bottom = -64.0
 scale = Vector2(3, 3)
 texture = ExtResource("2_tqdhk")

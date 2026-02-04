@@ -1,38 +1,55 @@
-extends Node2D
+extends Control
 class_name PlayerHand
 
 @export var player_id: int = 0
 
-# Optional: assign your main Camera2D here so the hand sticks to the bottom of the camera view.
-@export var camera_path: NodePath
-
 # Layout
-@export var card_spacing: float = 40.0
+@export var card_space: float = 350.0
 @export var bottom_margin: float = 90.0
 
-var hand: Array[Dictionary] = []
-var card_nodes: Array[Node2D] = []
-var is_my_turn: bool = false
+# CardUI scene (root must be Control, e.g. CardUI)
+@export var card_ui_scene: PackedScene = preload("res://scenes/Card.tscn")
 
-@onready var cam: Camera2D = get_node_or_null(camera_path) as Camera2D
+var hand: Array[Dictionary] = []
+var card_nodes: Array[Card] = []
+var is_my_turn: bool = false
 
 
 func _ready() -> void:
-	# Hook into the turn system
 	GameManager.request_play_card.connect(_on_request_play_card)
 	GameManager.round_started.connect(_on_round_started)
+	
+	InteractionManager.player_hand = self
 
 	_build_test_hand()
 	_render_hand()
 
 
-func _process(_delta: float) -> void:
-	# In world space, the camera can move every frame.
-	# So we keep re-anchoring the hand position.
-	_anchor_to_bottom_of_view()
+func submit_card(card: Card) -> void:
+	if not is_my_turn:
+		return
+
+	var idx := _find_card_index(card.card_data)
+	if idx == -1:
+		return
+
+	var chosen_card: Dictionary = hand[idx]
+
+	# --- Follow suit rule ---
+	var lead_suit := _get_lead_suit()
+	if lead_suit != "" and _has_suit_in_hand(lead_suit):
+		if chosen_card.get("suit", "") != lead_suit:
+			print("Illegal move: must follow suit:", lead_suit)
+			return
+
+	GameManager.submit_play(player_id, chosen_card)
+
+	hand.remove_at(idx)
+	_render_hand()
+	is_my_turn = false
 
 
-func _on_round_started(round_index: int, starting_player_id: int) -> void:
+func _on_round_started(_round_index: int, _starting_player_id: int) -> void:
 	is_my_turn = false
 
 
@@ -53,6 +70,8 @@ func _build_test_hand() -> void:
 
 
 func _render_hand() -> void:
+	_anchor_to_bottom_of_view()
+
 	for n in card_nodes:
 		if is_instance_valid(n):
 			n.queue_free()
@@ -60,74 +79,45 @@ func _render_hand() -> void:
 
 	for i in range(hand.size()):
 		var card_data := hand[i]
-		var card_view := GameManager.card_scene.instantiate() as Card
+		var card_view := card_ui_scene.instantiate() as Card
 		add_child(card_view)
 		card_nodes.append(card_view)
 
 		card_view.setup(card_data, true)
-		card_view.double_clicked.connect(_on_card_double_clicked)
 
 	_layout_cards()
 
 
 func _anchor_to_bottom_of_view() -> void:
-	# If we have a camera, anchor relative to its visible rect in world coordinates.
-	if cam != null:
-		var viewport_size := get_viewport().get_visible_rect().size
-		var half := viewport_size * 0.5
-
-		# Camera center in world space
-		var center := cam.global_position
-
-		# Bottom center of the camera view (world space)
-		var bottom_center := Vector2(center.x, center.y + half.y)
-
-		# Place this hand node slightly above the bottom edge
-		global_position = Vector2(bottom_center.x, bottom_center.y - bottom_margin)
-		return
-
-	# Fallback: anchor relative to viewport, not camera (won't follow camera movement).
+	# UI coordinates (this Control is the root)
 	var vs := get_viewport().get_visible_rect().size
-	global_position = Vector2(vs.x * 0.5, vs.y - bottom_margin)
+	position = Vector2(vs.x * 0.5, vs.y - bottom_margin)
 
 
 func _layout_cards() -> void:
-	# Layout cards centered around the PlayerHand node.
-	var total_width := (hand.size() - 1) * card_spacing
-	var start_x := -total_width * 0.5
+	var count := card_nodes.size()
+	if count <= 0:
+		return
 
-	for i in range(card_nodes.size()):
+	if count == 1:
+		var n := card_nodes[0]
+		if is_instance_valid(n):
+			n.position = Vector2.ZERO
+			n.z_index = 0
+		return
+
+	var half_width := card_space * 0.5
+	var step := card_space / float(count - 1)
+
+	for i in range(count):
 		var n := card_nodes[i]
 		if not is_instance_valid(n):
 			continue
-		n.position = Vector2(start_x + i * card_spacing, 0.0)
 
+		var x := -half_width + i * step
+		n.position = Vector2(x, 0.0)
+		n.z_index = i
 
-func _on_card_double_clicked(card_view: Card) -> void:
-	if not is_my_turn:
-		return
-
-	var idx := _find_card_index(card_view.card_data)
-	if idx == -1:
-		return
-
-	var chosen_card: Dictionary = hand[idx]
-
-	# --- Follow suit rule ---
-	var lead_suit := _get_lead_suit()
-
-	# If someone already led and you have that suit, you must follow suit
-	if lead_suit != "" and _has_suit_in_hand(lead_suit):
-		if chosen_card.get("suit", "") != lead_suit:
-			print("Illegal move: must follow suit:", lead_suit)
-			return
-
-	# Play is legal
-	GameManager.submit_play(player_id, chosen_card)
-
-	hand.remove_at(idx)
-	_render_hand()
-	is_my_turn = false
 
 func _get_lead_suit() -> String:
 	var leader_id: int = GameManager.current_starting_player
@@ -143,6 +133,7 @@ func _has_suit_in_hand(suit: String) -> bool:
 		if c.get("suit", "") == suit:
 			return true
 	return false
+
 
 func _find_card_index(data: Dictionary) -> int:
 	for i in range(hand.size()):

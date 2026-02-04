@@ -1,12 +1,12 @@
-extends Node2D
-class_name Hand
+extends Control
+class_name HandVisualisation
 
-@export var follow_speed: float = 12.0
+@export var follow_speed: float = 15.0
 @export var max_distance: float = 500.0
 
 @onready var cig_finger := $BaseHand/SmokingFingerSprite
 # Assign up to THREE Node2D slots in the inspector
-@export var cigarette_slots: Array[Node2D] = []
+@export var cigarette_slots: Array[Control] = []
 
 const MAX_CIGARETTES := 3
 
@@ -19,17 +19,27 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
-	var target_pos := get_global_mouse_position()
+	# Mouse position in SCREEN coordinates (can go outside the window)
+	var m := get_viewport().get_mouse_position()
 
+	# Clamp to the visible viewport rect (keeps it inside the window)
+	var vs := get_viewport().get_visible_rect().size
+	m.x = clampf(m.x, 0.0, vs.x)
+	m.y = clampf(m.y, 0.0, vs.y)
+
+	# Convert clamped screen position to WORLD position (camera-safe)
+	var target_pos := get_viewport().get_canvas_transform().affine_inverse() * m
+
+	# Keep your max-distance leash
 	var diff := target_pos - global_position
 	if diff.length() > max_distance:
 		target_pos = global_position + diff.normalized() * max_distance
 
+	# Smooth follow
 	global_position = global_position.lerp(
 		target_pos,
 		1.0 - exp(-follow_speed * delta)
 	)
-
 
 # --- Inventory / actions ---
 

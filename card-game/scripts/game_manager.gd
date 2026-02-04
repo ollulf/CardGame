@@ -17,7 +17,7 @@ const PLAYER_AI_2 := 2
 const PLAYERS := [PLAYER_HUMAN, PLAYER_AI_1, PLAYER_AI_2]
 
 # --- Cards ---
-var card_scene: PackedScene = preload("res://Card.tscn")
+var card_scene: PackedScene = preload("res://scenes/Card.tscn")
 
 @onready var hearts_tex: Texture2D = preload("res://sprites/suit_Herz.png")
 @onready var diamonds_tex: Texture2D = preload("res://sprites/suit_Karo.png")
@@ -28,7 +28,7 @@ var card_scene: PackedScene = preload("res://Card.tscn")
 
 var suit_textures: Dictionary = {}
 
-var table_root: Node2D
+var table_root: Control
 
 var played_card_nodes: Dictionary = {} #player_id and Card
 var played_cards: Dictionary = {} #player_id and cardData
@@ -58,7 +58,7 @@ func _ready() -> void:
 	}
 
 
-func set_table_root(node: Node2D) -> void:
+func set_table_root(node: Control) -> void:
 	table_root = node
 
 func start_match(starting_player_id: int = PLAYER_HUMAN) -> void:
@@ -158,13 +158,17 @@ func _show_played_card(player_id: int, card_data: Variant) -> void:
 	var offset := Vector2.ZERO
 	match player_id:
 		PLAYER_HUMAN:
-			offset = Vector2(0, 20)
+			offset = Vector2(0, 35)
 		PLAYER_AI_1:
-			offset = Vector2(-30, 0)
+			offset = Vector2(-70, 0)
 		PLAYER_AI_2:
-			offset = Vector2(30, 0)
+			offset = Vector2(60, -15)
 
 	card_view.global_position = center + offset
+	card_view.scale = Vector2(1.5,1.5)
+	
+	card_view.z_index = played_card_nodes.size()
+	
 	played_card_nodes[player_id] = card_view
 	played_cards[player_id] = card_data
 
@@ -239,6 +243,30 @@ func calculate_round_winner(current_plays: Dictionary) -> int:
 	)
 
 	return winning_player
+
+func get_highest_lead_suit_rank() -> int:
+	# No starting card yet → no lead suit
+	if not played_cards.has(current_starting_player):
+		return -1
+
+	var lead_card: Dictionary = played_cards[current_starting_player]
+	var lead_suit: String = str(lead_card.get("suit", ""))
+
+	if lead_suit == "":
+		return -1
+
+	var highest := -1
+
+	for player_id in played_cards.keys():
+		var c: Dictionary = played_cards[player_id]
+		if str(c.get("suit", "")) != lead_suit:
+			continue
+
+		var r: int = int(c.get("rank", -1))
+		if r > highest:
+			highest = r
+
+	return highest
 
 func message(text: String):
 	emit_signal("send_message", text)

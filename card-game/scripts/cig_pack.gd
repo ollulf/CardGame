@@ -47,7 +47,6 @@ func _input_event(_viewport: Viewport, event: InputEvent, _shape_idx: int) -> vo
 
 func on_clicked() -> void:
 	InteractionManager.pickedUpCig()
-	cig_amount-= 1
 	update_label()
 
 func update_label():

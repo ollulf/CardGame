@@ -1,35 +1,56 @@
 [gd_scene load_steps=4 format=3 uid="uid://bjmm2q84dkq0v"]
 
-[ext_resource type="Script" uid="uid://cuvaebvqn4c7p" path="res://hand.gd" id="1_hlq4m"]
+[ext_resource type="Script" uid="uid://cuvaebvqn4c7p" path="res://scripts/hand.gd" id="1_hlq4m"]
 [ext_resource type="Texture2D" uid="uid://crx3f1kr5f5dh" path="res://sprites/Hand.png" id="2_p6y3b"]
 [ext_resource type="Texture2D" uid="uid://cjyxhywobaqyl" path="res://sprites/Hand_finger.png" id="3_c15go"]
 
-[node name="HandVisualisation" type="Node2D" node_paths=PackedStringArray("cigarette_slots")]
+[node name="HandVisualisation" type="Control" node_paths=PackedStringArray("cigarette_slots")]
+z_index = 20
+layout_mode = 3
+anchors_preset = 0
+mouse_filter = 2
+mouse_behavior_recursive = 2
 script = ExtResource("1_hlq4m")
 cigarette_slots = [NodePath("Slot_1"), NodePath("Slot_2"), NodePath("Slot_3")]
 
-[node name="BaseHand" type="Sprite2D" parent="."]
+[node name="BaseHand" type="TextureRect" parent="."]
 z_index = 1
-position = Vector2(203, 324)
+layout_mode = 0
+offset_left = 1.5258789e-05
+offset_right = 143.00002
+offset_bottom = 223.0
 scale = Vector2(3, 3)
 texture = ExtResource("2_p6y3b")
 
-[node name="SmokingFingerSprite" type="Sprite2D" parent="BaseHand"]
+[node name="SmokingFingerSprite" type="TextureRect" parent="BaseHand"]
 visible = false
 z_index = -1
+layout_mode = 0
 texture = ExtResource("3_c15go")
 
-[node name="Slot_1" type="Node2D" parent="."]
-position = Vector2(27, 21)
+[node name="Slot_1" type="Control" parent="."]
+anchors_preset = 0
+offset_left = 38.0
+offset_top = 38.0
+offset_right = 38.0
+offset_bottom = 38.0
 rotation = 0.5094975
-scale = Vector2(3, 3)
+scale = Vector2(3.0000002, 3.0000002)
 
-[node name="Slot_2" type="Node2D" parent="."]
-position = Vector2(33.000004, 30.000004)
+[node name="Slot_2" type="Control" parent="."]
+anchors_preset = 0
+offset_left = 44.000004
+offset_top = 47.000004
+offset_right = 44.000004
+offset_bottom = 47.000004
 rotation = 0.73364764
 scale = Vector2(3, 3)
 
-[node name="Slot_3" type="Node2D" parent="."]
-position = Vector2(39.999996, 38.999992)
-rotation = 0.84143096
+[node name="Slot_3" type="Control" parent="."]
+anchors_preset = 0
+offset_left = 50.999996
+offset_top = 55.999992
+offset_right = 50.999996
+offset_bottom = 55.999992
+rotation = 0.841431
 scale = Vector2(3, 3)

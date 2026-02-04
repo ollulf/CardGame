@@ -1,6 +1,6 @@
 [gd_scene load_steps=2 format=3 uid="uid://bj87ioqol7050"]
 
-[ext_resource type="Script" uid="uid://d4mk6cor1jbve" path="res://won_rounds_ui.gd" id="1_6ho16"]
+[ext_resource type="Script" uid="uid://d4mk6cor1jbve" path="res://scripts/won_rounds_ui.gd" id="1_6ho16"]
 
 [node name="WonRoundsUI" type="CanvasLayer" node_paths=PackedStringArray("player_0", "player_1", "player_2")]
 script = ExtResource("1_6ho16")

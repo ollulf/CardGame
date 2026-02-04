@@ -5,7 +5,6 @@ class_name TurnIndicator
 @export var player_1_sprite: NinePatchRect
 @export var player_2_sprite: NinePatchRect
 
-
 func _process(_delta: float) -> void:
 	var current_player_id := _get_current_player_id()
 	match current_player_id:

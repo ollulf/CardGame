@@ -1,10 +1,10 @@
-extends Node2D
+extends Control
 class_name Cigarette
 
 enum State { UNLIT, LIT, STUMP }
 
 @export var burn_textures: Array[Texture2D] = []
-@onready var sprite: Sprite2D = $Sprite2D
+@onready var sprite: TextureRect = $Sprite2D
 @onready var burn_timer: Timer = Timer.new()
 
 var _state: int = State.UNLIT
@@ -49,7 +49,6 @@ func advance_burn() -> void:
 
 	_burn_index += 1
 
-	# 🔥 last burn reached → become stump automatically
 	if _burn_index >= burn_textures.size() - 1:
 		_burn_index = burn_textures.size() - 1
 		_state = State.STUMP
