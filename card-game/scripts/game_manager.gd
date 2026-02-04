@@ -27,6 +27,7 @@ var card_scene: PackedScene = preload("res://scenes/Card.tscn")
 @onready var smoke_tex: Texture2D = preload("res://sprites/suit_Smoke.png")
 
 var suit_textures: Dictionary = {}
+var trump_suits : Array[String] = ["alk", "smoke"]
 
 var table_root: Control
 
@@ -42,6 +43,7 @@ var current_starting_player := PLAYER_HUMAN
 var last_round_winner := PLAYER_HUMAN
 
 var current_round_plays: Dictionary = {}
+var first_played_trump_suit := ""
 
 var turn_order: Array[int] = []
 var current_turn_index := 0
@@ -122,16 +124,14 @@ func _request_current_player() -> void:
 
 # Called by human & AI controllers
 func submit_play(player_id: int, card_data: Variant) -> void:
-	if match_over:
-		return
-
-	if player_id != turn_order[current_turn_index]:
-		return
-
 	current_round_plays[player_id] = card_data
 
 	# Visualize played card immediately
 	_show_played_card(player_id, card_data)
+	
+	# Check for Trump Card
+	if card_data_has_trump(card_data):
+		first_played_trump_suit = card_data["suit"] 
 
 	current_turn_index += 1
 
@@ -158,11 +158,11 @@ func _show_played_card(player_id: int, card_data: Variant) -> void:
 	var offset := Vector2.ZERO
 	match player_id:
 		PLAYER_HUMAN:
-			offset = Vector2(0, 35)
+			offset = Vector2(0, -135)
 		PLAYER_AI_1:
-			offset = Vector2(-70, 0)
+			offset = Vector2(-70, -160)
 		PLAYER_AI_2:
-			offset = Vector2(60, -15)
+			offset = Vector2(60, -195)
 
 	card_view.global_position = center + offset
 	card_view.scale = Vector2(1.5,1.5)
@@ -174,13 +174,6 @@ func _show_played_card(player_id: int, card_data: Variant) -> void:
 
 
 func _get_table_center_world() -> Vector2:
-	# If you have a Camera2D, use its center for "screen center in world".
-	# Otherwise fall back to the viewport center in global canvas coordinates.
-	var cam := get_viewport().get_camera_2d()
-	if cam != null:
-		return cam.global_position
-
-	# Fallback if no camera exists
 	var vs := get_viewport().get_visible_rect().size
 	return Vector2(vs.x * 0.5, vs.y * 0.5)
 
@@ -194,14 +187,9 @@ func _clear_table_visuals() -> void:
 	played_cards.clear()
 
 func _finish_round() -> void:
-	
-	# Delay for requesting next player (nice pacing)
 	await get_tree().create_timer(2.0).timeout
 	
 	var winner_id := calculate_round_winner(current_round_plays)
-
-	if winner_id not in PLAYERS:
-		winner_id = current_starting_player
 
 	last_round_winner = winner_id
 
@@ -214,46 +202,73 @@ func _finish_round() -> void:
 
 
 func calculate_round_winner(current_plays: Dictionary) -> int:
-	# Safety: starting player must have played
-	if not current_plays.has(current_starting_player):
-		push_warning("Starting player has no card – fallback winner used.")
-		return current_starting_player
-
 	var lead_card: Dictionary = current_plays[current_starting_player]
-	var lead_suit: String = lead_card["suit"]
+	var lead_suit: String = str(lead_card.get("suit", ""))
 
+	if first_played_trump_suit != "":
+		var trump_suit := first_played_trump_suit
+
+		var winning_player := -1
+		var highest_rank := -1
+
+		for player_id in current_plays.keys():
+			var card = current_plays[player_id]
+			if typeof(card) != TYPE_DICTIONARY:
+				continue
+
+			if str(card.get("suit", "")) != trump_suit:
+				continue
+
+			var r: int = int(card.get("rank", -1))
+			if r > highest_rank:
+				highest_rank = r
+				winning_player = player_id
+
+		# If for some reason we didn't find it, fall back to lead-suit logic
+		if winning_player != -1:
+			round_clean_up()
+			return winning_player
+
+	# --- NORMAL RULE (lead suit wins) ---
 	var winning_player: int = current_starting_player
-	var highest_rank: int = lead_card["rank"]
+	var highest_rank: int = int(lead_card.get("rank", -1))
 
 	for player_id in current_plays.keys():
-		var card: Dictionary = current_plays[player_id]
-
-		# Only cards of the lead suit can win
-		if card["suit"] != lead_suit:
+		var card = current_plays[player_id]
+		if typeof(card) != TYPE_DICTIONARY:
 			continue
 
-		if card["rank"] > highest_rank:
-			highest_rank = card["rank"]
+		# Only cards of the lead suit can win
+		if str(card.get("suit", "")) != lead_suit:
+			continue
+
+		var r: int = int(card.get("rank", -1))
+		if r > highest_rank:
+			highest_rank = r
 			winning_player = player_id
 
-	print(
-		"Lead suit:", lead_suit,
-		"| Winner:", winning_player,
-		"| Rank:", highest_rank
-	)
-
+	round_clean_up()
 	return winning_player
 
+
+func card_data_has_trump_of(card_data: Variant, suit : String) -> bool:
+	if card_data["suit"] == suit:
+		return true
+	return false
+
+func card_data_has_trump(card_data : Variant) -> bool:
+	for s in trump_suits:
+		if card_data["suit"] == s:
+			return true
+	return false
+
+func round_clean_up():
+	first_played_trump_suit = ""
+
 func get_highest_lead_suit_rank() -> int:
-	# No starting card yet → no lead suit
-	if not played_cards.has(current_starting_player):
-		return -1
 
 	var lead_card: Dictionary = played_cards[current_starting_player]
 	var lead_suit: String = str(lead_card.get("suit", ""))
-
-	if lead_suit == "":
-		return -1
 
 	var highest := -1
 

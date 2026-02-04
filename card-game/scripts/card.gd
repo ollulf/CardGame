@@ -10,7 +10,7 @@ var _show: bool = false
 @onready var rank_label_2: Label = $RankLabel2
 
 # --- Hover FX (driven externally) ---
-@export var hover_scale: float = 1.12
+@export var hover_scale: float = 1.4
 @export var hover_z_index: int = 15
 @export var hover_anim_time: float = 0.12
 

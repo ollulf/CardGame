@@ -145,7 +145,7 @@ func _build_test_hand() -> void:
 	hand.clear()
 	var suits := ["hearts", "diamonds", "clubs", "spades", "alk", "smoke"]
 
-	for i in range(7):
+	for i in range(10):
 		var card: Dictionary = {
 			"suit": suits[randi() % suits.size()],
 			"rank": randi_range(1, 13)

@@ -28,6 +28,8 @@ size = Vector2(26, 32)
 script = ExtResource("1_yo8lh")
 
 [node name="HandVisualisation" parent="." instance=ExtResource("2_r2isv")]
+offset_left = -386.0
+offset_right = -386.0
 
 [node name="Lighter" type="Area2D" parent="."]
 position = Vector2(965, 575)

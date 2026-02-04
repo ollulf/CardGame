@@ -4,8 +4,8 @@ class_name PlayerHand
 @export var player_id: int = 0
 
 # Layout
-@export var card_space: float = 350.0
-@export var bottom_margin: float = 90.0
+@export var card_space: float = 400
+@export var bottom_margin: float = 150
 
 # CardUI scene (root must be Control, e.g. CardUI)
 @export var card_ui_scene: PackedScene = preload("res://scenes/Card.tscn")
@@ -61,7 +61,7 @@ func _build_test_hand() -> void:
 	hand.clear()
 	var suits := ["hearts", "diamonds", "clubs", "spades", "alk", "smoke"]
 
-	for i in range(7):
+	for i in range(10):
 		var card := {
 			"suit": suits[randi() % suits.size()],
 			"rank": randi_range(1, 13)
