@@ -103,6 +103,7 @@ offset_top = 300.0
 offset_right = 56.0
 offset_bottom = 300.0
 script = ExtResource("2_shfjk")
+reveal_hand = true
 
 [node name="AI_Player_2" type="Control" parent="."]
 layout_mode = 3
@@ -113,6 +114,7 @@ offset_right = 1090.0
 offset_bottom = 319.0
 script = ExtResource("2_shfjk")
 player_id = 2
+reveal_hand = true
 
 [node name="TableRoot" type="Control" parent="."]
 unique_name_in_owner = true

@@ -41,8 +41,8 @@ func submit_card(card: Card) -> void:
 	# --- Follow suit rule ---
 	if lead_suit != "":
 		# Lead suit is TRUMP: you must play ANY trump if you have one
-		if GameManager.suit_is_trump(lead_suit):
-			if _has_any_trump_in_hand() and not GameManager.suit_is_trump(chosen_suit):
+		if CardManager.suit_is_trump(lead_suit):
+			if _has_any_trump_in_hand() and not CardManager.suit_is_trump(chosen_suit):
 				print("Illegal move: must play a trump card.")
 				return
 
@@ -51,14 +51,6 @@ func submit_card(card: Card) -> void:
 			if _has_suit_in_hand(lead_suit) and chosen_suit != lead_suit:
 				print("Illegal move: must follow suit:", lead_suit)
 				return
-
-	# If we cannot follow lead suit, but a trump was played, we must play trump if we have any.
-	if lead_suit != "" and not GameManager.suit_is_trump(lead_suit):
-		if not _has_suit_in_hand(lead_suit):
-			if GameManager.first_played_trump_suit != "" and _has_any_trump_in_hand():
-				if not GameManager.suit_is_trump(chosen_suit):
-					print("Illegal move: trump was played, you must play a trump card.")
-					return
 
 	# Move is legal
 	GameManager.submit_play(player_id, chosen_card)
@@ -116,7 +108,7 @@ func _render_hand() -> void:
 		card_view.z_index = i
 		add_child(card_view)
 		card_nodes.append(card_view)
-		card_view.setup(card_data, true)
+		card_view.setup(card_data, true, player_id)
 
 	_layout_cards()
 
@@ -152,8 +144,8 @@ func _layout_cards() -> void:
 
 func _get_lead_suit() -> String:
 	var leader_id: int = GameManager.current_starting_player
-	if GameManager.played_cards.has(leader_id):
-		var lead_card = GameManager.played_cards[leader_id]
+	if CardManager.played_cards.has(leader_id):
+		var lead_card = CardManager.played_cards[leader_id]
 		if typeof(lead_card) == TYPE_DICTIONARY:
 			return str(lead_card.get("suit", ""))
 	return ""
@@ -167,7 +159,7 @@ func _has_suit_in_hand(suit: String) -> bool:
 
 func _has_any_trump_in_hand() -> bool:
 	for c in hand:
-		if GameManager.suit_is_trump(str(c.get("suit", ""))):
+		if CardManager.suit_is_trump(str(c.get("suit", ""))):
 			return true
 	return false
 

@@ -20,6 +20,7 @@ config/icon="res://icon.svg"
 GameManager="*res://scripts/game_manager.gd"
 PlayerDataManager="*res://scripts/player_data_manager.gd"
 InteractionManager="*res://scripts/interaction_manager.gd"
+CardManager="*res://scripts/card_manager.gd"
 
 [rendering]
 

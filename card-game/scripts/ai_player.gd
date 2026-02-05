@@ -7,8 +7,7 @@ class_name AIPlayer
 @export var reveal_hand: bool = false
 @export var card_spacing: float = 40.0
 
-# CardUI scene (root must be Control: CardUI)
-@export var card_ui_scene: PackedScene = preload("res://scenes/Card.tscn")
+@export var card: PackedScene = preload("res://scenes/Card.tscn")
 
 var hand: Array[Dictionary] = []
 
@@ -61,7 +60,7 @@ func _choose_card_index() -> int:
 		return randi() % hand.size()
 
 	# Highest rank already played in lead suit
-	var highest_played := GameManager.get_highest_lead_suit_rank()
+	var highest_played := CardManager.get_highest_lead_suit_rank(player_id)
 
 	# Find our lowest + highest card in the lead suit
 	var highest_index := -1
@@ -76,7 +75,7 @@ func _choose_card_index() -> int:
 		# Follow suit.
 		# If the lead suit is trump, any trump suit is allowed to follow.
 		if suit != lead_suit:
-			if not (GameManager.suit_is_trump(lead_suit) and GameManager.suit_is_trump(suit)):
+			if not (CardManager.suit_is_trump(lead_suit) and CardManager.suit_is_trump(suit)):
 				continue
 
 		var r: int = int(c.get("rank", -1))
@@ -90,13 +89,13 @@ func _choose_card_index() -> int:
 	# If we can follow suit:
 	if highest_index != -1:
 		# If lead is NOT trump: play highest if it beats table, else lowest of lead suit.
-		if not GameManager.suit_is_trump(lead_suit):
+		if not CardManager.suit_is_trump(lead_suit):
 			if highest_rank > highest_played:
 				return highest_index
 			return lowest_index
 
 		# Lead IS trump: only the FIRST played trump suit can win.
-		var first_trump := GameManager.first_played_trump_suit
+		var first_trump := CardManager.first_played_trump_suit
 		if first_trump == "":
 			return lowest_index
 
@@ -109,14 +108,24 @@ func _choose_card_index() -> int:
 
 # --- WE DON'T HAVE TO FOLLOW THE LEADING SUIT ---
 
-	var first_trump_suit: String = GameManager.first_played_trump_suit
+	var first_trump_suit: String = CardManager.first_played_trump_suit
 
+	if first_trump_suit == "":
+		# If we can't follow suit and we have any trump: play a random trump card.
+		var trump_indices: Array[int] = []
+		for i in range(hand.size()):
+			var suit := str(hand[i].get("suit", ""))
+			if CardManager.suit_is_trump(suit):
+				trump_indices.append(i)
+
+		if trump_indices.size() > 0:
+			return trump_indices[randi() % trump_indices.size()]
 	# If trump has been played: we MAY play a trump ONLY if it can beat the current first-trump-suit high.
 	# Otherwise: DO NOT play trump → play a random NON-trump card.
 	if first_trump_suit != "":
 		var highest_trump_played := -1
-		for pid in GameManager.played_cards.keys():
-			var pc = GameManager.played_cards[pid]
+		for pid in CardManager.played_cards.keys():
+			var pc = CardManager.played_cards[pid]
 			if typeof(pc) != TYPE_DICTIONARY:
 				continue
 			if str(pc.get("suit", "")) != first_trump_suit:
@@ -144,7 +153,7 @@ func _choose_card_index() -> int:
 		var non_trump_indices: Array[int] = []
 		for i in range(hand.size()):
 			var suit := str(hand[i].get("suit", ""))
-			if not GameManager.suit_is_trump(suit):
+			if not CardManager.suit_is_trump(suit):
 				non_trump_indices.append(i)
 
 		if non_trump_indices.size() > 0:
@@ -160,8 +169,8 @@ func _choose_card_index() -> int:
 func _get_lead_suit() -> String:
 	var leader_id: int = GameManager.current_starting_player
 
-	if GameManager.played_cards.has(leader_id):
-		var lead_card = GameManager.played_cards[leader_id]
+	if CardManager.played_cards.has(leader_id):
+		var lead_card = CardManager.played_cards[leader_id]
 		if lead_card is Dictionary:
 			return str(lead_card.get("suit", ""))
 
@@ -180,12 +189,12 @@ func _render_hand() -> void:
 	for i in range(count):
 		var card_data := hand[i]
 
-		var card_view := card_ui_scene.instantiate() as Card
+		var card_view := card.instantiate() as Card
 		add_child(card_view)
 		hand_card_nodes.append(card_view)
 
 		# Reveal or hide
-		card_view.setup(card_data, reveal_hand)
+		card_view.setup(card_data, reveal_hand, player_id)
 
 		# Layering
 		card_view.z_index = i

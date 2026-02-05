@@ -2,6 +2,7 @@ extends Control
 class_name Card
 
 var card_data: Dictionary = {}
+var my_player_id := -1
 var _show: bool = false
 
 @onready var suit_icon: TextureRect = $SuitIcon
@@ -26,8 +27,9 @@ func _ready() -> void:
 	_base_z = z_index
 
 
-func setup(data: Dictionary, show: bool) -> void:
+func setup(data: Dictionary, show: bool, player_id: int) -> void:
 	card_data = data
+	my_player_id = player_id
 	_show = show
 
 	if not _show:
@@ -39,7 +41,7 @@ func setup(data: Dictionary, show: bool) -> void:
 	rank_label.text = str(rank_value)
 	rank_label_2.text = str(rank_value)
 
-	var tex: Texture2D = GameManager.suit_textures.get(suit_key, null)
+	var tex: Texture2D = CardManager.suit_textures.get(suit_key, null)
 	suit_icon.texture = tex
 	suit_icon_2.texture = tex
 
