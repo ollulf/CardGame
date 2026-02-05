@@ -49,9 +49,7 @@ func hover_enter() -> void:
 		return
 
 	# Cache base at the moment of hover (so relayout restores correctly)
-	_base_scale = scale
 	_base_pos = position
-	_base_z = z_index
 
 	z_index = hover_z_index
 

@@ -130,7 +130,7 @@ func submit_play(player_id: int, card_data: Variant) -> void:
 	_show_played_card(player_id, card_data)
 	
 	# Check for Trump Card
-	if card_data_has_trump(card_data):
+	if is_trump(card_data) and first_played_trump_suit == "":
 		first_played_trump_suit = card_data["suit"] 
 
 	current_turn_index += 1
@@ -203,23 +203,18 @@ func _finish_round() -> void:
 
 func calculate_round_winner(current_plays: Dictionary) -> int:
 	var lead_card: Dictionary = current_plays[current_starting_player]
-	var lead_suit: String = str(lead_card.get("suit", ""))
+	var lead_suit: String = str(lead_card.get("suit"))
 
 	if first_played_trump_suit != "":
-		var trump_suit := first_played_trump_suit
-
 		var winning_player := -1
 		var highest_rank := -1
 
 		for player_id in current_plays.keys():
 			var card = current_plays[player_id]
-			if typeof(card) != TYPE_DICTIONARY:
+			if str(card.get("suit", "")) != first_played_trump_suit:
 				continue
 
-			if str(card.get("suit", "")) != trump_suit:
-				continue
-
-			var r: int = int(card.get("rank", -1))
+			var r: int = int(card.get("rank"))
 			if r > highest_rank:
 				highest_rank = r
 				winning_player = player_id
@@ -251,12 +246,13 @@ func calculate_round_winner(current_plays: Dictionary) -> int:
 	return winning_player
 
 
-func card_data_has_trump_of(card_data: Variant, suit : String) -> bool:
-	if card_data["suit"] == suit:
-		return true
+func suit_is_trump(suit : String) -> bool:
+	for s in trump_suits:
+		if suit == s:
+			return true
 	return false
 
-func card_data_has_trump(card_data : Variant) -> bool:
+func is_trump(card_data : Variant) -> bool:
 	for s in trump_suits:
 		if card_data["suit"] == s:
 			return true

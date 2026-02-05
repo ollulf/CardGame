@@ -34,14 +34,33 @@ func submit_card(card: Card) -> void:
 		return
 
 	var chosen_card: Dictionary = hand[idx]
+	var chosen_suit := str(chosen_card.get("suit", ""))
+
+	var lead_suit := _get_lead_suit()
 
 	# --- Follow suit rule ---
-	var lead_suit := _get_lead_suit()
-	if lead_suit != "" and _has_suit_in_hand(lead_suit):
-		if chosen_card.get("suit", "") != lead_suit:
-			print("Illegal move: must follow suit:", lead_suit)
-			return
+	if lead_suit != "":
+		# Lead suit is TRUMP: you must play ANY trump if you have one
+		if GameManager.suit_is_trump(lead_suit):
+			if _has_any_trump_in_hand() and not GameManager.suit_is_trump(chosen_suit):
+				print("Illegal move: must play a trump card.")
+				return
 
+		# Lead suit is NOT trump: you must follow that exact suit if you can
+		else:
+			if _has_suit_in_hand(lead_suit) and chosen_suit != lead_suit:
+				print("Illegal move: must follow suit:", lead_suit)
+				return
+
+	# If we cannot follow lead suit, but a trump was played, we must play trump if we have any.
+	if lead_suit != "" and not GameManager.suit_is_trump(lead_suit):
+		if not _has_suit_in_hand(lead_suit):
+			if GameManager.first_played_trump_suit != "" and _has_any_trump_in_hand():
+				if not GameManager.suit_is_trump(chosen_suit):
+					print("Illegal move: trump was played, you must play a trump card.")
+					return
+
+	# Move is legal
 	GameManager.submit_play(player_id, chosen_card)
 
 	hand.remove_at(idx)
@@ -68,6 +87,19 @@ func _build_test_hand() -> void:
 		}
 		hand.append(card)
 
+	# Sort by suit, then by rank (ascending)
+	hand.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
+		var suit_a := suits.find(str(a.get("suit", "")))
+		var suit_b := suits.find(str(b.get("suit", "")))
+
+		# First: suit order
+		if suit_a != suit_b:
+			return suit_a < suit_b
+
+		# Second: rank order
+		return int(a.get("rank", 0)) < int(b.get("rank", 0))
+	)
+
 
 func _render_hand() -> void:
 	_anchor_to_bottom_of_view()
@@ -80,9 +112,10 @@ func _render_hand() -> void:
 	for i in range(hand.size()):
 		var card_data := hand[i]
 		var card_view := card_ui_scene.instantiate() as Card
+		card_view._base_z = i
+		card_view.z_index = i
 		add_child(card_view)
 		card_nodes.append(card_view)
-
 		card_view.setup(card_data, true)
 
 	_layout_cards()
@@ -103,7 +136,6 @@ func _layout_cards() -> void:
 		var n := card_nodes[0]
 		if is_instance_valid(n):
 			n.position = Vector2.ZERO
-			n.z_index = 0
 		return
 
 	var half_width := card_space * 0.5
@@ -116,7 +148,6 @@ func _layout_cards() -> void:
 
 		var x := -half_width + i * step
 		n.position = Vector2(x, 0.0)
-		n.z_index = i
 
 
 func _get_lead_suit() -> String:
@@ -134,6 +165,11 @@ func _has_suit_in_hand(suit: String) -> bool:
 			return true
 	return false
 
+func _has_any_trump_in_hand() -> bool:
+	for c in hand:
+		if GameManager.suit_is_trump(str(c.get("suit", ""))):
+			return true
+	return false
 
 func _find_card_index(data: Dictionary) -> int:
 	for i in range(hand.size()):

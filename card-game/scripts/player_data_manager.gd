@@ -1,6 +1,3 @@
-extends Node
-class_name PlayerDataManagerClass
-
 signal stats_changed(player_id: int)
 
 const PLAYERS: Array[int] = [0, 1, 2]
