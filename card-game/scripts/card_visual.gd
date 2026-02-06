@@ -1,9 +1,8 @@
 extends Control
-class_name Card
+class_name CardVisual
 
-var card_data: Dictionary = {}
-var my_player_id := -1
-var _show: bool = false
+var card: Card
+var face_down: bool = false
 
 @onready var suit_icon: TextureRect = $SuitIcon
 @onready var suit_icon_2: TextureRect = $SuitIcon2
@@ -27,27 +26,47 @@ func _ready() -> void:
 	_base_z = z_index
 
 
-func setup(data: Dictionary, show: bool, player_id: int) -> void:
-	card_data = data
-	my_player_id = player_id
-	_show = show
+func setup(data: Card, _face_down: bool) -> void:
+	card = data
+	face_down = _face_down
 
-	if not _show:
-		return
+	card.values_changed.connect(update_visuals)
+	card.removed.connect(destroy)
 
-	var suit_key: String = str(card_data.get("suit", ""))
-	var rank_value = card_data.get("rank", "")
+	if not face_down:
+		update_visuals()
 
-	rank_label.text = str(rank_value)
-	rank_label_2.text = str(rank_value)
+func destroy():
+	queue_free()
 
-	var tex: Texture2D = CardManager.suit_textures.get(suit_key, null)
-	suit_icon.texture = tex
-	suit_icon_2.texture = tex
+func update_visuals():
+	rank_label.text = str(card.rank)
+	rank_label_2.text = str(card.rank)
+
+	suit_icon.texture = suit_to_texture(card)
+	suit_icon_2.texture = suit_to_texture(card)
+
+
+func suit_to_texture(card : Card) -> Texture2D:
+	match card.suit:
+		Card.Suit.DIAMONDS: 
+			return preload("res://sprites/suit_Karo.png")
+		Card.Suit.HEARTS: 
+			return preload("res://sprites/suit_Herz.png")
+		Card.Suit.SPADES:
+			return preload("res://sprites/suit_Pik.png")
+		Card.Suit.CLUBS:
+			return preload("res://sprites/suit_Kreuz.png")
+		Card.Suit.ALK:
+			return preload("res://sprites/suit_Alk.png")
+		Card.Suit.SMOKE:
+			return preload("res://sprites/suit_Smoke.png")
+		_:
+			return null
 
 
 func hover_enter() -> void:
-	if not _show:
+	if face_down:
 		return
 
 	# Cache base at the moment of hover (so relayout restores correctly)
@@ -63,7 +82,7 @@ func hover_enter() -> void:
 
 
 func hover_exit() -> void:
-	if not _show:
+	if face_down:
 		return
 
 	_kill_tween()

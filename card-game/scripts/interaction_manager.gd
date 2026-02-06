@@ -2,7 +2,7 @@ extends Node
 
 var cigPack: CigPack
 var hand: HandVisualisation
-var player_hand: PlayerHand
+var human_Player: HumanPlayer
 
 @export var cigarette_scene:= preload("res://scenes/cigarette.tscn") 
 
@@ -11,19 +11,19 @@ const BURN_SECONDS := 20.0
 
 var _burn_token: int = 0
 
-var hovered_card : Card = null
+var hovered_card : CardVisual = null
 
 func _process(delta: float) -> void:
 	check_for_hovered_card()
 
 func check_for_hovered_card() -> void:
 	var c: Control = get_viewport().gui_get_hovered_control()
-	var new_hovered: Card = null
+	var new_hovered: CardVisual = null
 
 	# Walk up from the hovered control until we find a Card (or nothing)
 	while c != null:
-		if c is Card:
-			new_hovered = c as Card
+		if c is CardVisual:
+			new_hovered = c as CardVisual
 			break
 		c = c.get_parent() as Control
 
@@ -51,11 +51,8 @@ func _input(event: InputEvent) -> void:
 			return
 	
 		if event.button_index == MOUSE_BUTTON_LEFT and event.double_click:
-			print("Double Click")
-			print(hovered_card)
-			
 			if is_instance_valid(hovered_card):
-				player_hand.submit_card(hovered_card)
+				human_Player.try_play_card(hovered_card.card)
 
 func pickedUpCig() -> void:
 	addCigToHand()

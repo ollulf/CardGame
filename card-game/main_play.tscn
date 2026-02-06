@@ -3,16 +3,16 @@
 [ext_resource type="Script" uid="uid://b1ufuvgq634xj" path="res://scripts/GameSetup.gd" id="1_yo8lh"]
 [ext_resource type="PackedScene" uid="uid://bjmm2q84dkq0v" path="res://scenes/hand_visualisation.tscn" id="2_r2isv"]
 [ext_resource type="Script" uid="uid://bqtm4pcvcl48u" path="res://scripts/ai_player.gd" id="2_shfjk"]
-[ext_resource type="Script" uid="uid://bnvbuen33moub" path="res://scripts/player_hand.gd" id="2_yo8lh"]
-[ext_resource type="Script" path="res://scripts/cig_pack.gd" id="3_el7dg"]
+[ext_resource type="Script" uid="uid://bnvbuen33moub" path="res://scripts/humanPlayer.gd" id="2_yo8lh"]
+[ext_resource type="Script" uid="uid://cixtgg70qdal3" path="res://scripts/cig_pack.gd" id="3_el7dg"]
 [ext_resource type="Texture2D" uid="uid://xn2sqj61surv" path="res://sprites/Cigarettes_closed_icon.png" id="4_555rj"]
 [ext_resource type="PackedScene" uid="uid://dfyq6nuwnii7j" path="res://scenes/turn_indicator.tscn" id="4_fwnfr"]
 [ext_resource type="Texture2D" uid="uid://bd4p2ye1o2uc5" path="res://sprites/Cigarettes_icon.png" id="5_555rj"]
 [ext_resource type="Texture2D" uid="uid://bo05sg6rj5oqn" path="res://sprites/lighter.png" id="5_lcid1"]
 [ext_resource type="PackedScene" uid="uid://bj87ioqol7050" path="res://scenes/won_rounds_ui.tscn" id="5_q6cnf"]
-[ext_resource type="Script" path="res://scripts/lighter.gd" id="5_yiaew"]
-[ext_resource type="Script" path="res://scripts/ash_tray.gd" id="6_2ja4j"]
-[ext_resource type="Script" path="res://scripts/message_ui.gd" id="6_bl2fu"]
+[ext_resource type="Script" uid="uid://lx6g1lamppqq" path="res://scripts/lighter.gd" id="5_yiaew"]
+[ext_resource type="Script" uid="uid://es2m5ykq15eu" path="res://scripts/ash_tray.gd" id="6_2ja4j"]
+[ext_resource type="Script" uid="uid://dg7s8jonl23ai" path="res://scripts/message_ui.gd" id="6_bl2fu"]
 [ext_resource type="Texture2D" uid="uid://beanmjab43tki" path="res://sprites/AshTray.png" id="6_r2isv"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2ja4j"]
@@ -94,6 +94,10 @@ layout_mode = 3
 anchors_preset = 0
 mouse_filter = 1
 script = ExtResource("2_yo8lh")
+player_id = null
+card_space = null
+bottom_margin = null
+card_ui_scene = null
 
 [node name="AI_Player_1" type="Control" parent="."]
 layout_mode = 3
@@ -103,6 +107,10 @@ offset_top = 300.0
 offset_right = 56.0
 offset_bottom = 300.0
 script = ExtResource("2_shfjk")
+player_id = null
+reveal_hand = null
+card_spacing = null
+card = null
 
 [node name="AI_Player_2" type="Control" parent="."]
 layout_mode = 3
@@ -113,6 +121,9 @@ offset_right = 1090.0
 offset_bottom = 319.0
 script = ExtResource("2_shfjk")
 player_id = 2
+reveal_hand = null
+card_spacing = null
+card = null
 
 [node name="TableRoot" type="Control" parent="."]
 unique_name_in_owner = true

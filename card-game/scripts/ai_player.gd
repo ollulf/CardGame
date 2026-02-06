@@ -1,35 +1,18 @@
-extends Control
+extends Player
 class_name AIPlayer
-
-@export var player_id: int = 1
 
 # Visual settings
 @export var reveal_hand: bool = false
 @export var card_spacing: float = 40.0
-
-@export var card: PackedScene = preload("res://scenes/Card.tscn")
-
-var hand: Array[Dictionary] = []
-
-# Spawned visuals for the hand
-var hand_card_nodes: Array[Card] = []
 
 
 func _ready() -> void:
 	GameManager.request_play_card.connect(_on_request_play_card)
 	GameManager.round_started.connect(_on_round_started)
 
-	# UI nodes shouldn't eat input unless you want them to
-	mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	_build_test_hand()
-	_render_hand()
-
 
 func _on_round_started(_round_index: int, _starting_player_id: int) -> void:
-	if hand.is_empty():
-		_build_test_hand()
-	_render_hand()
+	pass
 
 
 func _on_request_play_card(requested_player_id: int) -> void:
@@ -39,24 +22,17 @@ func _on_request_play_card(requested_player_id: int) -> void:
 	# Play Delay
 	await get_tree().create_timer(3.0).timeout
 
-	if hand.is_empty():
-		print("Player " + str(player_id) + " played nothing")
-		GameManager.submit_play(player_id, null)
-		return
 
-	var chosen_index: int = _choose_card_index()
-	var chosen_card: Dictionary = hand[chosen_index]
-	hand.remove_at(chosen_index)
+	var chosen_card = choose_card()
 
-	_render_hand()
-	GameManager.submit_play(player_id, chosen_card)
+	CardManager.submit_play(player_id, chosen_card)
 
 
-func _choose_card_index() -> int:
-	var lead_suit := _get_lead_suit()
-
+func choose_card() -> int:
+	return randi() % hand.size()
+	
 	# If no lead yet, dump a random card
-	if lead_suit == "":
+	if CardManager.leading_card == null:
 		return randi() % hand.size()
 
 	# Highest rank already played in lead suit

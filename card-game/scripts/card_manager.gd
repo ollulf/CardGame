@@ -1,39 +1,16 @@
 extends  Node
 
-var card_scene: PackedScene = preload("res://scenes/Card.tscn")
-
-@onready var hearts_tex: Texture2D = preload("res://sprites/suit_Herz.png")
-@onready var diamonds_tex: Texture2D = preload("res://sprites/suit_Karo.png")
-@onready var clubs_tex: Texture2D = preload("res://sprites/suit_Kreuz.png")
-@onready var spades_tex: Texture2D = preload("res://sprites/suit_Pik.png")
-@onready var alk_tex: Texture2D = preload("res://sprites/suit_Alk.png")
-@onready var smoke_tex: Texture2D = preload("res://sprites/suit_Smoke.png")
-
-var suit_textures: Dictionary = {}
-
-# Suits that count as trump
-var trump_suits: Array[String] = ["alk", "smoke"]
-
-# Table / played tracking
 var table_root: Control
-var played_card_nodes: Dictionary = {} # player_id -> Card node
-var played_cards: Dictionary = {}      # player_id -> cardData Dictionary
 
-var player_hands: Dictionary = {} # player_id -> Array[Cards (Dictionary)]
+var played_cards: Hand
 
-# Trick state
-var first_played_trump_suit: String = ""
+var player_hand: Hand
+var AI_1_hand: Hand
+var AI_2_hand: Hand
 
+var leading_card : Card
+var first_trump_card : Card
 
-func _ready() -> void:
-	suit_textures = {
-		"hearts": hearts_tex,
-		"diamonds": diamonds_tex,
-		"clubs": clubs_tex,
-		"spades": spades_tex,
-		"alk": alk_tex,
-		"smoke": smoke_tex
-	}
 
 # In this function the Card Manager should get through the active buffs and update the cards of that player
 func update_cards():
@@ -49,49 +26,45 @@ func generate_player_hands():
 	pass
 	
 
-func register_play(player_id: int, card_data: Variant) -> void:
+func submit_play(player_id: int, card: Card) -> void:
+	# Track leading card
+	if leading_card == null:
+		leading_card = card
+	
 	# Track first played trump suit
-	if first_played_trump_suit == "" and is_trump_card(card_data):
-		first_played_trump_suit = str(card_data.get("suit", ""))
+	if first_trump_card == null and card.is_trump:
+		first_trump_card = card
 
-	# Store data
-	played_cards[player_id] = card_data
+	played_cards.append(card)
+	render_played_card(card)
+	
+	GameManager.play_callback(player_id)
 
-	# Visualize
-	_show_played_card(player_id, card_data)
 
-
-func _show_played_card(player_id: int, card_data: Variant) -> void:
-	if table_root == null:
-		push_warning("CardManager: table_root not set; cannot show played cards.")
-		return
-
-	var card_view := card_scene.instantiate() as Card
-	table_root.add_child(card_view)
-
-	if card_view.has_method("setup") and card_data != null:
-		card_view.call("setup", card_data, true, player_id)
-	else:
-		print("No card Data!")
+func render_played_card(card : Card) -> void:
+	
+	var card_visual := preload("res://scenes/Card.tscn").instantiate() as CardVisual
+	card_visual.setup(card, false)
+	
+	table_root.add_child(card_visual)
 
 	var center := _get_table_center_world()
 
-	var offset := Vector2.ZERO
-	match player_id:
-		GameManagerClass.PLAYER_HUMAN:
+	var offset : Vector2
+	
+	match card.owner:
+		Card.Owner.HUMAN:
 			offset = Vector2(0, -135)
-		GameManagerClass.PLAYER_AI_1:
+		Card.Owner.AI_1:
 			offset = Vector2(-70, -160)
-		GameManagerClass.PLAYER_AI_2:
+		Card.Owner.AI_2:
 			offset = Vector2(60, -195)
 
-	card_view.global_position = center + offset
-	card_view.scale = Vector2(1.5, 1.5)
+	card_visual.global_position = center + offset
+	card_visual.scale = Vector2(1.5, 1.5)
 
 	# Layering: later plays on top
-	card_view.z_index = played_card_nodes.size()
-
-	played_card_nodes[player_id] = card_view
+	card_visual.z_index = played_cards.size()
 
 
 func _get_table_center_world() -> Vector2:
@@ -100,56 +73,20 @@ func _get_table_center_world() -> Vector2:
 
 
 func clear_table_visuals() -> void:
-	for player_id in played_card_nodes.keys():
-		var n = played_card_nodes[player_id]
-		if is_instance_valid(n):
-			n.queue_free()
-	played_card_nodes.clear()
+	for card_visual in played_cards:
+		card_visual.destroy()
+	
 	played_cards.clear()
 
 
 func round_clean_up() -> void:
-	first_played_trump_suit = ""
+	leading_card = null
+	first_trump_card = null
 
 
-# --- Trump helpers ---
-
-func suit_is_trump(suit: String) -> bool:
-	return suit in trump_suits
+func get_highest_lead_card() -> Card:
+	return played_cards.get_highest_card_of_suit(leading_card.suit)
 
 
-func is_trump_card(card_data: Variant) -> bool:
-	return str(card_data.get("suit", "")) in trump_suits
-
-
-func get_highest_lead_suit_rank(starting_player_id: int) -> int:
-	if not played_cards.has(starting_player_id):
-		return -1
-
-	var lead_card: Dictionary = played_cards[starting_player_id]
-	var lead_suit: String = str(lead_card.get("suit", ""))
-
-	var highest := -1
-	for pid in played_cards.keys():
-		var c: Dictionary = played_cards[pid]
-		if str(c.get("suit", "")) != lead_suit:
-			continue
-		highest = maxi(highest, int(c.get("rank", -1)))
-
-	return highest
-
-
-func get_highest_first_trump_rank_played() -> int:
-	if first_played_trump_suit == "":
-		return -1
-
-	var highest := -1
-	for pid in played_cards.keys():
-		var c = played_cards[pid]
-		if typeof(c) != TYPE_DICTIONARY:
-			continue
-		if str(c.get("suit", "")) != first_played_trump_suit:
-			continue
-		highest = maxi(highest, int(c.get("rank", -1)))
-
-	return highest
+func get_highest_trump_card() -> Card:
+	return played_cards.get_highest_trump_card()
