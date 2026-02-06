@@ -15,7 +15,7 @@ func _ready() -> void:
 	GameManager.request_play_card.connect(_on_request_play_card)
 	GameManager.round_started.connect(_on_round_started)
 	
-	InteractionManager.human_player = self
+	InteractionManager.human_Player = self
 
 func recieve_hand(hand: Hand):
 	get_ownership_of_hand_cards(hand)
