@@ -27,6 +27,12 @@ enum Suit {
 signal values_changed()
 signal removed()
 
+func is_suit(suit : Suit) -> bool:
+	return self.suit == suit
+
+func is_higher_than(card : Card) -> bool:
+	return rank > card.rank
+
 func _init() -> void:
 	is_trump = get_is_trump()
 
@@ -36,5 +42,6 @@ func get_is_trump() -> bool:
 func apply_modifiers():
 	values_changed.emit()
 
-func remove_self():
+func remove():
 	removed.emit()
+	call_deferred("free")

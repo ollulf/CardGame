@@ -3,10 +3,11 @@ class_name HumanPlayer
 
 # Layout
 @export var card_space: float = 400
+@export var MAX_GAP := 40.0
+
 @export var bottom_margin: float = 150
 
-# CardUI scene (root must be Control, e.g. CardUI)
-@export var card_ui_scene: PackedScene = preload("res://scenes/Card.tscn")
+var card_visuals : Array[CardVisual] = []
 
 var is_my_turn: bool = false
 
@@ -16,6 +17,18 @@ func _ready() -> void:
 	
 	InteractionManager.human_player = self
 
+func recieve_hand(hand: Hand):
+	get_ownership_of_hand_cards(hand)
+	render_hand()
+	
+	hand.hand_shrinked.connect(on_hand_shrinked)
+	hand.hand_grew.connect(on_hand_grew)
+
+func on_hand_shrinked():
+	layout_hand_cards()
+
+func on_hand_grew():
+	render_hand()
 
 func try_play_card(card: Card) -> void:
 	if not is_my_turn:
@@ -31,10 +44,9 @@ func try_play_card(card: Card) -> void:
 		print("Must obay leading suit of: " + leading_suit)
 		return
 
-	# Move is legal
+
+	hand.remove(card)
 	CardManager.submit_play(player_id, card)
-	
-	_render_hand()
 	
 	is_my_turn = false
 
@@ -47,24 +59,22 @@ func _on_request_play_card(requested_player_id: int) -> void:
 	is_my_turn = (requested_player_id == player_id)
 
 
-func _render_hand() -> void:
+func render_hand():
 	_anchor_to_bottom_of_view()
 
 	for card in hand:
 		if is_instance_valid(card):
-			n.queue_free()
-	card_nodes.clear()
+			card.queue_free()
 
-	for i in range(hand.size()):
-		var card_data := hand[i]
-		var card_view := card_ui_scene.instantiate() as Card
-		card_view._base_z = i
-		card_view.z_index = i
-		add_child(card_view)
-		card_nodes.append(card_view)
-		card_view.setup(card_data, true, player_id)
+	for card in hand:
+		var c := preload("res://scenes/Card.tscn").instantiate() as CardVisual
+		
+		c.setup(card, false)
+		
+		add_child(c)
+		card_visuals.append(c)
 
-	_layout_cards()
+	layout_hand_cards()
 
 
 func _anchor_to_bottom_of_view() -> void:
@@ -73,24 +83,22 @@ func _anchor_to_bottom_of_view() -> void:
 	position = Vector2(vs.x * 0.5, vs.y - bottom_margin)
 
 
-func _layout_cards() -> void:
-	var count := card_nodes.size()
-	if count <= 0:
+func layout_hand_cards() -> void:
+	if card_visuals.is_empty():
 		return
 
-	if count == 1:
-		var n := card_nodes[0]
-		if is_instance_valid(n):
-			n.position = Vector2.ZERO
+	var n = card_visuals.size()
+
+	if n == 1:
+		card_visuals[0].position = Vector2.ZERO
 		return
 
-	var half_width := card_space * 0.5
-	var step := card_space / float(count - 1)
+	var ideal_gap := card_space / float(n - 1)
+	var gap = min(ideal_gap, MAX_GAP)
+	var total_span = gap * float(n - 1)
+	var start_x = -total_span * 0.5
 
-	for i in range(count):
-		var n := card_nodes[i]
-		if not is_instance_valid(n):
-			continue
-
-		var x := -half_width + i * step
-		n.position = Vector2(x, 0.0)
+	for i in range(n):
+		var cv = card_visuals[i]
+		cv.position = Vector2(start_x + gap * float(i), 0.0)
+		cv.z_index = i

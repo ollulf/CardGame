@@ -2,7 +2,7 @@ extends  Node
 
 var table_root: Control
 
-var played_cards: Hand
+var played_cards: Hand = Hand.new()
 
 var player_hand: Hand
 var AI_1_hand: Hand
@@ -73,15 +73,19 @@ func _get_table_center_world() -> Vector2:
 
 
 func clear_table_visuals() -> void:
-	for card_visual in played_cards:
-		card_visual.destroy()
+	if played_cards.size() == 0:
+		return
 	
-	played_cards.clear()
-
+	for card in played_cards:
+		card.remove()
+	
+	played_cards.empty()
 
 func round_clean_up() -> void:
 	leading_card = null
 	first_trump_card = null
+	
+	clear_table_visuals()
 
 
 func get_highest_lead_card() -> Card:

@@ -33,7 +33,6 @@ func set_table_root(node: Control) -> void:
 
 func start_match(starting_player_id: int = PLAYER_HUMAN) -> void:
 	current_round = 0
-	
 	current_starting_player = starting_player_id
 	
 	await CardManager.generate_player_hands()
@@ -44,7 +43,6 @@ func start_match(starting_player_id: int = PLAYER_HUMAN) -> void:
 func _start_new_round(starting_player_id: int) -> void:
 	current_round += 1
 
-	CardManager.clear_table_visuals()
 	CardManager.round_clean_up()
 
 	current_starting_player = starting_player_id

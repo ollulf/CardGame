@@ -19,13 +19,6 @@ var _base_pos: Vector2
 var _base_z: int
 var _tween: Tween
 
-
-func _ready() -> void:
-	_base_scale = scale
-	_base_pos = position
-	_base_z = z_index
-
-
 func setup(data: Card, _face_down: bool) -> void:
 	card = data
 	face_down = _face_down
