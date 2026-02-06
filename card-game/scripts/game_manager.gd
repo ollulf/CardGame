@@ -1,5 +1,4 @@
 extends Node
-class_name GameManagerClass
 
 # --- Signals ---
 signal round_started(round_index: int, starting_player_id: int)
@@ -37,10 +36,10 @@ func start_match(starting_player_id: int = PLAYER_HUMAN) -> void:
 	
 	await CardManager.generate_player_hands()
 	
-	_start_new_round(current_starting_player)
+	start_new_round(current_starting_player)
 
 
-func _start_new_round(starting_player_id: int) -> void:
+func start_new_round(starting_player_id: int) -> void:
 	current_round += 1
 
 	CardManager.round_clean_up()
@@ -100,7 +99,7 @@ func _finish_round() -> void:
 		emit_signal("match_finished", last_round_winner)
 		return
 	
-	_start_new_round(owner_to_id(winner))
+	start_new_round(owner_to_id(winner))
 
 func owner_to_id(owner: Card.Owner) -> int:
 	match owner:

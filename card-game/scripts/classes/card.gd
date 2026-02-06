@@ -24,6 +24,13 @@ enum Suit {
 	SMOKE
 }
 
+func _init(suit: Suit, rank: int, owner : Owner, is_played: bool):
+	self.suit = suit
+	self.rank = rank
+	self.owner = owner
+	self.is_played = is_played
+	is_trump = get_is_trump()
+
 signal values_changed()
 signal removed()
 
@@ -32,9 +39,6 @@ func is_suit(suit : Suit) -> bool:
 
 func is_higher_than(card : Card) -> bool:
 	return rank > card.rank
-
-func _init() -> void:
-	is_trump = get_is_trump()
 
 func get_is_trump() -> bool:
 	return suit == Suit.ALK or suit == Suit.SMOKE

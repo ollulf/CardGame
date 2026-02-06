@@ -2,17 +2,9 @@ extends RefCounted
 class_name Hand
 
 var cards : Array[Card]
-var holder : Holder = Holder.NONE
 
 signal hand_grew
 signal hand_shrinked
-
-enum Holder {
-	NONE,
-	HUMAN,
-	AI_1,
-	AI_2
-}
 
 func remove(card : Card) -> bool:
 	if contains(card):
@@ -32,6 +24,8 @@ func is_empty() -> bool:
 	return cards.size() == 0
 
 func empty():
+	for card in cards:
+		card.remove()
 	cards.clear()
 
 func size() -> int:

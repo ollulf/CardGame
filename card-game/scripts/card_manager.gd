@@ -4,12 +4,46 @@ var table_root: Control
 
 var played_cards: Hand = Hand.new()
 
+var player_deck: Deck
+var AI_1_deck: Deck
+var AI_2_deck: Deck
+
 var player_hand: Hand
 var AI_1_hand: Hand
 var AI_2_hand: Hand
 
 var leading_card : Card
 var first_trump_card : Card
+
+func load_player_decks():
+	player_deck = Deck.new(generate_cards(20, Card.Owner.HUMAN))
+	AI_1_deck = Deck.new(generate_cards(20, Card.Owner.AI_1))
+	AI_2_deck = Deck.new(generate_cards(20, Card.Owner.AI_2))
+
+func generate_player_hands():
+	player_hand = player_deck.draw(10)
+	AI_1_hand = AI_1_deck.draw(10)
+	AI_2_hand = AI_2_deck.draw(10)
+	
+
+func generate_cards(amount: int, owner : Card.Owner) -> Array[Card]:
+	var cards: Array[Card] = []
+
+	var rng := RandomNumberGenerator.new()
+	rng.randomize()
+
+	for i in range(amount):
+		var random_suit: Card.Suit = rng.randi_range(0, Card.Suit.size() - 1)
+		var random_rank: int = rng.randi_range(1, 13)
+
+		var card := Card.new(
+			random_suit,
+			random_rank,
+			owner,
+			false
+		)
+		cards.append(card)
+	return cards
 
 
 # In this function the Card Manager should get through the active buffs and update the cards of that player
@@ -18,13 +52,6 @@ func update_cards():
 	
 	# For each Array of Cards, Go through each card and then apply the buff for that player
 	pass
-
-func set_table_root(node: Control) -> void:
-	table_root = node
-
-func generate_player_hands():
-	pass
-	
 
 func submit_play(player_id: int, card: Card) -> void:
 	# Track leading card
@@ -66,27 +93,23 @@ func render_played_card(card : Card) -> void:
 	# Layering: later plays on top
 	card_visual.z_index = played_cards.size()
 
+func round_clean_up() -> void:
+	leading_card = null
+	first_trump_card = null
+	
+	if played_cards.size() == 0:
+		return
+	
+	played_cards.empty()
+
+# - - - HELPER - - -
 
 func _get_table_center_world() -> Vector2:
 	var vs := get_viewport().get_visible_rect().size
 	return Vector2(vs.x * 0.5, vs.y * 0.5)
 
-
-func clear_table_visuals() -> void:
-	if played_cards.size() == 0:
-		return
-	
-	for card in played_cards:
-		card.remove()
-	
-	played_cards.empty()
-
-func round_clean_up() -> void:
-	leading_card = null
-	first_trump_card = null
-	
-	clear_table_visuals()
-
+func set_table_root(node: Control) -> void:
+	table_root = node
 
 func get_highest_lead_card() -> Card:
 	return played_cards.get_highest_card_of_suit(leading_card.suit)
