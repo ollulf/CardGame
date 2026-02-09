@@ -15,16 +15,19 @@ func _ready() -> void:
 	GameManager.request_play_card.connect(_on_request_play_card)
 	GameManager.round_started.connect(_on_round_started)
 	
-	InteractionManager.human_Player = self
+	InteractionManager.register(self)
+	GameManager.register(self)
 
 func recieve_hand(hand: Hand):
 	get_ownership_of_hand_cards(hand)
+	self.hand = hand
 	render_hand()
 	
 	hand.hand_shrinked.connect(on_hand_shrinked)
 	hand.hand_grew.connect(on_hand_grew)
 
 func on_hand_shrinked():
+	await get_tree().process_frame
 	layout_hand_cards()
 
 func on_hand_grew():
@@ -37,12 +40,13 @@ func try_play_card(card: Card) -> void:
 	if not hand.contains(card):
 		return
 
-	var leading_suit = CardManager.leading_card.suit
+	if (CardManager.leading_card != null):
+		var leading_suit = CardManager.leading_card.suit
 	
 	# --- Follow the obay suit rule ---
-	if hand.contains_card_of_suit(leading_suit) and card.suit != leading_suit:
-		print("Must obay leading suit of: " + leading_suit)
-		return
+		if hand.contains_card_of_suit(leading_suit) and card.suit != leading_suit:
+			print("Must obay leading suit of: " + str(leading_suit))
+			return
 
 
 	hand.remove(card)
@@ -62,11 +66,11 @@ func _on_request_play_card(requested_player_id: int) -> void:
 func render_hand():
 	_anchor_to_bottom_of_view()
 
-	for card in hand:
-		if is_instance_valid(card):
-			card.queue_free()
+	card_visuals = card_visuals.filter(func(c):
+		return is_instance_valid(c)
+	)
 
-	for card in hand:
+	for card in hand.cards:
 		var c := preload("res://scenes/Card.tscn").instantiate() as CardVisual
 		
 		c.setup(card, false)
@@ -86,7 +90,11 @@ func _anchor_to_bottom_of_view() -> void:
 func layout_hand_cards() -> void:
 	if card_visuals.is_empty():
 		return
-
+	
+	card_visuals = card_visuals.filter(func(c):
+		return is_instance_valid(c)
+	)
+	
 	var n = card_visuals.size()
 
 	if n == 1:
@@ -102,3 +110,4 @@ func layout_hand_cards() -> void:
 		var cv = card_visuals[i]
 		cv.position = Vector2(start_x + gap * float(i), 0.0)
 		cv.z_index = i
+		cv.update_layout()

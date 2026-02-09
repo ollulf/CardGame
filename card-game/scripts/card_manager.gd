@@ -19,11 +19,21 @@ func load_player_decks():
 	player_deck = Deck.new(generate_cards(20, Card.Owner.HUMAN))
 	AI_1_deck = Deck.new(generate_cards(20, Card.Owner.AI_1))
 	AI_2_deck = Deck.new(generate_cards(20, Card.Owner.AI_2))
+	print("Decks generated")
 
 func generate_player_hands():
+	load_player_decks()
+	
+	print("Drawing player hands")
 	player_hand = player_deck.draw(10)
 	AI_1_hand = AI_1_deck.draw(10)
 	AI_2_hand = AI_2_deck.draw(10)
+	
+	GameManager.human_player.recieve_hand(player_hand)
+	GameManager.ai_player_1.hand = AI_1_hand
+	GameManager.ai_player_2.hand = AI_2_hand 
+	
+	print("All Hands drawn")
 	
 
 func generate_cards(amount: int, owner : Card.Owner) -> Array[Card]:
@@ -102,6 +112,14 @@ func round_clean_up() -> void:
 	
 	played_cards.empty()
 
+func get_round_winner() -> Card.Owner:
+	var highest_trump = played_cards.get_highest_trump_card()
+	if highest_trump != null:
+		return highest_trump.owner
+	
+	var highest_lead = played_cards.get_highest_card_of_suit(leading_card.suit)
+	return highest_lead.owner
+
 # - - - HELPER - - -
 
 func _get_table_center_world() -> Vector2:
@@ -113,7 +131,6 @@ func set_table_root(node: Control) -> void:
 
 func get_highest_lead_card() -> Card:
 	return played_cards.get_highest_card_of_suit(leading_card.suit)
-
 
 func get_highest_trump_card() -> Card:
 	return played_cards.get_highest_trump_card()

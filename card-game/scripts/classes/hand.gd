@@ -9,6 +9,7 @@ signal hand_shrinked
 func remove(card : Card) -> bool:
 	if contains(card):
 		cards.erase(card)
+		card.remove()
 		hand_shrinked.emit()
 		return true
 	return false
@@ -16,6 +17,9 @@ func remove(card : Card) -> bool:
 func add(card: Card):
 	cards.append(card)
 	hand_grew.emit()
+
+func append(card: Card):
+	cards.append(card)
 
 func contains(card : Card) -> bool:
 	return cards.has(card)

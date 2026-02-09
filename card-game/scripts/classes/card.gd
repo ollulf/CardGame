@@ -9,10 +9,10 @@ var owner : Owner = Owner.NONE
 
 
 enum Owner {
-	NONE,
 	HUMAN,
 	AI_1,
-	AI_2
+	AI_2,
+	NONE
 }
 
 enum Suit {
@@ -48,4 +48,3 @@ func apply_modifiers():
 
 func remove():
 	removed.emit()
-	call_deferred("free")

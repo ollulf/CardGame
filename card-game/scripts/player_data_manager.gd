@@ -35,7 +35,7 @@ func get_drinking(player_id: int) -> int:
 	return drinking_level
 
 
-func _on_round_completed(_round_index: int, _plays: Dictionary, _winner_id: int) -> void:
+func _on_round_completed(_round_index: int,  _winner_id: int) -> void:
 	for pid in PLAYERS:
 		var stacks: Array = smoking_stacks[pid]
 		var changed := false

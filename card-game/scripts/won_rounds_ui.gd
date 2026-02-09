@@ -9,7 +9,7 @@ func _ready() -> void:
 	GameManager.match_finished.connect(_on_match_finished)
 	_reset_labels()
 
-func _on_round_completed(round_index: int, plays: Dictionary, winner_id: int):
+func _on_round_completed(round_index: int, winner_id: int):
 	_update_labels(winner_id)
 
 func _on_match_finished():

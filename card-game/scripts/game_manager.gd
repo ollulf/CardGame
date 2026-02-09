@@ -10,33 +10,38 @@ signal send_message(text: String)
 # --- Config ---
 const MAX_ROUNDS := 10
 
-const PLAYER_HUMAN := 0
-const PLAYER_AI_1 := 1
-const PLAYER_AI_2 := 2
-const PLAYERS := [PLAYER_HUMAN, PLAYER_AI_1, PLAYER_AI_2]
 const PLAYER_NAMES := ["YOU","AI player 1", "AI player 2"]
 
 # --- State ---
 var current_round := 0
 
-var current_starting_player := PLAYER_HUMAN
-var last_round_winner := PLAYER_HUMAN
-
 var turn_order: Array[int] = []
 var current_turn_index := 0
 
+var human_player = Player
+var ai_player_1 = Player
+var ai_player_2 = Player
+
+func register(player : Player):
+	match player.player_id:
+		0:
+			human_player = player
+		1:
+			ai_player_1 = player
+		2:
+			ai_player_2 = player
+		_:
+			printerr("Wrong Player ID in register()")
 
 func set_table_root(node: Control) -> void:
 	CardManager.set_table_root(node)
 
-
-func start_match(starting_player_id: int = PLAYER_HUMAN) -> void:
+func start_match(starting_player_id: int) -> void:
 	current_round = 0
-	current_starting_player = starting_player_id
 	
 	await CardManager.generate_player_hands()
 	
-	start_new_round(current_starting_player)
+	start_new_round(starting_player_id)
 
 
 func start_new_round(starting_player_id: int) -> void:
@@ -44,11 +49,10 @@ func start_new_round(starting_player_id: int) -> void:
 
 	CardManager.round_clean_up()
 
-	current_starting_player = starting_player_id
 	turn_order = _build_turn_order(starting_player_id)
 	current_turn_index = 0
 
-	print("Starting Player: " + PLAYER_NAMES[current_starting_player])
+	print("Starting Player: " + PLAYER_NAMES[starting_player_id])
 
 	emit_signal("round_started", current_round, starting_player_id)
 	
@@ -57,10 +61,9 @@ func start_new_round(starting_player_id: int) -> void:
 
 func _build_turn_order(starting_player_id: int) -> Array[int]:
 	var order: Array[int] = []
-	var start_index := PLAYERS.find(starting_player_id)
 
-	for i in range(PLAYERS.size()):
-		order.append(PLAYERS[(start_index + i) % PLAYERS.size()])
+	for i in range(3):
+		order.append((starting_player_id + i) % 3)
 
 	return order
 
@@ -85,21 +88,24 @@ func _finish_round() -> void:
 	await get_tree().create_timer(2.0).timeout
 
 	var winner : Card.Owner = CardManager.get_round_winner()
-	last_round_winner = winner
-
-	message(str(PLAYERS[winner]) + " won the Round")
+	message(str(PLAYER_NAMES[winner]) + " won the Round")
+	
+	emit_signal("round_completed", current_round, owner_to_id(winner))
 
 	await get_tree().create_timer(3.0).timeout
 
-	emit_signal("round_completed", current_round, winner)
-	
 	#Checks if match is over
 	if current_round >= MAX_ROUNDS:
-		message(str(PLAYERS[last_round_winner]) + " won the match!")
-		emit_signal("match_finished", last_round_winner)
+		var match_looser = get_match_looser()
+		message(str(PLAYER_NAMES[winner]) + " won the match!")
+		emit_signal("match_finished", match_looser)
 		return
 	
 	start_new_round(owner_to_id(winner))
+
+func get_match_looser() -> int:
+	return min(human_player.won_rounds, ai_player_1.won_rounds, ai_player_2.won_rounds)
+
 
 func owner_to_id(owner: Card.Owner) -> int:
 	match owner:

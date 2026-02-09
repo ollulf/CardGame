@@ -4,11 +4,6 @@ class_name CardVisual
 var card: Card
 var face_down: bool = false
 
-@onready var suit_icon: TextureRect = $SuitIcon
-@onready var suit_icon_2: TextureRect = $SuitIcon2
-@onready var rank_label: Label = $RankLabel
-@onready var rank_label_2: Label = $RankLabel2
-
 # --- Hover FX (driven externally) ---
 @export var hover_scale: float = 1.4
 @export var hover_z_index: int = 15
@@ -26,19 +21,25 @@ func setup(data: Card, _face_down: bool) -> void:
 	card.values_changed.connect(update_visuals)
 	card.removed.connect(destroy)
 
+	update_layout()
+	
 	if not face_down:
 		update_visuals()
+
+func update_layout():
+	_base_scale = scale
+	_base_pos = position
+	_base_z = z_index
 
 func destroy():
 	queue_free()
 
 func update_visuals():
-	rank_label.text = str(card.rank)
-	rank_label_2.text = str(card.rank)
+	$RankLabel.text = str(card.rank)
+	$RankLabel2.text = str(card.rank)
 
-	suit_icon.texture = suit_to_texture(card)
-	suit_icon_2.texture = suit_to_texture(card)
-
+	$SuitIcon.texture = suit_to_texture(card)
+	$SuitIcon2.texture = suit_to_texture(card)
 
 func suit_to_texture(card : Card) -> Texture2D:
 	match card.suit:
@@ -57,13 +58,9 @@ func suit_to_texture(card : Card) -> Texture2D:
 		_:
 			return null
 
-
 func hover_enter() -> void:
 	if face_down:
 		return
-
-	# Cache base at the moment of hover (so relayout restores correctly)
-	_base_pos = position
 
 	z_index = hover_z_index
 
@@ -86,6 +83,7 @@ func hover_exit() -> void:
 
 	_tween.finished.connect(func ():
 		if is_instance_valid(self):
+			scale = _base_scale
 			position = _base_pos
 			z_index = _base_z
 	)

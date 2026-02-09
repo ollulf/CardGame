@@ -13,6 +13,8 @@ var card_visuals : Array[CardVisual] = []
 func _ready() -> void:
 	GameManager.request_play_card.connect(_on_request_play_card)
 	GameManager.round_started.connect(_on_round_started)
+	
+	GameManager.register(self)
 
 
 func _on_round_started(_round_index: int, _starting_player_id: int) -> void:
