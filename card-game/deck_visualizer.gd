@@ -1,4 +1,4 @@
-extends Control
+extends CanvasLayer
 
 var card_visuals : Array[CardVisual]
 
