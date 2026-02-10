@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://bj87ioqol7050"]
+[gd_scene load_steps=4 format=3 uid="uid://bj87ioqol7050"]
 
 [ext_resource type="Script" uid="uid://d4mk6cor1jbve" path="res://scripts/won_rounds_ui.gd" id="1_6ho16"]
+[ext_resource type="Texture2D" uid="uid://j1p35h7lfn60" path="res://sprites/suit_Herz.png" id="2_q57u7"]
+[ext_resource type="Texture2D" uid="uid://ddmdjqenohsom" path="res://sprites/x.png" id="3_8qdrj"]
 
 [node name="WonRoundsUI" type="CanvasLayer" node_paths=PackedStringArray("player_0", "player_1", "player_2")]
 script = ExtResource("1_6ho16")
@@ -50,6 +52,60 @@ text = "99"
 horizontal_alignment = 2
 vertical_alignment = 1
 
+[node name="LostMatches" type="Control" parent="Player_0"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -70.0
+offset_right = 20.0
+offset_bottom = -30.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="Hearts_1" type="TextureRect" parent="Player_0/LostMatches"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -64.0
+offset_top = -40.0
+offset_right = -24.0
+grow_horizontal = 0
+grow_vertical = 0
+texture = ExtResource("2_q57u7")
+
+[node name="x_image" type="TextureRect" parent="Player_0/LostMatches/Hearts_1"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("3_8qdrj")
+
+[node name="Hearts_2" type="TextureRect" parent="Player_0/LostMatches"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -13.0
+offset_top = -40.0
+offset_right = 27.0
+grow_horizontal = 0
+grow_vertical = 0
+texture = ExtResource("2_q57u7")
+
+[node name="x_image" type="TextureRect" parent="Player_0/LostMatches/Hearts_2"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("3_8qdrj")
+
 [node name="Player_1" type="Panel" parent="."]
 offset_right = 150.0
 offset_bottom = 30.0
@@ -81,6 +137,57 @@ grow_vertical = 2
 text = "99"
 horizontal_alignment = 2
 vertical_alignment = 1
+
+[node name="LostMatches" type="Control" parent="Player_1"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -21.0
+offset_top = 35.0
+offset_right = 19.0
+offset_bottom = 75.0
+grow_horizontal = 2
+
+[node name="Hearts_1" type="TextureRect" parent="Player_1/LostMatches"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -64.0
+offset_top = -40.0
+offset_right = -24.0
+grow_horizontal = 0
+grow_vertical = 0
+texture = ExtResource("2_q57u7")
+
+[node name="x_image" type="TextureRect" parent="Player_1/LostMatches/Hearts_1"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("3_8qdrj")
+
+[node name="Hearts_2" type="TextureRect" parent="Player_1/LostMatches"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -13.0
+offset_top = -40.0
+offset_right = 27.0
+grow_horizontal = 0
+grow_vertical = 0
+texture = ExtResource("2_q57u7")
+
+[node name="x_image" type="TextureRect" parent="Player_1/LostMatches/Hearts_2"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("3_8qdrj")
 
 [node name="Player_2" type="Panel" parent="."]
 anchors_preset = 1
@@ -117,3 +224,62 @@ grow_vertical = 2
 text = "99"
 horizontal_alignment = 2
 vertical_alignment = 1
+
+[node name="LostMatches" type="Control" parent="Player_2"]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -20.0
+offset_top = 33.0
+offset_right = 20.0
+offset_bottom = 73.0
+grow_horizontal = 2
+
+[node name="Hearts_1" type="TextureRect" parent="Player_2/LostMatches"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -64.0
+offset_top = -40.0
+offset_right = -24.0
+grow_horizontal = 0
+grow_vertical = 0
+texture = ExtResource("2_q57u7")
+
+[node name="x_image" type="TextureRect" parent="Player_2/LostMatches/Hearts_1"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("3_8qdrj")
+
+[node name="Hearts_2" type="TextureRect" parent="Player_2/LostMatches"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -13.0
+offset_top = -40.0
+offset_right = 27.0
+grow_horizontal = 0
+grow_vertical = 0
+texture = ExtResource("2_q57u7")
+
+[node name="x_image" type="TextureRect" parent="Player_2/LostMatches/Hearts_2"]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 40.0
+texture = ExtResource("3_8qdrj")
+
+[node name="NextMatchButton" type="Button" parent="."]
+unique_name_in_owner = true
+offset_left = 551.0
+offset_top = 338.0
+offset_right = 559.0
+offset_bottom = 346.0
+text = "Next Match"

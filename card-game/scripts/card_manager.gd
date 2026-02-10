@@ -21,13 +21,11 @@ func load_player_decks():
 	AI_2_deck = Deck.new(generate_cards(20, Card.Owner.AI_2))
 	print("Decks generated")
 
-func generate_player_hands():
-	load_player_decks()
-	
+func generate_player_hands():	
 	print("Drawing player hands")
-	player_hand = player_deck.draw(10)
-	AI_1_hand = AI_1_deck.draw(10)
-	AI_2_hand = AI_2_deck.draw(10)
+	player_hand = player_deck.draw(5)
+	AI_1_hand = AI_1_deck.draw(5)
+	AI_2_hand = AI_2_deck.draw(5)
 	
 	GameManager.human_player.recieve_hand(player_hand)
 	GameManager.ai_player_1.hand = AI_1_hand
@@ -44,7 +42,7 @@ func generate_cards(amount: int, owner : Card.Owner) -> Array[Card]:
 
 	for i in range(amount):
 		var random_suit: Card.Suit = rng.randi_range(0, Card.Suit.size() - 1)
-		var random_rank: int = rng.randi_range(1, 13)
+		var random_rank: int = rng.randi_range(0, 9)
 
 		var card := Card.new(
 			random_suit,

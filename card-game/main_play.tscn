@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://sho7nec3ufwc"]
+[gd_scene load_steps=19 format=3 uid="uid://sho7nec3ufwc"]
 
 [ext_resource type="Script" uid="uid://b1ufuvgq634xj" path="res://scripts/GameSetup.gd" id="1_yo8lh"]
 [ext_resource type="PackedScene" uid="uid://bjmm2q84dkq0v" path="res://scenes/hand_visualisation.tscn" id="2_r2isv"]
@@ -14,6 +14,7 @@
 [ext_resource type="Script" path="res://scripts/message_ui.gd" id="6_bl2fu"]
 [ext_resource type="Texture2D" uid="uid://beanmjab43tki" path="res://sprites/AshTray.png" id="6_r2isv"]
 [ext_resource type="Script" uid="uid://bnvbuen33moub" path="res://scripts/humanPlayer.gd" id="10_r2isv"]
+[ext_resource type="Script" uid="uid://bhy3xlf41kv5r" path="res://deck_visualizer.gd" id="15_2ja4j"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2ja4j"]
 size = Vector2(44, 56)
@@ -144,3 +145,10 @@ text = "This is the message text label that shows that happens in the game."
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
+
+[node name="DeckVisualizer" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0
+script = ExtResource("15_2ja4j")

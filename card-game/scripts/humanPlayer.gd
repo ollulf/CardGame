@@ -12,6 +12,8 @@ var card_visuals : Array[CardVisual] = []
 var is_my_turn: bool = false
 
 func _ready() -> void:
+	super._ready()
+	
 	GameManager.request_play_card.connect(_on_request_play_card)
 	GameManager.round_started.connect(_on_round_started)
 	
@@ -66,9 +68,8 @@ func _on_request_play_card(requested_player_id: int) -> void:
 func render_hand():
 	_anchor_to_bottom_of_view()
 
-	card_visuals = card_visuals.filter(func(c):
-		return is_instance_valid(c)
-	)
+	for card_visual in card_visuals:
+		card_visual.queue_free()
 
 	for card in hand.cards:
 		var c := preload("res://scenes/Card.tscn").instantiate() as CardVisual

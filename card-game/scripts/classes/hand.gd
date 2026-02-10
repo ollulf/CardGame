@@ -124,13 +124,11 @@ func get_cards_higher_than(card: Card) -> Array[Card]:
 		return c.suit == card.suit and c.rank > card.rank
 	)
 
-
 func get_random_higher_card_than(card: Card) -> Card:
 	var higher := get_cards_higher_than(card)
 	if higher.is_empty():
 		return null
 	return higher.pick_random()
-
 
 func get_cards_lower_than(card: Card) -> Array[Card]:
 	if card.is_trump:
@@ -141,7 +139,6 @@ func get_cards_lower_than(card: Card) -> Array[Card]:
 	return cards.filter(func(c:):
 		return c.suit == card.suit and c.rank <= card.rank
 	)
-
 
 func get_random_lower_than(card: Card) -> Card:
 	var lower := get_cards_lower_than(card)

@@ -11,6 +11,8 @@ class_name AIPlayer
 var card_visuals : Array[CardVisual] = []
 
 func _ready() -> void:
+	super._ready()
+	
 	GameManager.request_play_card.connect(_on_request_play_card)
 	GameManager.round_started.connect(_on_round_started)
 	
@@ -64,8 +66,10 @@ func choose_card() -> Card:
 # If no trump has been played and we have one play a random trump
 	if first_trump_card == null:
 		var trumps = hand.get_trump_cards()
-		
-		return trumps[randi() % trumps.size()]
+		if trumps.size() != 0:
+			return trumps[randi() % trumps.size()]
+		else:
+			return hand.get_lowest_card()
 
 # If there is a first played trump card we try to play over it
 	if first_trump_card != null:
