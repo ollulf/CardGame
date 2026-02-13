@@ -1,20 +1,21 @@
-[gd_scene load_steps=19 format=3 uid="uid://sho7nec3ufwc"]
+[gd_scene load_steps=20 format=3 uid="uid://sho7nec3ufwc"]
 
 [ext_resource type="Script" uid="uid://b1ufuvgq634xj" path="res://scripts/GameSetup.gd" id="1_yo8lh"]
 [ext_resource type="PackedScene" uid="uid://bjmm2q84dkq0v" path="res://scenes/hand_visualisation.tscn" id="2_r2isv"]
 [ext_resource type="Script" uid="uid://bqtm4pcvcl48u" path="res://scripts/ai_player.gd" id="2_shfjk"]
-[ext_resource type="Script" uid="uid://cixtgg70qdal3" path="res://scripts/cig_pack.gd" id="3_el7dg"]
+[ext_resource type="Script" path="res://scripts/cig_pack.gd" id="3_el7dg"]
 [ext_resource type="Texture2D" uid="uid://xn2sqj61surv" path="res://sprites/Cigarettes_closed_icon.png" id="4_555rj"]
 [ext_resource type="PackedScene" uid="uid://dfyq6nuwnii7j" path="res://scenes/turn_indicator.tscn" id="4_fwnfr"]
 [ext_resource type="Texture2D" uid="uid://bd4p2ye1o2uc5" path="res://sprites/Cigarettes_icon.png" id="5_555rj"]
 [ext_resource type="Texture2D" uid="uid://bo05sg6rj5oqn" path="res://sprites/lighter.png" id="5_lcid1"]
 [ext_resource type="PackedScene" uid="uid://bj87ioqol7050" path="res://scenes/won_rounds_ui.tscn" id="5_q6cnf"]
-[ext_resource type="Script" uid="uid://lx6g1lamppqq" path="res://scripts/lighter.gd" id="5_yiaew"]
-[ext_resource type="Script" uid="uid://es2m5ykq15eu" path="res://scripts/ash_tray.gd" id="6_2ja4j"]
-[ext_resource type="Script" uid="uid://dg7s8jonl23ai" path="res://scripts/message_ui.gd" id="6_bl2fu"]
+[ext_resource type="Script" path="res://scripts/lighter.gd" id="5_yiaew"]
+[ext_resource type="Script" path="res://scripts/ash_tray.gd" id="6_2ja4j"]
+[ext_resource type="Script" path="res://scripts/message_ui.gd" id="6_bl2fu"]
 [ext_resource type="Texture2D" uid="uid://beanmjab43tki" path="res://sprites/AshTray.png" id="6_r2isv"]
 [ext_resource type="Script" uid="uid://bnvbuen33moub" path="res://scripts/humanPlayer.gd" id="10_r2isv"]
 [ext_resource type="Script" uid="uid://bhy3xlf41kv5r" path="res://deck_visualizer.gd" id="15_2ja4j"]
+[ext_resource type="Script" uid="uid://cvxwpok4ke1o" path="res://cards_panel.gd" id="16_yiaew"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2ja4j"]
 size = Vector2(44, 56)
@@ -174,7 +175,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="LeftPanel" type="Panel" parent="DeckVisualizer/Panel/HBoxContainer"]
-custom_minimum_size = Vector2(400, 500)
+custom_minimum_size = Vector2(250, 500)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
@@ -193,42 +194,27 @@ offset_bottom = 240.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="MittelPanel" type="Panel" parent="DeckVisualizer/Panel/HBoxContainer"]
-custom_minimum_size = Vector2(250, 450)
+[node name="CardsPanel" type="Panel" parent="DeckVisualizer/Panel/HBoxContainer"]
+custom_minimum_size = Vector2(760, 500)
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
+script = ExtResource("16_yiaew")
 
-[node name="DeckInnerPanel2" type="Control" parent="DeckVisualizer/Panel/HBoxContainer/MittelPanel"]
+[node name="UpperPanel" type="Panel" parent="DeckVisualizer/Panel/HBoxContainer/CardsPanel"]
+self_modulate = Color(1, 0, 0, 1)
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -110.0
-offset_top = -210.0
-offset_right = 110.0
-offset_bottom = 210.0
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 250.0
 grow_horizontal = 2
-grow_vertical = 2
 
-[node name="RightPanel" type="Panel" parent="DeckVisualizer/Panel/HBoxContainer"]
-custom_minimum_size = Vector2(400, 500)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-
-[node name="DeckInnerPanel" type="Control" parent="DeckVisualizer/Panel/HBoxContainer/RightPanel"]
+[node name="LowerPanel" type="Panel" parent="DeckVisualizer/Panel/HBoxContainer/CardsPanel"]
 layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -190.0
-offset_top = -240.0
-offset_right = 190.0
-offset_bottom = 240.0
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -250.0
 grow_horizontal = 2
-grow_vertical = 2
+grow_vertical = 0
