@@ -10,7 +10,6 @@ var face_down: bool = false
 @export var hover_anim_time: float = 0.12
 
 var _base_scale: Vector2
-var _base_pos: Vector2
 var _base_z: int
 var _tween: Tween
 
@@ -28,7 +27,6 @@ func setup(data: Card, _face_down: bool) -> void:
 
 func update_layout():
 	_base_scale = scale
-	_base_pos = position
 	_base_z = z_index
 
 func destroy():
@@ -84,7 +82,6 @@ func hover_exit() -> void:
 	_tween.finished.connect(func ():
 		if is_instance_valid(self):
 			scale = _base_scale
-			position = _base_pos
 			z_index = _base_z
 	)
 

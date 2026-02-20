@@ -42,7 +42,7 @@ func set_table_root(node: Control) -> void:
 
 func start_match(starting_player_id: int) -> void:
 	current_round = 0
-	
+	CardManager.played_cards_match.empty()
 	await CardManager.load_player_decks()
 	await CardManager.generate_player_hands()
 	

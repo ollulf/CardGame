@@ -46,5 +46,8 @@ func get_is_trump() -> bool:
 func apply_modifiers():
 	values_changed.emit()
 
+func string_info() -> String:
+	return str(Suit.keys()[suit], " - ", rank, " (", Owner.keys()[owner], ")")
+
 func remove():
 	removed.emit()

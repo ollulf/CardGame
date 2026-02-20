@@ -2,7 +2,8 @@ extends  Node
 
 var table_root: Control
 
-var played_cards: Hand = Hand.new()
+var played_cards_round: Hand = Hand.new()
+var played_cards_match: Hand = Hand.new()
 
 var player_deck: Deck
 var AI_1_deck: Deck
@@ -32,7 +33,6 @@ func generate_player_hands():
 	GameManager.ai_player_2.hand = AI_2_hand 
 	
 	print("All Hands drawn")
-	
 
 func generate_cards(amount: int, owner : Card.Owner) -> Array[Card]:
 	var cards: Array[Card] = []
@@ -70,11 +70,13 @@ func submit_play(player_id: int, card: Card) -> void:
 	if first_trump_card == null and card.is_trump:
 		first_trump_card = card
 
-	played_cards.append(card)
+	played_cards_round.append(card)
+	played_cards_match.append(card)
 	render_played_card(card)
 	
 	GameManager.play_callback(player_id)
-
+	print("played: ", card)
+	print("contains: ", played_cards_match.cards[0])
 
 func render_played_card(card : Card) -> void:
 	
@@ -99,23 +101,23 @@ func render_played_card(card : Card) -> void:
 	card_visual.scale = Vector2(1.5, 1.5)
 
 	# Layering: later plays on top
-	card_visual.z_index = played_cards.size()
+	card_visual.z_index = played_cards_round.size()
 
 func round_clean_up() -> void:
 	leading_card = null
 	first_trump_card = null
 	
-	if played_cards.size() == 0:
+	if played_cards_round.size() == 0:
 		return
 	
-	played_cards.empty()
+	played_cards_round.empty()
 
 func get_round_winner() -> Card.Owner:
-	var highest_trump = played_cards.get_highest_trump_card()
+	var highest_trump = played_cards_round.get_highest_trump_card()
 	if highest_trump != null:
 		return highest_trump.owner
 	
-	var highest_lead = played_cards.get_highest_card_of_suit(leading_card.suit)
+	var highest_lead = played_cards_round.get_highest_card_of_suit(leading_card.suit)
 	return highest_lead.owner
 
 # - - - HELPER - - -
@@ -128,7 +130,7 @@ func set_table_root(node: Control) -> void:
 	table_root = node
 
 func get_highest_lead_card() -> Card:
-	return played_cards.get_highest_card_of_suit(leading_card.suit)
+	return played_cards_round.get_highest_card_of_suit(leading_card.suit)
 
 func get_highest_trump_card() -> Card:
-	return played_cards.get_highest_trump_card()
+	return played_cards_round.get_highest_trump_card()

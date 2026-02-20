@@ -15,7 +15,7 @@ func draw(amount: int) -> Hand:
 	var draw_count = min(amount, cards.size())
 
 	for i in range(draw_count):
-		var card = cards.pop_back()  # removes from deck
-		hand.add(card)
+		var c = cards.pop_back()
+		hand.add(c)
 
 	return hand

@@ -1,19 +1,43 @@
 extends Panel
 
-@onready var panel_a: Control = $UpperPanel
-@onready var panel_b: Control = $LowerPanel
+@onready var upper: Control = $UpperPanel
+@onready var lower: Control = $LowerPanel
 
-const EXPANDED_HEIGHT := 50
-const SHRUNK_HEIGHT := 400
 
-func _ready():
-	panel_a.mouse_entered.connect(_on_panel_a_hovered)
-	panel_b.mouse_entered.connect(_on_panel_b_hovered)
+#hover / expand stuff
+const EXPANDED_HEIGHT := 400.0
+const SHRUNK_HEIGHT := 100.0
+const DEADZONE := 6.0 # optional
 
-func _on_panel_a_hovered():
-	panel_a.size.y = EXPANDED_HEIGHT
-	panel_b.size.y = SHRUNK_HEIGHT
+var hovered := 0 # 0 top, 1 bottom
 
-func _on_panel_b_hovered():
-	panel_b.size.y = EXPANDED_HEIGHT
-	panel_a.size.y = SHRUNK_HEIGHT
+func _ready() -> void:
+	upper.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	lower.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_refresh_layout()
+
+func _gui_input(event: InputEvent) -> void:
+	if event is not InputEventMouseMotion:
+		return
+
+	var y := get_local_mouse_position().y
+	var divider := upper.size.y
+
+	if hovered == 0:
+		if y > divider + DEADZONE:
+			hovered = 1
+			_refresh_layout()
+	else:
+		if y < divider - DEADZONE:
+			hovered = 0
+			_refresh_layout()
+
+func _refresh_layout() -> void:
+	if hovered == 0:
+		upper.size.y = EXPANDED_HEIGHT
+		lower.size.y = SHRUNK_HEIGHT
+		lower.position.y = EXPANDED_HEIGHT
+	else:
+		upper.size.y = SHRUNK_HEIGHT
+		lower.size.y = EXPANDED_HEIGHT
+		lower.position.y = SHRUNK_HEIGHT
