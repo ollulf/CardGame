@@ -14,6 +14,8 @@ const MAX_ROUNDS := 5
 
 const PLAYER_NAMES := ["YOU","AI player 1", "AI player 2"]
 
+const MOVIE_WINDOW_POSITION := Vector2i(-10000, -10000)
+
 # --- State ---
 var current_round := 0
 
@@ -25,6 +27,10 @@ var ai_player_1 = Player
 var ai_player_2 = Player
 
 var last_match_loosers : Array[int]
+
+func _init() -> void:
+	if Engine.get_write_movie_path() != "":
+		DisplayServer.window_set_position(MOVIE_WINDOW_POSITION)
 
 func register(player : Player):
 	match player.player_id:
