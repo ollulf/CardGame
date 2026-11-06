@@ -11,8 +11,9 @@ const TRIGGERS_WITHOUT_COUNT := ["game_start", "between_rounds", "game_over"]
 const NO_SEAT := -1
 const AUTO_ADVANCE_HOLD := 1.5
 const DIALOGUE_LAYER := 100
+const LINES_PATH := "res://dialogue_lines.yaml"
 
-var lines: Array = DialogueLines.LINES
+var lines: Array = load_lines(LINES_PATH)
 var auto_advance := Engine.get_write_movie_path() != "" or DisplayServer.get_name() == "headless"
 
 var _bubble: SpeechBubble
@@ -184,6 +185,40 @@ func _fire(trigger: String) -> void:
 func _queue_entry(entry: Dictionary) -> void:
 	for line in entry.lines:
 		say(line[0], line[1])
+
+static func load_lines(path: String) -> Array:
+	return rows_from_yaml(YamlLite.parse_file(path))
+
+static func rows_from_yaml(yaml: YamlLite) -> Array:
+	var rows: Array = []
+	for i in yaml.data.size():
+		var row = _clean_row(yaml.data[i], yaml.item_lines[i])
+		if row != null:
+			rows.append(row)
+	return rows
+
+static func _clean_row(raw, line: int):
+	if not raw is Dictionary or not raw.get("when") is String:
+		push_warning("DialogueLines line %d: row needs a 'when'" % line)
+		return null
+	if not raw.get("lines") is Array or raw.lines.is_empty():
+		push_warning("DialogueLines line %d: row needs a list of 'lines'" % line)
+		return null
+	var row := {"when": raw.when, "lines": []}
+	if raw.has("count"):
+		if not raw.count is int:
+			push_warning("DialogueLines line %d: 'count' must be a whole number" % line)
+			return null
+		row["count"] = raw.count
+	for spoken in raw.lines:
+		if not spoken is Dictionary or not spoken.get("seat") is int or not spoken.get("text") is String:
+			push_warning("DialogueLines line %d: every line needs a 'seat' number and a 'text'" % line)
+			return null
+		if spoken.seat < 0 or spoken.seat >= SEAT_COUNT:
+			push_warning("DialogueLines line %d: seat %d does not exist" % [line, spoken.seat])
+			return null
+		row.lines.append([spoken.seat, spoken.text])
+	return row
 
 func _check_lines() -> void:
 	for entry in lines:
