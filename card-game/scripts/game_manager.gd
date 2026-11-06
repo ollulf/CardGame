@@ -11,6 +11,7 @@ signal send_message(text: String)
 
 # --- Config ---
 const MAX_ROUNDS := 5
+const MAX_LIVES := 2
 
 const PLAYER_NAMES := ["YOU","AI player 1", "AI player 2"]
 
@@ -130,17 +131,21 @@ func _finish_round() -> void:
 		match_finished.emit(last_match_loosers)
 		
 		#Check if somebody lost twice
-		var total_looser = try_get_total_looser()
-		
-		if(total_looser != null):
+		for total_looser in get_total_loosers():
 			game_lost.emit(total_looser)
 		
 		return
 	
 	start_new_round(owner_to_id(winner))
 
-func try_get_total_looser() -> int:
-	return 0
+func get_total_loosers() -> Array[int]:
+	var result: Array[int] = []
+
+	for id in last_match_loosers:
+		if id_to_player(id).lost_matches == MAX_LIVES:
+			result.append(id)
+
+	return result
 
 func notify_match_loosers(ids : Array[int]):
 	for id in ids:
