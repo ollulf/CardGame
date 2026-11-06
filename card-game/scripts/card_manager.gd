@@ -1,5 +1,8 @@
 extends  Node
 
+const PLAY_ZONE_OFFSET := Vector2(-330, -290)
+const PLAY_ZONE_SIZE := Vector2(660, 400)
+
 var table_root: Control
 
 var played_cards_round: Hand = Hand.new()
@@ -135,6 +138,9 @@ func get_round_winner() -> Card.Owner:
 func _get_table_center_world() -> Vector2:
 	var vs := get_viewport().get_visible_rect().size
 	return Vector2(vs.x * 0.5, vs.y * 0.5)
+
+func is_in_play_zone(point: Vector2) -> bool:
+	return Rect2(_get_table_center_world() + PLAY_ZONE_OFFSET, PLAY_ZONE_SIZE).has_point(point)
 
 func set_table_root(node: Control) -> void:
 	table_root = node

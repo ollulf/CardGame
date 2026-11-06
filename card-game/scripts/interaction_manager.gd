@@ -8,10 +8,16 @@ var human_player: HumanPlayer
 
 const MAX_IN_HAND := 3
 const BURN_SECONDS := 20.0
+const DRAG_THRESHOLD := 6.0
 
 var _burn_token: int = 0
 
 var hovered_card : CardVisual = null
+
+var _pressed_card : CardVisual = null
+var _press_position : Vector2
+var _grab_offset : Vector2
+var _is_dragging : bool = false
 
 func register(player : Player):
 	human_player = player
@@ -19,7 +25,18 @@ func register(player : Player):
 func _process(delta: float) -> void:
 	check_for_hovered_card()
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT and _is_press_active():
+		var card_visual := _pressed_card
+		var was_dragging := _is_dragging
+		_clear_press()
+		if was_dragging:
+			_return_to_hand(card_visual)
+
 func check_for_hovered_card() -> void:
+	if _is_press_active():
+		return
+
 	var c: Control = get_viewport().gui_get_hovered_control()
 	var new_hovered: CardVisual = null
 
@@ -46,6 +63,14 @@ func check_for_hovered_card() -> void:
 
 
 func _input(event: InputEvent) -> void:
+	if event is InputEventMouseMotion:
+		_update_drag(event)
+		return
+
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and not event.pressed:
+		_release_press(event.position)
+		return
+
 	# Right click: put one unlit cigarette back into the pack
 	if event is InputEventMouseButton and event.pressed:
 		# Right click: put one unlit cigarette back into the pack
@@ -53,9 +78,68 @@ func _input(event: InputEvent) -> void:
 			_return_one_unlit_to_pack()
 			return
 	
-		if event.button_index == MOUSE_BUTTON_LEFT and event.double_click:
-			if is_instance_valid(hovered_card):
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			if event.double_click and is_instance_valid(hovered_card):
 				human_player.try_play_card(hovered_card.card)
+			_begin_press(event)
+
+func _begin_press(event: InputEventMouseButton) -> void:
+	if _is_press_active() or not _is_draggable(hovered_card):
+		return
+
+	_pressed_card = hovered_card
+	_press_position = event.position
+	_grab_offset = human_player.make_input_local(event).position - _pressed_card.position
+
+func _update_drag(event: InputEventMouseMotion) -> void:
+	if not _is_press_active():
+		return
+
+	if not _is_dragging:
+		if event.position.distance_to(_press_position) < DRAG_THRESHOLD:
+			return
+		_is_dragging = true
+		_pressed_card.begin_drag()
+
+	_pressed_card.position = human_player.make_input_local(event).position - _grab_offset
+
+func _release_press(mouse_position: Vector2) -> void:
+	if not _is_press_active():
+		return
+
+	var card_visual := _pressed_card
+	var was_dragging := _is_dragging
+	_clear_press()
+
+	if not was_dragging:
+		return
+
+	hovered_card = null
+
+	if CardManager.is_in_play_zone(mouse_position) and human_player.can_play(card_visual.card):
+		human_player.try_play_card(card_visual.card)
+		return
+
+	_return_to_hand(card_visual)
+
+func _return_to_hand(card_visual: CardVisual) -> void:
+	if hovered_card == card_visual:
+		hovered_card = null
+	card_visual.end_drag()
+	human_player.layout_hand_cards()
+
+func _is_press_active() -> bool:
+	if _is_draggable(_pressed_card):
+		return true
+	_clear_press()
+	return false
+
+func _is_draggable(card_visual) -> bool:
+	return is_instance_valid(card_visual) and human_player != null and human_player.has_hand_visual(card_visual)
+
+func _clear_press() -> void:
+	_pressed_card = null
+	_is_dragging = false
 
 func pickedUpCig() -> void:
 	addCigToHand()

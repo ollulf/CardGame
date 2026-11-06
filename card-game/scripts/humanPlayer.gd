@@ -49,6 +49,9 @@ func can_play(card: Card) -> bool:
 	var leading_suit = CardManager.leading_card.suit
 	return card.suit == leading_suit or not hand.contains_card_of_suit(leading_suit)
 
+func has_hand_visual(card_visual: CardVisual) -> bool:
+	return not card_visual.is_queued_for_deletion() and card_visuals.has(card_visual) and hand.contains(card_visual.card)
+
 func try_play_card(card: Card) -> void:
 	if not can_play(card):
 		return
@@ -80,6 +83,7 @@ func render_hand():
 
 	for card_visual in card_visuals:
 		card_visual.queue_free()
+	card_visuals.clear()
 
 	for card in hand.cards:
 		var c := preload("res://scenes/Card.tscn").instantiate() as CardVisual
@@ -110,7 +114,8 @@ func layout_hand_cards() -> void:
 	var n = card_visuals.size()
 
 	if n == 1:
-		card_visuals[0].position = Vector2.ZERO
+		if not card_visuals[0].dragging:
+			card_visuals[0].position = Vector2.ZERO
 		return
 
 	var ideal_gap := card_space / float(n - 1)
@@ -120,6 +125,7 @@ func layout_hand_cards() -> void:
 
 	for i in range(n):
 		var cv = card_visuals[i]
-		cv.position = Vector2(start_x + gap * float(i), 0.0)
+		if not cv.dragging:
+			cv.position = Vector2(start_x + gap * float(i), 0.0)
 		cv.z_index = i
 		cv.update_layout()

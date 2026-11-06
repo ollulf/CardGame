@@ -4,6 +4,7 @@ class_name CardVisual
 var card: Card
 var face_down: bool = false
 var hover_enabled: bool = true
+var dragging: bool = false
 
 const RANK_INCREASED_COLOR := Color(0.4, 1.0, 0.45)
 const RANK_DECREASED_COLOR := Color(1.0, 0.4, 0.4)
@@ -12,6 +13,7 @@ const RANK_DECREASED_COLOR := Color(1.0, 0.4, 0.4)
 @export var hover_scale: float = 1.4
 @export var hover_z_index: int = 15
 @export var hover_anim_time: float = 0.12
+@export var drag_z_index: int = 50
 
 var _base_scale: Vector2
 var _base_z: int
@@ -33,7 +35,7 @@ func setup(data: Card, _face_down: bool) -> void:
 func update_layout():
 	_base_z = z_index
 	if _hover_active:
-		z_index = hover_z_index
+		z_index = drag_z_index if dragging else hover_z_index
 		return
 	_base_scale = scale
 
@@ -111,6 +113,18 @@ func hover_exit() -> void:
 			scale = _base_scale
 			z_index = _base_z
 	)
+
+
+func begin_drag() -> void:
+	dragging = true
+	_hover_active = true
+	z_index = drag_z_index
+
+
+func end_drag() -> void:
+	dragging = false
+	z_index = hover_z_index
+	hover_exit()
 
 
 func _kill_tween() -> void:
