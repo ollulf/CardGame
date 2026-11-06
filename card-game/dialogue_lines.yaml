@@ -1,0 +1,34 @@
+- when: game_start
+  lines:
+    - seat: 1
+      text: "Cards down, *smokes* out."
+    - seat: 2
+      text: "Deal me in."
+
+- when: after_turns
+  count: 2
+  lines:
+    - seat: 1
+      text: "Nine of hearts? *Bold.*"
+
+- when: every_turns
+  count: 3
+  lines:
+    - seat: 2
+      text: "You cough when you *bluff.*"
+
+- when: after_rounds
+  count: 1
+  lines:
+    - seat: 2
+      text: "That's one round gone."
+
+- when: between_rounds
+  lines:
+    - seat: 1
+      text: "Light up. *Next round.*"
+
+- when: game_over
+  lines:
+    - seat: 1
+      text: "That's it. *Out of lives.*"
