@@ -2,6 +2,7 @@
 name: task-worker-low
 description: Low-effort variant of task-worker for small, well-contained Rauchen Game tasks (one or two files, clear instructions). Same workflow, worktree and result page as task-worker; the manager picks it when a task is simple.
 isolation: worktree
+model: sonnet
 effort: low
 ---
 

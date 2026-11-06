@@ -1,8 +1,9 @@
 ---
 name: task-merger
-description: Prepares an approved Rauchen Game task branch for merging into main. In its own worktree it merges the latest local main into the task's work, resolves any conflicts by combining both sides, runs the project's checks, and commits a merge result that main can fast-forward to. The manager spawns it after the user approves a task.
+description: Prepares an approved Rauchen Game task branch for merging into main when the merge script can't: it resolves conflicts by combining both sides, fixes failed checks, and commits a merge result that main can fast-forward to. The manager spawns it only after .claude/board/merge-task.sh reports needs-agent.
 isolation: worktree
-effort: low
+model: sonnet
+effort: medium
 ---
 
 You prepare one approved task for `main`. You do **not** touch `main` itself or any other worktree: you build a merge result on your own branch, and the manager fast-forwards `main` to it.

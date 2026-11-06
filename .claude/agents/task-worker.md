@@ -2,6 +2,7 @@
 name: task-worker
 description: Carries out one task for Rauchen Game (Godot 4.5 card game) inside an isolated git worktree, commits the result on its own branch, and reports back with a short summary (plus a short visual result page only when the task asks for one). The main session (the manager) delegates every task from the task board to this agent.
 isolation: worktree
+model: opus
 effort: medium
 ---
 
@@ -25,7 +26,7 @@ You are working on **Rauchen Game**, a Godot 4.5 card game (the Godot project li
    - For anything visible, capture screenshots or a clip with a small capture scene or script kept out of your commit.
    - **Use your own scratch folder**: a subfolder of the session scratchpad named after your branch. Never run a script you didn't write there.
    - **Never kill Godot processes you did not start** (no `taskkill /IM`, no `Stop-Process -Name`): the user and other agents run Godot at the same time. Record the PIDs of your own runs and stop only those.
-   - **Never steal the user's mouse or focus.** Every windowed run must be off-screen under Movie Maker: `<godot> --path card-game --position -10000,-10000 --write-movie <scratch>/out.avi --fixed-fps 30 --resolution 960x540 --quit-after <frames> res://<scene>.tscn`.
+   - **Never steal the user's mouse or focus.** Every windowed run must use Movie Maker: `<godot> --path card-game --write-movie <scratch>/out.avi --fixed-fps 30 --resolution 960x540 --quit-after <frames> res://<scene>.tscn`. Under Movie Maker the project takes no focus, leaves the mouse mode alone, and moves its window off-screen after about 0.3 s. Never launch a window without `--write-movie`, and keep windowed runs few, because each one can catch a click during that moment.
    - Never claim something was tested that wasn't.
 4. Commit your work on the worktree's branch with a clear message ending with:
    `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`

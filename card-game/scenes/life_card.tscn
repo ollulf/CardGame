@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://cc60yteifbaax"]
+[gd_scene format=3 uid="uid://cc60yteifbaax"]
 
 [ext_resource type="Script" path="res://scripts/life_card.gd" id="1_life"]
 [ext_resource type="Texture2D" uid="uid://dvk00gefy0gis" path="res://sprites/card_Background.png" id="2_back"]
