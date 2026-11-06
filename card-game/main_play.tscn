@@ -13,9 +13,26 @@
 [ext_resource type="Script" uid="uid://es2m5ykq15eu" path="res://scripts/ash_tray.gd" id="6_2ja4j"]
 [ext_resource type="Script" uid="uid://dg7s8jonl23ai" path="res://scripts/message_ui.gd" id="6_bl2fu"]
 [ext_resource type="Texture2D" uid="uid://beanmjab43tki" path="res://sprites/AshTray.png" id="6_r2isv"]
+[ext_resource type="Script" path="res://scripts/wallet.gd" id="wallet_script"]
+[ext_resource type="Texture2D" path="res://sprites/wallet.png" id="wallet_tex"]
 [ext_resource type="Script" uid="uid://bnvbuen33moub" path="res://scripts/humanPlayer.gd" id="10_r2isv"]
 [ext_resource type="Script" uid="uid://bhy3xlf41kv5r" path="res://deck_visualizer.gd" id="15_2ja4j"]
 [ext_resource type="Script" uid="uid://cvxwpok4ke1o" path="res://cards_panel.gd" id="16_yiaew"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_wallet"]
+size = Vector2(96, 96)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_wallet"]
+bg_color = Color(0.08, 0.07, 0.07, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.85, 0.8, 0.7, 1)
+content_margin_left = 6.0
+content_margin_top = 3.0
+content_margin_right = 6.0
+content_margin_bottom = 3.0
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2ja4j"]
 size = Vector2(44, 56)
@@ -56,6 +73,31 @@ shape = SubResource("RectangleShape2D_yiaew")
 [node name="Sprite2D" type="Sprite2D" parent="AshTray"]
 scale = Vector2(3, 3)
 texture = ExtResource("6_r2isv")
+
+[node name="Wallet" type="Area2D" parent="."]
+position = Vector2(70, 590)
+script = ExtResource("wallet_script")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Wallet"]
+shape = SubResource("RectangleShape2D_wallet")
+
+[node name="Sprite2D" type="Sprite2D" parent="Wallet"]
+scale = Vector2(3, 3)
+texture = ExtResource("wallet_tex")
+
+[node name="Tooltip" type="Label" parent="Wallet"]
+z_index = 10
+offset_left = 56.0
+offset_top = -34.0
+offset_right = 160.0
+offset_bottom = -8.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.95, 0.92, 0.85, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_wallet")
+text = "Buy something"
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="CigPack" type="Area2D" parent="."]
 position = Vector2(878, 608)
