@@ -13,6 +13,7 @@ var hover_enabled: bool = true
 var _base_scale: Vector2
 var _base_z: int
 var _tween: Tween
+var _hover_active: bool = false
 
 func setup(data: Card, _face_down: bool) -> void:
 	card = data
@@ -27,8 +28,11 @@ func setup(data: Card, _face_down: bool) -> void:
 		update_visuals()
 
 func update_layout():
-	_base_scale = scale
 	_base_z = z_index
+	if _hover_active:
+		z_index = hover_z_index
+		return
+	_base_scale = scale
 
 func destroy():
 	queue_free()
@@ -61,6 +65,7 @@ func hover_enter() -> void:
 	if face_down or not hover_enabled:
 		return
 
+	_hover_active = true
 	z_index = hover_z_index
 
 	_kill_tween()
@@ -82,6 +87,7 @@ func hover_exit() -> void:
 
 	_tween.finished.connect(func ():
 		if is_instance_valid(self):
+			_hover_active = false
 			scale = _base_scale
 			z_index = _base_z
 	)
