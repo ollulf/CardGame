@@ -34,6 +34,9 @@ func destroy():
 	queue_free()
 
 func update_visuals():
+	if face_down:
+		return
+
 	$RankLabel.text = str(card.rank)
 	$RankLabel2.text = str(card.rank)
 
