@@ -34,22 +34,12 @@ func _update_labels(id: int):
 		2: player_2.text = str(int(player_2.text)+1)
 
 func update_match_looser(looser_id : int):
-	match looser_id:
-		0:
-			if GameManager.human_player.lost_matches == 1:
-				$Player_0/LostMatches/Hearts_1/x_image.visible = true
-			if GameManager.human_player.lost_matches == 2:
-				$Player_0/LostMatches/Hearts_2/x_image.visible = true
-		1:
-			if GameManager.ai_player_1.lost_matches == 1:
-				$Player_1/LostMatches/Hearts_1/x_image.visible = true
-			if GameManager.ai_player_1.lost_matches == 2:
-				$Player_1/LostMatches/Hearts_2/x_image.visible = true
-		2:
-			if GameManager.ai_player_2.lost_matches == 1:
-				$Player_2/LostMatches/Hearts_1/x_image.visible = true
-			if GameManager.ai_player_2.lost_matches == 2:
-				$Player_2/LostMatches/Hearts_2/x_image.visible = true
+	var lost_matches: int = GameManager.id_to_player(looser_id).lost_matches
+	if lost_matches == 1 or lost_matches == 2:
+		_life_card(looser_id, lost_matches).split()
+
+func _life_card(player_id: int, life: int) -> LifeCard:
+	return get_node("Player_%d/LostMatches/Hearts_%d" % [player_id, life])
 
 func reset_UI():
 	next_match_button.visible = false
@@ -59,9 +49,6 @@ func reset_UI():
 	player_2.text = "0"
 	
 func reset_lifes():
-	$Player_0/LostMatches/Hearts_1/x_image.visible = false
-	$Player_0/LostMatches/Hearts_2/x_image.visible = false
-	$Player_1/LostMatches/Hearts_1/x_image.visible = false
-	$Player_1/LostMatches/Hearts_2/x_image.visible = false
-	$Player_2/LostMatches/Hearts_1/x_image.visible = false
-	$Player_2/LostMatches/Hearts_2/x_image.visible = false
+	for player_id in 3:
+		for life in [1, 2]:
+			_life_card(player_id, life).restore()

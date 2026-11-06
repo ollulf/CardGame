@@ -61,7 +61,7 @@ func pickedUpCig() -> void:
 	addCigToHand()
 
 func usedLighter() -> void:
-	hand.light_all_unlit()
+	CardManager.update_cards(hand.light_all_unlit())
 
 	_burn_token += 1
 	var my_token := _burn_token
