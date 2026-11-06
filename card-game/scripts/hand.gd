@@ -19,6 +19,9 @@ func _ready() -> void:
 
 
 func _process(delta: float) -> void:
+	if DialogueManager.is_open():
+		return
+
 	# Mouse position in SCREEN coordinates (can go outside the window)
 	var m := get_viewport().get_mouse_position()
 

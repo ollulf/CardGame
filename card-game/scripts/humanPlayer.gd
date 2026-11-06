@@ -83,7 +83,8 @@ func render_hand():
 	_anchor_to_bottom_of_view()
 
 	for card_visual in card_visuals:
-		card_visual.queue_free()
+		if is_instance_valid(card_visual):
+			card_visual.queue_free()
 	card_visuals.clear()
 
 	for card in hand.cards:

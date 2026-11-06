@@ -7,10 +7,14 @@ signal round_completed(round_index: int, winner_id: int)
 signal match_finished(winner_id: int)
 signal match_started()
 signal game_lost(looser_id: int)
+signal next_match_available()
+signal game_finished(looser_ids: Array[int])
+signal new_game_started()
 signal send_message(text: String)
 
 # --- Config ---
 const MAX_ROUNDS := 5
+const MAX_LIVES := 2
 
 const PLAYER_NAMES := ["YOU","AI player 1", "AI player 2"]
 
@@ -53,7 +57,9 @@ func start_match(starting_player_id: int) -> void:
 	await CardManager.generate_player_hands()
 	
 	match_started.emit()
-	
+
+	await DialogueManager.wait_until_idle()
+
 	start_new_round(starting_player_id)
 
 func restart_match():
@@ -62,8 +68,23 @@ func restart_match():
 	await CardManager.generate_player_hands()
 	
 	match_started.emit()
-	
+
+	await DialogueManager.wait_until_idle()
+
 	start_new_round(last_match_loosers.pick_random())
+
+func start_new_game() -> void:
+	var starting_player_id: int = get_total_loosers().pick_random()
+
+	for id in range(3):
+		id_to_player(id).lost_matches = 0
+	last_match_loosers.clear()
+
+	CardManager.clear_all_cards()
+
+	new_game_started.emit()
+
+	start_match(starting_player_id)
 
 func start_new_round(starting_player_id: int) -> void:
 	current_round += 1
@@ -90,6 +111,8 @@ func _build_turn_order(starting_player_id: int) -> Array[int]:
 
 
 func _request_current_player() -> void:
+	await DialogueManager.wait_until_idle()
+
 	if current_turn_index >= turn_order.size():
 		_finish_round()
 		return
@@ -106,6 +129,7 @@ func play_callback(player_id: int) -> void:
 
 func _finish_round() -> void:
 	await get_tree().create_timer(2.0, false).timeout
+	await DialogueManager.wait_until_idle()
 
 	var winner : Card.Owner = CardManager.get_round_winner()
 	
@@ -114,6 +138,7 @@ func _finish_round() -> void:
 	round_completed.emit(current_round, owner_to_id(winner))
 
 	await get_tree().create_timer(3.0, false).timeout
+	await DialogueManager.wait_until_idle()
 
 	#Checks if match is over
 	if current_round >= MAX_ROUNDS:
@@ -130,17 +155,29 @@ func _finish_round() -> void:
 		match_finished.emit(last_match_loosers)
 		
 		#Check if somebody lost twice
-		var total_looser = try_get_total_looser()
-		
-		if(total_looser != null):
+		var total_loosers := get_total_loosers()
+		for total_looser in total_loosers:
 			game_lost.emit(total_looser)
-		
+
+		await DialogueManager.wait_until_idle()
+
+		if total_loosers.is_empty():
+			next_match_available.emit()
+		else:
+			game_finished.emit(total_loosers)
+
 		return
 	
 	start_new_round(owner_to_id(winner))
 
-func try_get_total_looser() -> int:
-	return 0
+func get_total_loosers() -> Array[int]:
+	var result: Array[int] = []
+
+	for id in last_match_loosers:
+		if id_to_player(id).lost_matches == MAX_LIVES:
+			result.append(id)
+
+	return result
 
 func notify_match_loosers(ids : Array[int]):
 	for id in ids:

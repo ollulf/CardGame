@@ -126,6 +126,14 @@ func round_clean_up() -> void:
 	
 	played_cards_round.empty()
 
+func clear_all_cards() -> void:
+	round_clean_up()
+	played_cards_match.empty()
+
+	for hand in [player_hand, AI_1_hand, AI_2_hand]:
+		if hand != null:
+			hand.empty()
+
 func get_round_winner() -> Card.Owner:
 	var highest_trump = played_cards_round.get_highest_trump_card()
 	if highest_trump != null:

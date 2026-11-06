@@ -18,6 +18,8 @@ var _pressed_card : CardVisual = null
 var _press_position : Vector2
 var _grab_offset : Vector2
 var _is_dragging : bool = false
+var _skip_double_click : bool = false
+var _table_blocked : bool = false
 
 func register(player : Player):
 	human_player = player
@@ -26,18 +28,32 @@ func _process(delta: float) -> void:
 	check_for_hovered_card()
 
 func _notification(what: int) -> void:
-	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT and _is_press_active():
-		var card_visual := _pressed_card
-		var was_dragging := _is_dragging
-		_clear_press()
-		if was_dragging:
-			_return_to_hand(card_visual)
+	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
+		cancel_press()
+
+func cancel_press() -> void:
+	if not _is_press_active():
+		return
+
+	var card_visual := _pressed_card
+	var was_dragging := _is_dragging
+	_clear_press()
+	if was_dragging:
+		_return_to_hand(card_visual)
+
+func set_table_blocked(blocked: bool) -> void:
+	_table_blocked = blocked
+	cancel_press()
+	get_viewport().physics_object_picking = not blocked
+
+func skip_next_double_click() -> void:
+	_skip_double_click = true
 
 func check_for_hovered_card() -> void:
 	if _is_press_active():
 		return
 
-	var c: Control = get_viewport().gui_get_hovered_control()
+	var c: Control = null if DialogueManager.is_open() or _table_blocked else get_viewport().gui_get_hovered_control()
 	var new_hovered: CardVisual = null
 
 	# Walk up from the hovered control until we find a Card (or nothing)
@@ -63,6 +79,9 @@ func check_for_hovered_card() -> void:
 
 
 func _input(event: InputEvent) -> void:
+	if _table_blocked:
+		return
+
 	if event is InputEventMouseMotion:
 		_update_drag(event)
 		return
@@ -79,8 +98,9 @@ func _input(event: InputEvent) -> void:
 			return
 	
 		if event.button_index == MOUSE_BUTTON_LEFT:
-			if event.double_click and is_instance_valid(hovered_card):
+			if event.double_click and not _skip_double_click and is_instance_valid(hovered_card):
 				human_player.try_play_card(hovered_card.card)
+			_skip_double_click = false
 			_begin_press(event)
 
 func _begin_press(event: InputEventMouseButton) -> void:
