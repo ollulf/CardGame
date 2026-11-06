@@ -3,6 +3,7 @@ class_name CardVisual
 
 var card: Card
 var face_down: bool = false
+var hover_enabled: bool = true
 
 # --- Hover FX (driven externally) ---
 @export var hover_scale: float = 1.4
@@ -57,7 +58,7 @@ func suit_to_texture(card : Card) -> Texture2D:
 			return null
 
 func hover_enter() -> void:
-	if face_down:
+	if face_down or not hover_enabled:
 		return
 
 	z_index = hover_z_index
@@ -70,7 +71,7 @@ func hover_enter() -> void:
 
 
 func hover_exit() -> void:
-	if face_down:
+	if face_down or not hover_enabled:
 		return
 
 	_kill_tween()

@@ -2,11 +2,11 @@ extends Player
 class_name AIPlayer
 
 # Visual settings
-@export var show_hand: bool = false
+@export var show_hand: bool = true
 
 # Layout
-@export var card_space: float = 400
-@export var MAX_GAP := 40.0
+@export var card_space: float = 320
+@export var MAX_GAP := 70.0
 
 var card_visuals : Array[CardVisual] = []
 
@@ -17,6 +17,17 @@ func _ready() -> void:
 	GameManager.round_started.connect(_on_round_started)
 	
 	GameManager.register(self)
+
+
+func recieve_hand(new_hand: Hand) -> void:
+	hand = new_hand
+	render_hand()
+
+	hand.hand_shrinked.connect(on_hand_shrinked)
+
+
+func on_hand_shrinked() -> void:
+	layout_hand_cards()
 
 
 func _on_round_started(_round_index: int, _starting_player_id: int) -> void:
@@ -33,9 +44,11 @@ func _on_request_play_card(requested_player_id: int) -> void:
 	if hand.is_empty():
 		print("AI Players hand is empty")
 		CardManager.submit_play(player_id, null)
+		return
 
 	var chosen_card = choose_card()
 
+	hand.remove(chosen_card)
 	CardManager.submit_play(player_id, chosen_card)
 
 
@@ -82,17 +95,19 @@ func choose_card() -> Card:
 	return hand.get_lowest_card()
 
 
-func render_hand():
+func render_hand() -> void:
+	for card_visual in card_visuals:
+		if is_instance_valid(card_visual):
+			card_visual.queue_free()
 
-	for card in hand:
-		if is_instance_valid(card):
-			card.queue_free()
+	card_visuals.clear()
 
-	for card in hand:
+	for card in hand.cards:
 		var c := preload("res://scenes/Card.tscn").instantiate() as CardVisual
-		
-		c.setup(card, show_hand)
-		
+
+		c.setup(card, not show_hand)
+		c.hover_enabled = false
+
 		add_child(c)
 		card_visuals.append(c)
 
@@ -100,21 +115,25 @@ func render_hand():
 
 
 func layout_hand_cards() -> void:
-	if card_visuals.is_empty():
-		return
+	card_visuals = card_visuals.filter(func(c):
+		return is_instance_valid(c) and not c.is_queued_for_deletion()
+	)
 
 	var n = card_visuals.size()
 
-	if n == 1:
-		card_visuals[0].position = Vector2.ZERO
+	if n == 0:
 		return
 
-	var ideal_gap := card_space / float(n - 1)
-	var gap = min(ideal_gap, MAX_GAP)
+	var gap = MAX_GAP
+
+	if n > 1:
+		gap = min(card_space / float(n - 1), MAX_GAP)
+
 	var total_span = gap * float(n - 1)
-	var start_x = -total_span * 0.5
+	var start_y = -total_span * 0.5
 
 	for i in range(n):
 		var cv = card_visuals[i]
-		cv.position = Vector2(start_x + gap * float(i), 0.0)
+		cv.position = Vector2(0.0, start_y + gap * float(i)) - cv.size * 0.5
 		cv.z_index = i
+		cv.update_layout()

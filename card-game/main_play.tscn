@@ -100,20 +100,20 @@ script = ExtResource("10_r2isv")
 [node name="AI_Player_1" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 56.0
-offset_top = 300.0
-offset_right = 56.0
-offset_bottom = 300.0
+offset_left = 84.0
+offset_top = 324.0
+offset_right = 84.0
+offset_bottom = 324.0
 script = ExtResource("2_shfjk")
 player_id = 1
 
 [node name="AI_Player_2" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 0
-offset_left = 1090.0
-offset_top = 319.0
-offset_right = 1090.0
-offset_bottom = 319.0
+offset_left = 1072.0
+offset_top = 324.0
+offset_right = 1072.0
+offset_bottom = 324.0
 script = ExtResource("2_shfjk")
 player_id = 2
 

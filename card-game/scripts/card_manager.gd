@@ -29,8 +29,8 @@ func generate_player_hands():
 	AI_2_hand = AI_2_deck.draw(5)
 	
 	GameManager.human_player.recieve_hand(player_hand)
-	GameManager.ai_player_1.hand = AI_1_hand
-	GameManager.ai_player_2.hand = AI_2_hand 
+	GameManager.ai_player_1.recieve_hand(AI_1_hand)
+	GameManager.ai_player_2.recieve_hand(AI_2_hand)
 	
 	print("All Hands drawn")
 
@@ -62,6 +62,10 @@ func update_cards():
 	pass
 
 func submit_play(player_id: int, card: Card) -> void:
+	if card == null:
+		GameManager.play_callback(player_id)
+		return
+
 	# Track leading card
 	if leading_card == null:
 		leading_card = card
