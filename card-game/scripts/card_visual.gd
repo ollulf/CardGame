@@ -5,6 +5,9 @@ var card: Card
 var face_down: bool = false
 var hover_enabled: bool = true
 
+const RANK_INCREASED_COLOR := Color(0.4, 1.0, 0.45)
+const RANK_DECREASED_COLOR := Color(1.0, 0.4, 0.4)
+
 # --- Hover FX (driven externally) ---
 @export var hover_scale: float = 1.4
 @export var hover_z_index: int = 15
@@ -39,6 +42,17 @@ func update_visuals():
 
 	$SuitIcon.texture = suit_to_texture(card)
 	$SuitIcon2.texture = suit_to_texture(card)
+
+	update_rank_color($RankLabel)
+	update_rank_color($RankLabel2)
+
+func update_rank_color(label: Label) -> void:
+	if card.rank > card.base_rank:
+		label.add_theme_color_override("font_color", RANK_INCREASED_COLOR)
+	elif card.rank < card.base_rank:
+		label.add_theme_color_override("font_color", RANK_DECREASED_COLOR)
+	else:
+		label.remove_theme_color_override("font_color")
 
 func suit_to_texture(card : Card) -> Texture2D:
 	match card.suit:
