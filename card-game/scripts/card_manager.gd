@@ -111,6 +111,7 @@ func render_played_card(card : Card) -> void:
 
 	# Layering: later plays on top
 	card_visual.z_index = played_cards_round.size()
+	card_visual.update_layout()
 
 func round_clean_up() -> void:
 	leading_card = null

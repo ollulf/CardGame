@@ -2,7 +2,7 @@ extends Player
 class_name AIPlayer
 
 # Visual settings
-@export var show_hand: bool = true
+@export var show_hand: bool = false
 
 # Layout
 @export var card_space: float = 320
