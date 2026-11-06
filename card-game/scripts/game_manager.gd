@@ -105,7 +105,7 @@ func play_callback(player_id: int) -> void:
 
 
 func _finish_round() -> void:
-	await get_tree().create_timer(2.0).timeout
+	await get_tree().create_timer(2.0, false).timeout
 
 	var winner : Card.Owner = CardManager.get_round_winner()
 	
@@ -113,7 +113,7 @@ func _finish_round() -> void:
 	
 	round_completed.emit(current_round, owner_to_id(winner))
 
-	await get_tree().create_timer(3.0).timeout
+	await get_tree().create_timer(3.0, false).timeout
 
 	#Checks if match is over
 	if current_round >= MAX_ROUNDS:

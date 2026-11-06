@@ -13,6 +13,7 @@ var _burn_index: int = -1  # -1 = unlit, 0..n = burning
 
 func _ready() -> void:
 	add_child(burn_timer)
+	burn_timer.process_mode = Node.PROCESS_MODE_PAUSABLE
 	burn_timer.wait_time = 2.0
 	burn_timer.one_shot = false
 	burn_timer.timeout.connect(advance_burn)

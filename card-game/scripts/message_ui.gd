@@ -15,7 +15,7 @@ func _message(text: String) -> void:
 	message_label.text = text
 	message_label.visible = true
 
-	await get_tree().create_timer(3.0).timeout
+	await get_tree().create_timer(3.0, false).timeout
 
 	# If another message started meanwhile, abort
 	if my_token != _message_token:

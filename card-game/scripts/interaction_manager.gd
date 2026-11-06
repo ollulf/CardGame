@@ -150,7 +150,7 @@ func usedLighter() -> void:
 	_burn_token += 1
 	var my_token := _burn_token
 
-	await get_tree().create_timer(BURN_SECONDS).timeout
+	await get_tree().create_timer(BURN_SECONDS, false).timeout
 	if my_token != _burn_token:
 		return
 

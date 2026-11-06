@@ -2,6 +2,7 @@ extends Node2D
 
 func _ready() -> void:
 	GameManager.set_table_root(%TableRoot)
+	$Wallet.clicked.connect($BarScreen.open)
 	
 	await CardManager.load_player_decks()
 	

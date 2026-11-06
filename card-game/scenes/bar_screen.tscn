@@ -1,0 +1,270 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/bar_screen.gd" id="1_bar"]
+[ext_resource type="Script" path="res://scripts/cigarette_machine.gd" id="2_machine"]
+[ext_resource type="Texture2D" path="res://sprites/cigarette_machine.png" id="3_machine"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_back"]
+bg_color = Color(0.08, 0.07, 0.07, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.85, 0.8, 0.7, 1)
+content_margin_left = 10.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_back_hover"]
+bg_color = Color(0.22, 0.17, 0.13, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.95, 0.8, 1)
+content_margin_left = 10.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_focus"]
+
+[node name="BarScreen" type="CanvasLayer"]
+process_mode = 3
+layer = 100
+script = ExtResource("1_bar")
+
+[node name="Room" type="Control" parent="."]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Wall" type="ColorRect" parent="Room"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.11, 0.08, 0.09, 1)
+
+[node name="WallPanel" type="ColorRect" parent="Room"]
+layout_mode = 0
+offset_top = 340.0
+offset_right = 1152.0
+offset_bottom = 556.0
+mouse_filter = 2
+color = Color(0.16, 0.1, 0.08, 1)
+
+[node name="WallTrim" type="ColorRect" parent="Room"]
+layout_mode = 0
+offset_top = 334.0
+offset_right = 1152.0
+offset_bottom = 340.0
+mouse_filter = 2
+color = Color(0.26, 0.17, 0.11, 1)
+
+[node name="Floor" type="ColorRect" parent="Room"]
+layout_mode = 0
+offset_top = 556.0
+offset_right = 1152.0
+offset_bottom = 648.0
+mouse_filter = 2
+color = Color(0.07, 0.06, 0.06, 1)
+
+[node name="Sign" type="ColorRect" parent="Room"]
+layout_mode = 0
+offset_left = 276.0
+offset_top = 36.0
+offset_right = 476.0
+offset_bottom = 96.0
+mouse_filter = 2
+color = Color(0.42, 0.13, 0.1, 1)
+
+[node name="SignText" type="Label" parent="Room/Sign"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.98, 0.84, 0.55, 1)
+theme_override_font_sizes/font_size = 36
+text = "BAR"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ShelfTop" type="ColorRect" parent="Room"]
+layout_mode = 0
+offset_left = 84.0
+offset_top = 188.0
+offset_right = 668.0
+offset_bottom = 198.0
+mouse_filter = 2
+color = Color(0.3, 0.19, 0.12, 1)
+
+[node name="ShelfBottom" type="ColorRect" parent="Room"]
+layout_mode = 0
+offset_left = 84.0
+offset_top = 292.0
+offset_right = 668.0
+offset_bottom = 302.0
+mouse_filter = 2
+color = Color(0.3, 0.19, 0.12, 1)
+
+[node name="Bottle1" type="ColorRect" parent="Room"]
+layout_mode = 0
+offset_left = 120.0
+offset_top = 132.0
+offset_right = 144.0
+offset_bottom = 188.0
+mouse_filter = 2
+color = Color(0.22, 0.38, 0.22, 1)
+
+[node name="Bottle2" type="ColorRect" parent="Room"]
+layout_mode = 0
+offset_left = 186.0
+offset_top = 144.0
+offset_right = 210.0
+offset_bottom = 188.0
+mouse_filter = 2
+color = Color(0.5, 0.3, 0.12, 1)
+
+[node name="Bottle3" type="ColorRect" parent="Room"]
+layout_mode = 0
+offset_left = 300.0
+offset_top = 126.0
+offset_right = 324.0
+offset_bottom = 188.0
+mouse_filter = 2
+color = Color(0.45, 0.14, 0.14, 1)
+
+[node name="Bottle4" type="ColorRect" parent="Room"]
+layout_mode = 0
+offset_left = 408.0
+offset_top = 138.0
+offset_right = 432.0
+offset_bottom = 188.0
+mouse_filter = 2
+color = Color(0.22, 0.38, 0.22, 1)
+
+[node name="Bottle5" type="ColorRect" parent="Room"]
+layout_mode = 0
+offset_left = 540.0
+offset_top = 132.0
+offset_right = 564.0
+offset_bottom = 188.0
+mouse_filter = 2
+color = Color(0.5, 0.3, 0.12, 1)
+
+[node name="Bottle6" type="ColorRect" parent="Room"]
+layout_mode = 0
+offset_left = 150.0
+offset_top = 240.0
+offset_right = 174.0
+offset_bottom = 292.0
+mouse_filter = 2
+color = Color(0.45, 0.14, 0.14, 1)
+
+[node name="Bottle7" type="ColorRect" parent="Room"]
+layout_mode = 0
+offset_left = 258.0
+offset_top = 234.0
+offset_right = 282.0
+offset_bottom = 292.0
+mouse_filter = 2
+color = Color(0.5, 0.3, 0.12, 1)
+
+[node name="Bottle8" type="ColorRect" parent="Room"]
+layout_mode = 0
+offset_left = 372.0
+offset_top = 246.0
+offset_right = 396.0
+offset_bottom = 292.0
+mouse_filter = 2
+color = Color(0.22, 0.38, 0.22, 1)
+
+[node name="Bottle9" type="ColorRect" parent="Room"]
+layout_mode = 0
+offset_left = 480.0
+offset_top = 234.0
+offset_right = 504.0
+offset_bottom = 292.0
+mouse_filter = 2
+color = Color(0.45, 0.14, 0.14, 1)
+
+[node name="Bottle10" type="ColorRect" parent="Room"]
+layout_mode = 0
+offset_left = 600.0
+offset_top = 240.0
+offset_right = 624.0
+offset_bottom = 292.0
+mouse_filter = 2
+color = Color(0.5, 0.3, 0.12, 1)
+
+[node name="Counter" type="ColorRect" parent="Room"]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 432.0
+offset_right = 716.0
+offset_bottom = 580.0
+mouse_filter = 2
+color = Color(0.23, 0.14, 0.09, 1)
+
+[node name="CounterTop" type="ColorRect" parent="Room"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 414.0
+offset_right = 728.0
+offset_bottom = 432.0
+mouse_filter = 2
+color = Color(0.38, 0.24, 0.14, 1)
+
+[node name="CounterFoot" type="ColorRect" parent="Room"]
+layout_mode = 0
+offset_left = 36.0
+offset_top = 568.0
+offset_right = 716.0
+offset_bottom = 580.0
+mouse_filter = 2
+color = Color(0.13, 0.08, 0.06, 1)
+
+[node name="BackButton" type="Button" parent="Room"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 190.0
+offset_bottom = 62.0
+focus_mode = 0
+theme_override_colors/font_color = Color(0.95, 0.92, 0.85, 1)
+theme_override_colors/font_hover_color = Color(1, 0.98, 0.9, 1)
+theme_override_colors/font_pressed_color = Color(1, 0.98, 0.9, 1)
+theme_override_font_sizes/font_size = 16
+theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
+theme_override_styles/hover = SubResource("StyleBoxFlat_back_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_back_hover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_back")
+text = "< Back to table"
+
+[node name="CigaretteMachine" type="Control" parent="Room"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 780.0
+offset_top = 216.0
+offset_right = 1098.0
+offset_bottom = 588.0
+script = ExtResource("2_machine")
+
+[node name="Sprite" type="TextureRect" parent="Room/CigaretteMachine"]
+layout_mode = 0
+offset_right = 53.0
+offset_bottom = 62.0
+scale = Vector2(6, 6)
+mouse_filter = 2
+texture = ExtResource("3_machine")
