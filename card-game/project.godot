@@ -22,6 +22,10 @@ PlayerDataManager="*res://scripts/player_data_manager.gd"
 InteractionManager="*res://scripts/interaction_manager.gd"
 CardManager="*res://scripts/card_manager.gd"
 
+[display]
+
+window/size/no_focus.movie=true
+
 [input]
 
 togge_deck_visualizer={
