@@ -8,6 +8,8 @@ signal match_finished(winner_id: int)
 signal match_started()
 signal game_lost(looser_id: int)
 signal next_match_available()
+signal game_finished(looser_ids: Array[int])
+signal new_game_started()
 signal send_message(text: String)
 
 # --- Config ---
@@ -70,6 +72,19 @@ func restart_match():
 	await DialogueManager.wait_until_idle()
 
 	start_new_round(last_match_loosers.pick_random())
+
+func start_new_game() -> void:
+	var starting_player_id: int = get_total_loosers().pick_random()
+
+	for id in range(3):
+		id_to_player(id).lost_matches = 0
+	last_match_loosers.clear()
+
+	CardManager.clear_all_cards()
+
+	new_game_started.emit()
+
+	start_match(starting_player_id)
 
 func start_new_round(starting_player_id: int) -> void:
 	current_round += 1
@@ -140,12 +155,16 @@ func _finish_round() -> void:
 		match_finished.emit(last_match_loosers)
 		
 		#Check if somebody lost twice
-		for total_looser in get_total_loosers():
+		var total_loosers := get_total_loosers()
+		for total_looser in total_loosers:
 			game_lost.emit(total_looser)
 
 		await DialogueManager.wait_until_idle()
 
-		next_match_available.emit()
+		if total_loosers.is_empty():
+			next_match_available.emit()
+		else:
+			game_finished.emit(total_loosers)
 
 		return
 	

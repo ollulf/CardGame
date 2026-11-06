@@ -10,6 +10,7 @@ func _ready() -> void:
 	GameManager.round_completed.connect(on_round_completed)
 	GameManager.match_finished.connect(on_match_finished)
 	GameManager.next_match_available.connect(on_next_match_available)
+	GameManager.new_game_started.connect(on_new_game_started)
 	
 	next_match_button.pressed.connect(on_next_match_pressed)
 	
@@ -29,6 +30,10 @@ func on_match_finished(looser_id : Array[int]):
 
 func on_next_match_available():
 	next_match_button.visible = true
+
+func on_new_game_started():
+	reset_UI()
+	reset_lifes()
 
 func _update_labels(id: int):
 	match id:

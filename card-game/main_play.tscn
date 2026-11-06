@@ -12,6 +12,7 @@
 [ext_resource type="Script" uid="uid://lx6g1lamppqq" path="res://scripts/lighter.gd" id="5_yiaew"]
 [ext_resource type="Script" uid="uid://es2m5ykq15eu" path="res://scripts/ash_tray.gd" id="6_2ja4j"]
 [ext_resource type="Script" uid="uid://dg7s8jonl23ai" path="res://scripts/message_ui.gd" id="6_bl2fu"]
+[ext_resource type="PackedScene" path="res://scenes/deck_screen.tscn" id="deck_screen"]
 [ext_resource type="Texture2D" uid="uid://beanmjab43tki" path="res://sprites/AshTray.png" id="6_r2isv"]
 [ext_resource type="Script" path="res://scripts/wallet.gd" id="wallet_script"]
 [ext_resource type="Texture2D" path="res://sprites/wallet.png" id="wallet_tex"]
@@ -167,6 +168,8 @@ anchors_preset = 0
 [node name="TurnIndicator" parent="." instance=ExtResource("4_fwnfr")]
 
 [node name="WonRoundsUI" parent="." instance=ExtResource("5_q6cnf")]
+
+[node name="DeckScreen" parent="." instance=ExtResource("deck_screen")]
 
 [node name="MessageUI" type="CanvasLayer" parent="."]
 script = ExtResource("6_bl2fu")
