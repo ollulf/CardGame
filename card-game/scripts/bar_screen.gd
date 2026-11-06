@@ -19,9 +19,10 @@ func _ready() -> void:
 
 
 func open() -> void:
-	if visible:
+	if visible or DialogueManager.is_open() or InteractionManager.is_table_blocked():
 		return
 
+	InteractionManager.cancel_press()
 	get_tree().paused = true
 	_pointer_parent = pointer.get_parent()
 	_pointer_index = pointer.get_index()
@@ -39,5 +40,6 @@ func close() -> void:
 	hide()
 	pointer.reparent(_pointer_parent)
 	_pointer_parent.move_child(pointer, _pointer_index)
+	InteractionManager.skip_next_double_click()
 	get_tree().paused = false
 	closed.emit()

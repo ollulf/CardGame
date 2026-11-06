@@ -46,6 +46,9 @@ func set_table_blocked(blocked: bool) -> void:
 	cancel_press()
 	get_viewport().physics_object_picking = not blocked
 
+func is_table_blocked() -> bool:
+	return _table_blocked
+
 func skip_next_double_click() -> void:
 	_skip_double_click = true
 
