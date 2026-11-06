@@ -18,6 +18,12 @@ func on_round_completed(current_round : int, winner_id: int):
 	if winner_id == player_id:
 		won_rounds += 1
 
+func get_card_transform(card : Card) -> Transform2D:
+	for child in get_children():
+		if child is CardVisual and child.card == card:
+			return child.get_global_transform()
+	return get_global_transform()
+
 func get_ownership_of_hand_cards(hand : Hand):
 	for card in hand.cards:
 		card.owner

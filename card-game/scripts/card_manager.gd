@@ -69,7 +69,7 @@ func update_cards(cigarettes_lit: int) -> void:
 		card.rank += cigarettes_lit
 		card.apply_modifiers()
 
-func submit_play(player_id: int, card: Card) -> void:
+func submit_play(player_id: int, card: Card, from: Transform2D = Transform2D.IDENTITY) -> void:
 	if card == null:
 		GameManager.play_callback(player_id)
 		return
@@ -84,13 +84,13 @@ func submit_play(player_id: int, card: Card) -> void:
 
 	played_cards_round.append(card)
 	played_cards_match.append(card)
-	render_played_card(card)
+	render_played_card(card, from)
 	
 	GameManager.play_callback(player_id)
 	print("played: ", card)
 	print("contains: ", played_cards_match.cards[0])
 
-func render_played_card(card : Card) -> void:
+func render_played_card(card : Card, from: Transform2D) -> void:
 	
 	var card_visual := preload("res://scenes/Card.tscn").instantiate() as CardVisual
 	card_visual.setup(card, false)
@@ -115,6 +115,7 @@ func render_played_card(card : Card) -> void:
 	# Layering: later plays on top
 	card_visual.z_index = played_cards_round.size()
 	card_visual.update_layout()
+	card_visual.float_in_from(from)
 
 func round_clean_up() -> void:
 	leading_card = null

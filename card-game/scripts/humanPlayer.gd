@@ -57,9 +57,10 @@ func try_play_card(card: Card) -> void:
 		return
 
 	is_my_turn = false
+	var from := get_card_transform(card)
 	hand.remove(card)
 	_refresh_playable_cards()
-	CardManager.submit_play(player_id, card)
+	CardManager.submit_play(player_id, card, from)
 
 
 func _on_round_started(_round_index: int, _starting_player_id: int) -> void:

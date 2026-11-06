@@ -14,6 +14,7 @@ const RANK_DECREASED_COLOR := Color(1.0, 0.4, 0.4)
 @export var hover_z_index: int = 15
 @export var hover_anim_time: float = 0.12
 @export var drag_z_index: int = 50
+@export var float_anim_time: float = 0.35
 
 var _base_scale: Vector2
 var _base_z: int
@@ -125,6 +126,34 @@ func end_drag() -> void:
 	dragging = false
 	z_index = hover_z_index
 	hover_exit()
+
+
+func float_in_from(from: Transform2D) -> void:
+	var target_position := position
+	var target_scale := scale
+	var target_z := z_index
+
+	hover_enabled = false
+	z_index = drag_z_index
+	scale = from.get_scale()
+	global_position = from.origin
+
+	_kill_tween()
+	_tween = create_tween()
+	_tween.set_parallel()
+	_tween.set_trans(Tween.TRANS_CUBIC)
+	_tween.set_ease(Tween.EASE_OUT)
+	_tween.tween_property(self, "position", target_position, float_anim_time)
+	_tween.tween_property(self, "scale", target_scale, float_anim_time)
+	_tween.finished.connect(_on_float_finished.bind(target_z))
+
+
+func _on_float_finished(target_z: int) -> void:
+	z_index = target_z
+	update_layout()
+	hover_enabled = true
+	if InteractionManager.hovered_card == self:
+		hover_enter()
 
 
 func _kill_tween() -> void:
