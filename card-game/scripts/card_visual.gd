@@ -30,6 +30,9 @@ func update_layout():
 	_base_scale = scale
 	_base_z = z_index
 
+func set_playable(playable: bool) -> void:
+	$PlayableOutline.visible = playable
+
 func destroy():
 	queue_free()
 

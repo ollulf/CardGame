@@ -31,38 +31,48 @@ func recieve_hand(hand: Hand):
 func on_hand_shrinked():
 	await get_tree().process_frame
 	layout_hand_cards()
+	_refresh_playable_cards()
 
 func on_hand_grew():
 	render_hand()
 
-func try_play_card(card: Card) -> void:
+func can_play(card: Card) -> bool:
 	if not is_my_turn:
-		return
+		return false
 
 	if not hand.contains(card):
+		return false
+
+	if CardManager.leading_card == null:
+		return true
+
+	var leading_suit = CardManager.leading_card.suit
+	return card.suit == leading_suit or not hand.contains_card_of_suit(leading_suit)
+
+func try_play_card(card: Card) -> void:
+	if not can_play(card):
 		return
 
-	if (CardManager.leading_card != null):
-		var leading_suit = CardManager.leading_card.suit
-	
-	# --- Follow the obay suit rule ---
-		if hand.contains_card_of_suit(leading_suit) and card.suit != leading_suit:
-			print("Must obay leading suit of: " + str(leading_suit))
-			return
-
-
-	hand.remove(card)
-	CardManager.submit_play(player_id, card)
-	
 	is_my_turn = false
+	hand.remove(card)
+	_refresh_playable_cards()
+	CardManager.submit_play(player_id, card)
 
 
 func _on_round_started(_round_index: int, _starting_player_id: int) -> void:
 	is_my_turn = false
+	_refresh_playable_cards()
 
 
 func _on_request_play_card(requested_player_id: int) -> void:
 	is_my_turn = (requested_player_id == player_id)
+	_refresh_playable_cards()
+
+
+func _refresh_playable_cards() -> void:
+	for card_visual in card_visuals:
+		if is_instance_valid(card_visual):
+			card_visual.set_playable(can_play(card_visual.card))
 
 
 func render_hand():
@@ -80,6 +90,7 @@ func render_hand():
 		card_visuals.append(c)
 
 	layout_hand_cards()
+	_refresh_playable_cards()
 
 
 func _anchor_to_bottom_of_view() -> void:
