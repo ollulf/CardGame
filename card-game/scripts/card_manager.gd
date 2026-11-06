@@ -55,11 +55,16 @@ func generate_cards(amount: int, owner : Card.Owner) -> Array[Card]:
 
 
 # In this function the Card Manager should get through the active buffs and update the cards of that player
-func update_cards():
+func update_cards(cigarettes_lit: int) -> void:
+	if player_hand == null or cigarettes_lit <= 0:
+		return
+
 	# Create Array of Cards for each player
-	
+
 	# For each Array of Cards, Go through each card and then apply the buff for that player
-	pass
+	for card in player_hand.get_cards_of_suit(Card.Suit.SMOKE):
+		card.rank += cigarettes_lit
+		card.apply_modifiers()
 
 func submit_play(player_id: int, card: Card) -> void:
 	if card == null:
