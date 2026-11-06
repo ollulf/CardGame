@@ -5,6 +5,7 @@ var suit : Suit
 var is_trump : bool
 var is_played : bool
 var rank : int
+var base_rank : int
 var owner : Owner = Owner.NONE
 
 
@@ -27,6 +28,7 @@ enum Suit {
 func _init(suit: Suit, rank: int, owner : Owner, is_played: bool):
 	self.suit = suit
 	self.rank = rank
+	base_rank = rank
 	self.owner = owner
 	self.is_played = is_played
 	is_trump = get_is_trump()
