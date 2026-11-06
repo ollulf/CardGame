@@ -9,6 +9,7 @@ extends CanvasLayer
 func _ready() -> void:
 	GameManager.round_completed.connect(on_round_completed)
 	GameManager.match_finished.connect(on_match_finished)
+	GameManager.next_match_available.connect(on_next_match_available)
 	
 	next_match_button.pressed.connect(on_next_match_pressed)
 	
@@ -25,6 +26,8 @@ func on_round_completed(round_index: int, winner_id: int):
 func on_match_finished(looser_id : Array[int]):
 	for i in looser_id:
 		update_match_looser(i)
+
+func on_next_match_available():
 	next_match_button.visible = true
 
 func _update_labels(id: int):

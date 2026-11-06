@@ -1,30 +1,39 @@
 extends Node
 
 signal line_started(player_id: int, text: String)
+signal closed
 
 const SPEECH_BUBBLE := preload("res://scenes/speech_bubble.tscn")
 const SEAT_COUNT := 3
 const SEAT_OFFSETS := [Vector2(-276, -18), Vector2(66, 0), Vector2(-66, 0)]
 const TRIGGERS_WITH_COUNT := ["after_turns", "every_turns", "after_rounds"]
 const TRIGGERS_WITHOUT_COUNT := ["game_start", "between_rounds", "game_over"]
+const NO_SEAT := -1
+const AUTO_ADVANCE_HOLD := 1.5
+const DIALOGUE_LAYER := 100
 
 var lines: Array = DialogueLines.LINES
+var auto_advance := Engine.get_write_movie_path() != "" or DisplayServer.get_name() == "headless"
 
-var _bubbles: Array[SpeechBubble] = []
-var _seat_queues: Array[Array] = [[], [], []]
-var _entry_queue: Array = []
-var _playing_entries := false
+var _bubble: SpeechBubble
+var _mouse_blocker: Control
+var _queue: Array = []
+var _speaking_seat := NO_SEAT
+var _auto_advance_time := 0.0
 var _game_running := false
 var _turns := 0
 var _rounds := 0
 
 func _ready() -> void:
 	var layer := CanvasLayer.new()
+	layer.layer = DIALOGUE_LAYER
 	add_child(layer)
-	for seat in SEAT_COUNT:
-		var bubble: SpeechBubble = SPEECH_BUBBLE.instantiate()
-		layer.add_child(bubble)
-		_bubbles.append(bubble)
+	_mouse_blocker = Control.new()
+	_mouse_blocker.set_anchors_preset(Control.PRESET_FULL_RECT)
+	_mouse_blocker.visible = false
+	layer.add_child(_mouse_blocker)
+	_bubble = SPEECH_BUBBLE.instantiate()
+	layer.add_child(_bubble)
 
 	GameManager.match_started.connect(_on_match_started)
 	GameManager.round_completed.connect(_on_round_completed)
@@ -37,24 +46,87 @@ func say(player_id: int, text: String) -> void:
 	if player_id < 0 or player_id >= SEAT_COUNT:
 		push_warning("DialogueManager.say: no seat %d" % player_id)
 		return
-	_seat_queues[player_id].append(text)
+	var was_open := is_open()
+	_queue.append([player_id, text])
+	if not was_open:
+		_open()
+		_show_next()
 
-func is_seat_talking(player_id: int) -> bool:
-	return _bubbles[player_id].is_talking or not _seat_queues[player_id].is_empty()
+func is_open() -> bool:
+	return _speaking_seat != NO_SEAT or not _queue.is_empty()
 
-func _process(_delta: float) -> void:
-	for seat in SEAT_COUNT:
-		var seat_node := _seat_node(seat)
+func wait_until_idle() -> void:
+	while is_open():
+		await closed
+
+func _input(event: InputEvent) -> void:
+	if not is_open() or not event is InputEventMouse:
+		return
+	if event is InputEventMouseButton and not event.pressed:
+		return
+	get_viewport().set_input_as_handled()
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		InteractionManager.skip_next_double_click()
+		_advance()
+
+func _process(delta: float) -> void:
+	if _speaking_seat == NO_SEAT:
+		return
+	var seat_node := _seat_node(_speaking_seat)
+	if seat_node == null:
+		_end_line()
+		return
+	_bubble.place_at(seat_node.global_position + SEAT_OFFSETS[_speaking_seat])
+	if auto_advance and _bubble.is_typed:
+		_auto_advance_time += delta
+		if _auto_advance_time >= AUTO_ADVANCE_HOLD:
+			_advance()
+
+func _advance() -> void:
+	if _bubble.is_typed:
+		_end_line()
+	else:
+		_bubble.complete_line()
+
+func _end_line() -> void:
+	_bubble.close_line()
+	_speaking_seat = NO_SEAT
+	_show_next()
+
+func _show_next() -> void:
+	while not _queue.is_empty():
+		var line: Array = _queue.pop_front()
+		var seat_node := _seat_node(line[0])
 		if seat_node == null:
+			push_warning("DialogueManager: seat %d is not at the table" % line[0])
 			continue
-		var bubble := _bubbles[seat]
-		if not bubble.is_talking and not _seat_queues[seat].is_empty():
-			var text: String = _seat_queues[seat].pop_front()
-			bubble.tail_side = _tail_side(seat)
-			bubble.show_line(text)
-			line_started.emit(seat, text)
-		if bubble.is_talking:
-			bubble.place_at(seat_node.global_position + SEAT_OFFSETS[seat])
+		_speaking_seat = line[0]
+		_auto_advance_time = 0.0
+		_bubble.tail_side = _tail_side(_speaking_seat)
+		_bubble.show_line(line[1])
+		_bubble.place_at(seat_node.global_position + SEAT_OFFSETS[_speaking_seat])
+		line_started.emit(_speaking_seat, line[1])
+		return
+	_close()
+
+func _open() -> void:
+	InteractionManager.cancel_press()
+	get_viewport().physics_object_picking = false
+	_mouse_blocker.visible = true
+
+func _close() -> void:
+	get_viewport().physics_object_picking = true
+	_mouse_blocker.visible = false
+	_refresh_hover.call_deferred()
+	closed.emit()
+
+func _refresh_hover() -> void:
+	if is_open():
+		return
+	var motion := InputEventMouseMotion.new()
+	motion.position = get_viewport().get_mouse_position()
+	motion.global_position = motion.position
+	get_viewport().push_input(motion)
 
 func _seat_node(seat: int) -> Player:
 	var players: Array = [GameManager.human_player, GameManager.ai_player_1, GameManager.ai_player_2]
@@ -110,19 +182,8 @@ func _fire(trigger: String) -> void:
 			_queue_entry(entry)
 
 func _queue_entry(entry: Dictionary) -> void:
-	_entry_queue.append(entry)
-	if not _playing_entries:
-		_play_entries()
-
-func _play_entries() -> void:
-	_playing_entries = true
-	while not _entry_queue.is_empty():
-		var entry: Dictionary = _entry_queue.pop_front()
-		for line in entry.lines:
-			say(line[0], line[1])
-			while is_seat_talking(line[0]):
-				await _bubbles[line[0]].finished
-	_playing_entries = false
+	for line in entry.lines:
+		say(line[0], line[1])
 
 func _check_lines() -> void:
 	for entry in lines:

@@ -40,6 +40,7 @@ func _on_request_play_card(requested_player_id: int) -> void:
 
 	# Play Delay
 	await get_tree().create_timer(3.0).timeout
+	await DialogueManager.wait_until_idle()
 
 	if hand.is_empty():
 		print("AI Players hand is empty")
