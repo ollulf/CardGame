@@ -36,11 +36,24 @@ match: 1
 			1: Awesome idea... Cheers!
 			1: Alright, next round!
 
-		when: turn_end
+		when: round_start
 		round: 2
-		turn: 1
 		lines:
 			2: ...couthing...
+
+		when: round_start
+		round: 3
+		turn: 0
+		lines:
+			wait_for_cards_played: 1
+			2: Finaly I am drawing my *smoking* cards.
+			2: It basically is *always* a *trump* card.
+			1: But if *you* are playing a *highter diamonds* trump card now, you would win this turn.
+		turn: 3
+		lines:
+			1: Well, beat this!
+			wait_for_cards_played: 1
+			2: I will by smoking a cigarette which makes my cigarettes cards better.
 
 		when: match_end
 		lines:
@@ -51,10 +64,6 @@ match: 1
 
 match: any
 	dialogues:
-		when: round_end
-		lines:
-			1: Light up. *Next round.*
-
 		when: match_end
 		lines:
 			1: That's it. *Out of lives.*
