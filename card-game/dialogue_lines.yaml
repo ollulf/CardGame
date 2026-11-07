@@ -1,13 +1,15 @@
 - when: game_start
   lines:
 	- seat: 1
-	  text: "Lets play around of *cards*, shall we?"
+	  text: "Lets play some *cards*, shall we?"
 	- seat: 2
 	  text: "Alright, how did it work again?."
 	- seat: 1
 	  text: "Everybody got their own *deck* with them?"
+	# show deck
 	- seat: 2
 	  text: "Yes! Now, everybody draws *5 cards*, if I remember correctly."
+	# everybody draws cards
 	- seat: 1
 	  text: "Okay *you*, play a card now."
 	- seat: 1
@@ -18,10 +20,10 @@
 	- seat: 1
 	  text: "Yes."
 	- seat: 1
-	  after_played_cards: 2
+	  after_played_cards: 1
 	  text: "I think my card will be the highest no matter what you play."
 	- seat: 2
-	  text: "We will see"
+	  text: "We will see..."
 
 - when: after_turns
   count: 1
