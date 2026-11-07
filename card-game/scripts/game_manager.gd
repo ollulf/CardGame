@@ -100,6 +100,12 @@ func run_cue(cue: String) -> void:
 			var wallet = get_tree().get_first_node_in_group("wallet")
 			if wallet:
 				await wallet.reveal()
+		"ai_one_smokes":
+			if ai_player_1:
+				await ai_player_1.smoke()
+		"ai_two_smokes":
+			if ai_player_2:
+				await ai_player_2.smoke()
 		"show_won_turns", "show_life_cards":
 			var ui = get_tree().get_first_node_in_group(WON_ROUNDS_UI_GROUP)
 			if ui:
