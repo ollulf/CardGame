@@ -40,20 +40,58 @@ func parse(text: String, source := "") -> Array:
 
 func _tokenize(text: String) -> Array:
 	var tokens: Array = []
+	var lines := text.replace("\r", "").split("\n")
 	var number := 0
-	for raw in text.replace("\r", "").split("\n"):
+	while number < lines.size():
+		var raw: String = lines[number]
 		number += 1
-		if number == 1 and raw.begins_with("﻿"):
+		var start := number
+		if start == 1 and raw.begins_with("﻿"):
 			raw = raw.substr(1)
 		var content := raw.strip_edges()
 		if content == "" or content.begins_with("#"):
 			continue
-		var indent := raw.length() - raw.lstrip(" ").length()
-		if raw.substr(indent).begins_with("\t"):
-			_warn(number, "tabs are not allowed for indentation")
-			continue
-		tokens.append({"indent": indent, "content": content, "line": number})
+		var indent := 0
+		for c in raw:
+			if c == " ":
+				indent += 1
+			elif c == "\t":
+				indent += 4
+			else:
+				break
+		while _has_open_quote(content) and number < lines.size():
+			content += " " + String(lines[number]).strip_edges()
+			number += 1
+		tokens.append({"indent": indent, "content": content, "line": start})
 	return tokens
+
+func _has_open_quote(content: String) -> bool:
+	var rest := content
+	while rest.begins_with("- "):
+		rest = rest.substr(2).strip_edges(true, false)
+	var split := _key_split(rest)
+	if split >= 0:
+		rest = rest.substr(split + 1).strip_edges(true, false)
+	if rest.begins_with("\""):
+		var i := 1
+		while i < rest.length():
+			if rest[i] == "\\":
+				i += 1
+			elif rest[i] == "\"":
+				return false
+			i += 1
+		return true
+	if rest.begins_with("'"):
+		var j := 1
+		while j < rest.length():
+			if rest[j] == "'":
+				if j + 1 < rest.length() and rest[j + 1] == "'":
+					j += 1
+				else:
+					return false
+			j += 1
+		return true
+	return false
 
 func _warn(line: int, message: String) -> void:
 	_failed = true
