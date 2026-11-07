@@ -32,18 +32,26 @@
 	  turn: 1
 	  lines:
 		- seat: 1
+			cue: show_won_turns
 		  text: "This was the first turn. Now the *winner* plays the *first card.*"
 		- seat: 1
 		  text: "After we played *5 turns* and nobody has hand cards anymore the players
-		with the *least won rounds looses the game*."
+		with the *least won turns* looses the round."
 
 	- when: round_end
 	  round: 1
 	  lines:
+		- seat: 2 
+			cue: show_life_cards
+			text: "Well, that makes me the *looser*... I have to rip one of the two *life cards* now."
 		- seat: 2
-		  text: "That's the first round gone."
+		  text: "If I loose one more time I *loose* the whole *game*."
 		- seat: 2
-		  text: "I will get us a ground of *drinks*."
+		  text: "But since I lost, I will get us a round of *drinks*."
+		- seat: 1
+			text: "Awesome idea... Cheers!"
+		- seat: 1
+			text: "Alright, next round!"
 
 - match: any
   dialogues:
