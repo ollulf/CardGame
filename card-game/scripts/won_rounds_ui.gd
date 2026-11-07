@@ -4,6 +4,8 @@ extends CanvasLayer
 @export var player_1: Label
 @export var player_2: Label
 
+var lifes_revealed := false
+
 @onready var next_match_button: Button = %NextMatchButton
 
 func _ready() -> void:
@@ -25,6 +27,7 @@ func on_round_completed(round_index: int, winner_id: int):
 	_update_labels(winner_id)
 
 func on_match_finished(looser_id : Array[int]):
+	await reveal_lifes()
 	for i in looser_id:
 		update_match_looser(i)
 
@@ -57,6 +60,24 @@ func reset_UI():
 	player_2.text = "0"
 	
 func reset_lifes():
+	lifes_revealed = false
 	for player_id in 3:
 		for life in [1, 2]:
-			_life_card(player_id, life).restore()
+			var card := _life_card(player_id, life)
+			card.restore()
+			card.modulate.a = 0.0
+			card.scale = Vector2.ONE
+
+func reveal_lifes():
+	if lifes_revealed:
+		return
+	lifes_revealed = true
+	var tween := create_tween().set_parallel().set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	for player_id in 3:
+		for life in [1, 2]:
+			var card := _life_card(player_id, life)
+			card.pivot_offset = card.size / 2.0
+			card.scale = Vector2(0.6, 0.6)
+			tween.tween_property(card, "modulate:a", 1.0, 0.3)
+			tween.tween_property(card, "scale", Vector2.ONE, 0.3)
+	await tween.finished
