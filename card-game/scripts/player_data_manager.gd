@@ -1,9 +1,15 @@
 extends Node
 
 signal stats_changed(player_id: int)
+signal money_changed(money: int)
+signal booster_bought
 
 const PLAYERS: Array[int] = [0, 1, 2]
 const SMOKE_BONUS_PER_CIGARETTE := 1
+const STARTING_MONEY := 9
+const CIGARETTE_PACK_PRICE := 5
+const CIGARETTES_PER_PACK := 8
+const BOOSTER_PRICE := 8
 
 var smoking_stacks := {
 	0: [],
@@ -12,6 +18,9 @@ var smoking_stacks := {
 }
 
 var drinking_level := 0
+
+var money := 0
+var starting_money_granted := false
 
 func _ready() -> void:
 	GameManager.round_finished.connect(_on_round_finished)
@@ -49,3 +58,40 @@ func clear_smoking() -> void:
 
 func _on_round_finished(_loosers) -> void:
 	clear_smoking()
+
+func grant_starting_money() -> void:
+	if starting_money_granted:
+		return
+	starting_money_granted = true
+	set_money(STARTING_MONEY)
+
+func set_money(value: int) -> void:
+	value = max(value, 0)
+	if value == money:
+		return
+	money = value
+	money_changed.emit(money)
+
+func add_money(amount: int) -> void:
+	set_money(money + amount)
+
+func can_afford(price: int) -> bool:
+	return money >= price
+
+func spend(price: int) -> bool:
+	if price < 0 or not can_afford(price):
+		return false
+	set_money(money - price)
+	return true
+
+func buy_cigarettes() -> bool:
+	if InteractionManager.cigPack == null or not spend(CIGARETTE_PACK_PRICE):
+		return false
+	InteractionManager.cigPack.add_cigarettes(CIGARETTES_PER_PACK)
+	return true
+
+func buy_booster() -> bool:
+	if not spend(BOOSTER_PRICE):
+		return false
+	booster_bought.emit()
+	return true

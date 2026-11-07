@@ -4,6 +4,8 @@ class_name BarScreen
 signal opened
 signal closed
 
+const NOT_ENOUGH_MONEY_TEXT := "Not enough money"
+
 @export var pointer: Control
 
 @onready var back_button: Button = %BackButton
@@ -17,6 +19,9 @@ var _pointer_index: int
 func _ready() -> void:
 	hide()
 	back_button.pressed.connect(close)
+	machine.set_label_text("Buy Cigarettes (%d$)" % PlayerDataManager.CIGARETTE_PACK_PRICE)
+	booster_stand.set_label_text("Buy Booster (%d$)" % PlayerDataManager.BOOSTER_PRICE)
+	machine.clicked.connect(_on_machine_clicked)
 	booster_stand.clicked.connect(_on_booster_stand_clicked)
 
 
@@ -47,5 +52,13 @@ func close() -> void:
 	closed.emit()
 
 
+func _on_machine_clicked() -> void:
+	if not PlayerDataManager.buy_cigarettes():
+		machine.deny(NOT_ENOUGH_MONEY_TEXT)
+
+
 func _on_booster_stand_clicked() -> void:
-	print("Booster stand clicked: coming soon")
+	if not PlayerDataManager.buy_booster():
+		booster_stand.deny(NOT_ENOUGH_MONEY_TEXT)
+		return
+	print("Booster bought: booster window coming soon")

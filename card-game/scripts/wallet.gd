@@ -32,6 +32,7 @@ func _on_new_match_started() -> void:
 		modulate.a = 0.0
 	else:
 		visible = true
+		PlayerDataManager.grant_starting_money()
 
 
 func reveal() -> void:
@@ -39,6 +40,7 @@ func reveal() -> void:
 		return
 	_hidden_by_cue = false
 	visible = true
+	PlayerDataManager.grant_starting_money()
 	input_pickable = true
 	var tween := create_tween()
 	tween.tween_property(self, "modulate:a", 1.0, 0.4)
