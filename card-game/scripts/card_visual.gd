@@ -44,6 +44,23 @@ func update_layout():
 func set_playable(playable: bool) -> void:
 	$PlayableOutline.visible = playable
 
+func set_winner(active: bool) -> void:
+	var outline := get_node_or_null("WinnerOutline")
+	if not active:
+		if outline != null:
+			outline.queue_free()
+		return
+	if outline == null:
+		outline = $PlayableOutline.duplicate()
+		outline.name = "WinnerOutline"
+		outline.modulate = Color(1.0, 0.85, 0.2)
+		add_child(outline)
+	outline.visible = true
+	var pulse := create_tween()
+	pulse.set_trans(Tween.TRANS_SINE)
+	pulse.tween_property(self, "scale", scale * 1.15, 0.25)
+	pulse.tween_property(self, "scale", scale, 0.25)
+
 func destroy():
 	queue_free()
 
