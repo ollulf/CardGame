@@ -14,6 +14,7 @@ const NOT_ENOUGH_MONEY_TEXT := "Not enough money"
 
 var _pointer_parent: Node
 var _pointer_index: int
+var booster_window: BoosterWindow
 
 
 func _ready() -> void:
@@ -23,6 +24,9 @@ func _ready() -> void:
 	booster_stand.set_label_text("Buy Booster (%d$)" % PlayerDataManager.BOOSTER_PRICE)
 	machine.clicked.connect(_on_machine_clicked)
 	booster_stand.clicked.connect(_on_booster_stand_clicked)
+	booster_window = BoosterWindow.new()
+	add_child(booster_window)
+	PlayerDataManager.booster_bought.connect(booster_window.open)
 
 
 func open() -> void:
@@ -61,4 +65,3 @@ func _on_booster_stand_clicked() -> void:
 	if not PlayerDataManager.buy_booster():
 		booster_stand.deny(NOT_ENOUGH_MONEY_TEXT)
 		return
-	print("Booster bought: booster window coming soon")

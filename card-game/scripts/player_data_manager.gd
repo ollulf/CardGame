@@ -3,6 +3,7 @@ extends Node
 signal stats_changed(player_id: int)
 signal money_changed(money: int)
 signal booster_bought
+signal collection_changed
 
 const PLAYERS: Array[int] = [0, 1, 2]
 const SMOKE_BONUS_PER_CIGARETTE := 1
@@ -21,6 +22,8 @@ var drinking_level := 0
 
 var money := 0
 var starting_money_granted := false
+
+var collection: Array[Card] = []
 
 func _ready() -> void:
 	GameManager.round_finished.connect(_on_round_finished)
@@ -95,3 +98,9 @@ func buy_booster() -> bool:
 		return false
 	booster_bought.emit()
 	return true
+
+func add_to_collection(cards: Array[Card]) -> void:
+	if cards.is_empty():
+		return
+	collection.append_array(cards)
+	collection_changed.emit()
