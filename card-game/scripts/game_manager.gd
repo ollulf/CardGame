@@ -16,6 +16,7 @@ signal send_message(text: String)
 const MAX_TURNS := 5
 const MAX_LIVES := 2
 const TRUMP_REVEAL_TIME := 1.2
+const TURN_WINNER_SHOW_TIME := 2.5
 
 const PLAYER_NAMES := ["YOU","AI player 1", "AI player 2"]
 
