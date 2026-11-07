@@ -4,6 +4,9 @@ extends CanvasLayer
 @export var player_1: Label
 @export var player_2: Label
 
+var won_turns_shown := false
+var fade_tween: Tween
+
 @onready var next_round_button: Button = %NextRoundButton
 
 func _ready() -> void:
@@ -16,6 +19,7 @@ func _ready() -> void:
 	
 	reset_UI()
 	reset_lifes()
+	set_won_turns_alpha(0.0)
 
 func on_next_round_pressed():
 	reset_UI()
@@ -23,6 +27,7 @@ func on_next_round_pressed():
 
 func on_turn_completed(turn_index: int, winner_id: int):
 	_update_labels(winner_id)
+	show_won_turns()
 
 func on_round_finished(looser_id : Array[int]):
 	for i in looser_id:
@@ -34,6 +39,27 @@ func on_next_round_available():
 func on_new_match_started():
 	reset_UI()
 	reset_lifes()
+	if fade_tween:
+		fade_tween.kill()
+	set_won_turns_alpha(0.0)
+	won_turns_shown = false
+
+func show_won_turns():
+	if won_turns_shown:
+		return
+	won_turns_shown = true
+	if fade_tween:
+		fade_tween.kill()
+	fade_tween = create_tween()
+	fade_tween.tween_method(set_won_turns_alpha, 0.0, 1.0, 0.4)
+
+func set_won_turns_alpha(alpha: float):
+	for i in 3:
+		var panel: Panel = get_node("Player_%d" % i)
+		panel.self_modulate.a = alpha
+		for child in panel.get_children():
+			if child is Label:
+				child.modulate.a = alpha
 
 func _update_labels(id: int):
 	match id:
