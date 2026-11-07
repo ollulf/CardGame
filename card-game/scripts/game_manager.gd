@@ -101,6 +101,10 @@ func run_cue(cue: String) -> void:
 			var wallet = get_tree().get_first_node_in_group("wallet")
 			if wallet:
 				await wallet.reveal()
+		"show_cigs":
+			var cigs_ui = get_tree().get_first_node_in_group("ai_cigarettes_ui")
+			if cigs_ui:
+				await cigs_ui.reveal()
 		"ai_one_smokes":
 			if ai_player_1:
 				await ai_player_1.smoke()

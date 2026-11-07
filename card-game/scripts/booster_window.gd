@@ -27,7 +27,6 @@ var flipped: Array[bool] = []
 var _panel: Panel
 var _pack: Control
 var _flap: ColorRect
-var _hint: Label
 var _collection_button: Button
 
 
@@ -101,20 +100,6 @@ func _build() -> void:
 	_collection_button.position = PANEL_RECT.end - Vector2(140, 48)
 	add_child(_collection_button)
 
-	_hint = Label.new()
-	_hint.text = "click\nto flip"
-	_hint.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_hint.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_hint.add_theme_color_override("font_color", Color(0.05, 0.05, 0.05, 1))
-	_hint.add_theme_font_size_override("font_size", 13)
-	var hint_style := StyleBoxFlat.new()
-	hint_style.bg_color = Color(1, 1, 1, 1)
-	hint_style.set_content_margin_all(5)
-	_hint.add_theme_stylebox_override("normal", hint_style)
-	_hint.z_index = 20
-	add_child(_hint)
-
 
 func open() -> void:
 	for visual in card_visuals:
@@ -130,7 +115,6 @@ func open() -> void:
 	_flap.position = Vector2.ZERO
 	_flap.rotation = 0.0
 	_flap.modulate = Color.WHITE
-	_hint.hide()
 	_collection_button.modulate = Color.WHITE
 	state = State.CLOSED
 	show()
@@ -204,7 +188,6 @@ func _rip_open() -> void:
 		visual.hover_enabled = false
 		visual.z_index = 1
 		add_child(visual)
-		move_child(visual, _hint.get_index())
 		visual.setup(cards[i], true)
 		visual.position = pack_center - CARD_SIZE / 2.0
 		visual.scale = Vector2.ONE * 0.6
@@ -216,7 +199,6 @@ func _rip_open() -> void:
 		deal.tween_property(visual, "modulate:a", 1.0, 0.15).set_delay(delay)
 	await deal.finished
 	state = State.REVEAL
-	_update_hint()
 
 
 func _ignore_mouse(node: Node) -> void:
@@ -230,7 +212,6 @@ func flip(index: int) -> void:
 	if state != State.REVEAL or flipped[index]:
 		return
 	flipped[index] = true
-	_update_hint()
 	var visual := card_visuals[index]
 	var turn := create_tween()
 	turn.tween_property(visual, "scale:x", 0.0, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
@@ -242,17 +223,6 @@ func flip(index: int) -> void:
 		state = State.COLLECTING
 		await turn.finished
 		_collect()
-
-
-func _update_hint() -> void:
-	var next := flipped.find(false)
-	if next == -1:
-		_hint.hide()
-		return
-	_hint.reset_size()
-	var rect := _card_rect(next)
-	_hint.position = Vector2(rect.get_center().x - _hint.size.x / 2.0, rect.position.y - _hint.size.y - 10)
-	_hint.show()
 
 
 func _collect() -> void:
