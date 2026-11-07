@@ -15,6 +15,7 @@ signal send_message(text: String)
 # --- Config ---
 const MAX_ROUNDS := 5
 const MAX_LIVES := 2
+const TRUMP_REVEAL_TIME := 1.2
 
 const PLAYER_NAMES := ["YOU","AI player 1", "AI player 2"]
 
@@ -55,7 +56,9 @@ func start_match(starting_player_id: int) -> void:
 	CardManager.played_cards_match.empty()
 	await CardManager.load_player_decks()
 	await CardManager.generate_player_hands()
-	
+
+	await reveal_trump()
+
 	match_started.emit()
 
 	await DialogueManager.wait_until_idle()
@@ -66,12 +69,18 @@ func restart_match():
 	current_round = 0
 	
 	await CardManager.generate_player_hands()
-	
+
+	await reveal_trump()
+
 	match_started.emit()
 
 	await DialogueManager.wait_until_idle()
 
 	start_new_round(last_match_loosers.pick_random())
+
+func reveal_trump() -> void:
+	CardManager.pick_trump_suit()
+	await get_tree().create_timer(TRUMP_REVEAL_TIME, false).timeout
 
 func start_new_game() -> void:
 	var starting_player_id: int = get_total_loosers().pick_random()

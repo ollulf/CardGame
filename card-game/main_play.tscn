@@ -1,4 +1,4 @@
-[gd_scene load_steps=21 format=3 uid="uid://sho7nec3ufwc"]
+[gd_scene load_steps=22 format=3 uid="uid://sho7nec3ufwc"]
 
 [ext_resource type="Script" uid="uid://b1ufuvgq634xj" path="res://scripts/GameSetup.gd" id="1_yo8lh"]
 [ext_resource type="PackedScene" uid="uid://bjmm2q84dkq0v" path="res://scenes/hand_visualisation.tscn" id="2_r2isv"]
@@ -20,6 +20,7 @@
 [ext_resource type="Script" uid="uid://bnvbuen33moub" path="res://scripts/humanPlayer.gd" id="10_r2isv"]
 [ext_resource type="Script" uid="uid://bhy3xlf41kv5r" path="res://deck_visualizer.gd" id="15_2ja4j"]
 [ext_resource type="Script" uid="uid://cvxwpok4ke1o" path="res://cards_panel.gd" id="16_yiaew"]
+[ext_resource type="Script" path="res://scripts/trump_display.gd" id="trump_display_script"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_wallet"]
 size = Vector2(96, 96)
@@ -167,6 +168,9 @@ layout_mode = 3
 anchors_preset = 0
 
 [node name="TurnIndicator" parent="." instance=ExtResource("4_fwnfr")]
+
+[node name="TrumpDisplay" type="CanvasLayer" parent="."]
+script = ExtResource("trump_display_script")
 
 [node name="WonRoundsUI" parent="." instance=ExtResource("5_q6cnf")]
 

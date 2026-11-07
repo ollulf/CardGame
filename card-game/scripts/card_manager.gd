@@ -1,5 +1,7 @@
 extends  Node
 
+signal trump_chosen(suit: Card.Suit)
+
 const PLAY_ZONE_OFFSET := Vector2(-330, -290)
 const PLAY_ZONE_SIZE := Vector2(660, 400)
 
@@ -16,6 +18,8 @@ var player_hand: Hand
 var AI_1_hand: Hand
 var AI_2_hand: Hand
 
+var trump_suit : Card.Suit = Card.Suit.SMOKE
+
 var leading_card : Card
 var first_trump_card : Card
 
@@ -24,6 +28,11 @@ func load_player_decks():
 	AI_1_deck = Deck.new(generate_cards(20, Card.Owner.AI_1))
 	AI_2_deck = Deck.new(generate_cards(20, Card.Owner.AI_2))
 	print("Decks generated")
+
+func pick_trump_suit() -> void:
+	trump_suit = Card.Suit.values().pick_random()
+	print("Trump suit: ", Card.Suit.keys()[trump_suit])
+	trump_chosen.emit(trump_suit)
 
 func generate_player_hands():	
 	print("Drawing player hands")
