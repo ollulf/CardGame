@@ -13,6 +13,7 @@ var _life_cue_running := false
 @onready var next_round_button: Button = %NextRoundButton
 
 func _ready() -> void:
+	visible = true
 	add_to_group(GameManager.WON_ROUNDS_UI_GROUP)
 	GameManager.round_started.connect(on_round_started)
 	GameManager.turn_completed.connect(on_turn_completed)

@@ -51,6 +51,7 @@ func show_trump(suit: Card.Suit) -> void:
 	_card_visual.get_node("RankLabel2").visible = false
 	_ignore_mouse(_card_visual)
 
+	visible = true
 	_root.visible = true
 	_play_reveal()
 
