@@ -1,34 +1,48 @@
 - when: game_start
   lines:
-    - seat: 1
-      text: "Cards down, *smokes* out."
-    - seat: 2
-      text: "Deal me in."
+	- seat: 1
+	  text: "Lets play around of *cards*, shall we?"
+	- seat: 2
+	  text: "Alright, how did it work again?."
+	- seat: 1
+	  text: "Everybody got their own *deck* with them?"
+	- seat: 2
+	  text: "Yes, end then everybody draws *5 cards*, if I remember correctly."
+	- seat: 1
+	  text: "Then a random player starts playing one card from their hand and the
+	others follow in order and have to *obey the played suit*. Highest card wins"
+	- seat: 2
+	  text: "Ahh and there was a *trump color* that is *always higher*, right? "
+	- seat: 1
+	  text: "Yes. And if there are multiple trump cards obviously the highest wins.
+	And then the winner plays the next card."
+	- seat: 1
+	  text: "After we played the 5 turns and nobody has hand cards anymore the players
+	with the *least won rounds looses the game*."
+	- seat: 1
+	  text: "Everything clear?"
+	- seat: 2
+	  text: "Yes, lets play!"
+
 
 - when: after_turns
   count: 2
   lines:
-    - seat: 1
-      text: "Nine of hearts? *Bold.*"
-
-- when: every_turns
-  count: 3
-  lines:
-    - seat: 2
-      text: "You cough when you *bluff.*"
+	- seat: 1
+	  text: "Well played!"
 
 - when: after_rounds
   count: 1
   lines:
-    - seat: 2
-      text: "That's one round gone."
+	- seat: 2
+	  text: "That's the first round gone."
 
 - when: between_rounds
   lines:
-    - seat: 1
-      text: "Light up. *Next round.*"
+	- seat: 1
+	  text: "Light up. *Next round.*"
 
 - when: game_over
   lines:
-    - seat: 1
-      text: "That's it. *Out of lives.*"
+	- seat: 1
+	  text: "That's it. *Out of lives.*"
