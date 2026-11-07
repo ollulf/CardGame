@@ -1,6 +1,7 @@
 extends  Node
 
 signal trump_chosen(suit: Card.Suit)
+signal card_played(player_id: int, card: Card)
 
 const PLAY_ZONE_OFFSET := Vector2(-330, -290)
 const PLAY_ZONE_SIZE := Vector2(660, 400)
@@ -105,7 +106,8 @@ func submit_play(player_id: int, card: Card, from: Transform2D = Transform2D.IDE
 	played_cards_round.append(card)
 	played_cards_match.append(card)
 	render_played_card(card, from)
-	
+	card_played.emit(player_id, card)
+
 	GameManager.play_callback(player_id)
 	print("played: ", card)
 	print("contains: ", played_cards_match.cards[0])

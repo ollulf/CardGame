@@ -19,6 +19,7 @@ var auto_advance := Engine.get_write_movie_path() != "" or DisplayServer.get_nam
 var _bubble: SpeechBubble
 var _mouse_blocker: Control
 var _queue: Array = []
+var _waiting: Array = []
 var _speaking_seat := NO_SEAT
 var _auto_advance_time := 0.0
 var _game_running := false
@@ -40,6 +41,8 @@ func _ready() -> void:
 	GameManager.round_completed.connect(_on_round_completed)
 	GameManager.match_finished.connect(_on_match_finished)
 	GameManager.game_lost.connect(_on_game_lost)
+	GameManager.new_game_started.connect(_drop_waiting)
+	CardManager.card_played.connect(_on_card_played)
 
 	_check_lines()
 
@@ -173,6 +176,7 @@ func _on_game_lost(_looser_id: int) -> void:
 	if not _game_running:
 		return
 	_game_running = false
+	_drop_waiting()
 	_turns = 0
 	_rounds = 0
 	_fire("game_over")
@@ -183,8 +187,30 @@ func _fire(trigger: String) -> void:
 			_queue_entry(entry)
 
 func _queue_entry(entry: Dictionary) -> void:
-	for line in entry.lines:
+	_queue_lines(entry.lines)
+
+func _queue_lines(spoken_lines: Array) -> void:
+	for i in spoken_lines.size():
+		var line: Array = spoken_lines[i]
+		if line[2] > 0:
+			var rest := spoken_lines.slice(i)
+			rest[0] = [line[0], line[1], 0]
+			_waiting.append({"cards_left": line[2], "lines": rest})
+			return
 		say(line[0], line[1])
+
+func _on_card_played(_player_id: int, _card: Card) -> void:
+	var due: Array = []
+	for waiting in _waiting:
+		waiting.cards_left -= 1
+		if waiting.cards_left <= 0:
+			due.append(waiting)
+	for waiting in due:
+		_waiting.erase(waiting)
+		_queue_lines(waiting.lines)
+
+func _drop_waiting() -> void:
+	_waiting.clear()
 
 static func load_lines(path: String) -> Array:
 	return rows_from_yaml(YamlLite.parse_file(path))
@@ -217,7 +243,13 @@ static func _clean_row(raw, line: int):
 		if spoken.seat < 0 or spoken.seat >= SEAT_COUNT:
 			push_warning("DialogueLines line %d: seat %d does not exist" % [line, spoken.seat])
 			return null
-		row.lines.append([spoken.seat, spoken.text])
+		var wait := 0
+		if spoken.has("after_played_cards"):
+			if not spoken.after_played_cards is int or spoken.after_played_cards < 1:
+				push_warning("DialogueLines line %d: 'after_played_cards' must be a whole number of 1 or more" % line)
+				return null
+			wait = spoken.after_played_cards
+		row.lines.append([spoken.seat, spoken.text, wait])
 	return row
 
 func _check_lines() -> void:
