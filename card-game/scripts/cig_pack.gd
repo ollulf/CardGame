@@ -13,6 +13,7 @@ class_name CigPack
 var _base_position: Vector2
 
 func _ready() -> void:
+	visible = true
 	InteractionManager.cigPack = self
 	
 	_base_position = sprite.position
