@@ -27,6 +27,8 @@ func _ready() -> void:
 
 func smoke(cigarettes: int = 1) -> void:
 	_smoked_this_round = true
+	if Missions.can_smoke(player_id):
+		Missions.use_cigarette(player_id)
 	var side := 1.0 if player_id == 1 else -1.0
 	var visual := AiSmoke.spawn(self, Vector2(smoke_offset.x * side, smoke_offset.y), 0.5 * side)
 	await visual.lit
@@ -35,6 +37,8 @@ func smoke(cigarettes: int = 1) -> void:
 
 func _wants_to_smoke() -> bool:
 	if not auto_smoke or _smoked_this_round or TutorialScript.is_scripted():
+		return false
+	if not Missions.can_smoke(player_id):
 		return false
 	if hand == null or not hand.has_trump_card():
 		return false
