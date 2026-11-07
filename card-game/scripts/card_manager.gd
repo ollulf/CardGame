@@ -65,7 +65,7 @@ func generate_cards(amount: int, owner : Card.Owner) -> Array[Card]:
 	rng.randomize()
 
 	for i in range(amount):
-		var random_suit: Card.Suit = rng.randi_range(0, Card.Suit.size() - 1)
+		var random_suit: Card.Suit = rng.randi_range(0, Card.Suit.CLUBS)
 		var random_rank: int = rng.randi_range(0, 9)
 
 		var card := Card.new(
