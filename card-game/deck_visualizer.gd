@@ -61,6 +61,8 @@ func _on_backdrop_input(event: InputEvent):
 		close()
 
 func open_for_owner(owner: Card.Owner):
+	if owner != Card.Owner.HUMAN:
+		return
 	var deck := _deck_of(owner)
 	if deck == null or DialogueManager.is_open() or InteractionManager.is_table_blocked():
 		return
