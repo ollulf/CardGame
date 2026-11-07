@@ -5,7 +5,13 @@ class_name CigPack
 @export var hover_texture: Texture2D
 @export var hover_offset: Vector2 = Vector2(0, -10)
 
-@export var cig_amount:= 10
+@export var cig_amount: int = 0:
+	set(value):
+		var had := cig_amount > 0
+		cig_amount = max(value, 0)
+		if is_node_ready():
+			update_label()
+			_refresh_visibility(had)
 @onready var amount_label:= $Sprite2D/Amount
 
 @onready var sprite: Sprite2D = $Sprite2D
@@ -25,6 +31,9 @@ func _ready() -> void:
 	mouse_exited.connect(_on_mouse_exited)
 	
 	update_label()
+	visible = cig_amount > 0
+	monitorable = visible
+	input_pickable = visible
 
 
 func _on_mouse_entered() -> void:
@@ -52,3 +61,22 @@ func on_clicked() -> void:
 
 func update_label():
 	amount_label.text = str(cig_amount);
+
+
+func add_cigarettes(n: int) -> void:
+	cig_amount += n
+
+
+func _refresh_visibility(had: bool) -> void:
+	var has := cig_amount > 0
+	monitorable = has
+	input_pickable = has
+	if has == had:
+		return
+	if has:
+		modulate.a = 0.0
+		visible = true
+		var tween := create_tween()
+		tween.tween_property(self, "modulate:a", 1.0, 0.25)
+	else:
+		visible = false
