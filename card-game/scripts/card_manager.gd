@@ -174,6 +174,20 @@ func clear_all_cards() -> void:
 		if hand != null:
 			hand.empty()
 
+func get_round_winning_card() -> Card:
+	var highest_trump = played_cards_round.get_highest_trump_card()
+	if highest_trump != null:
+		return highest_trump
+	return played_cards_round.get_highest_card_of_suit(leading_card.suit)
+
+func highlight_round_winner() -> void:
+	var winning_card := get_round_winning_card()
+	if winning_card == null or table_root == null:
+		return
+	for child in table_root.get_children():
+		if child is CardVisual and child.card == winning_card:
+			child.set_winner(true)
+
 func get_round_winner() -> Card.Owner:
 	var highest_trump = played_cards_round.get_highest_trump_card()
 	if highest_trump != null:

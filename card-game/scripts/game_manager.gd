@@ -176,6 +176,7 @@ func _finish_round() -> void:
 	await DialogueManager.wait_until_idle()
 
 	var winner : Card.Owner = CardManager.get_round_winner()
+	CardManager.highlight_round_winner()
 	
 	message(str(PLAYER_NAMES[winner]) + " won the Round")
 	
