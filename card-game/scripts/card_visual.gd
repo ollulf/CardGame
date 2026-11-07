@@ -187,6 +187,22 @@ func deal_from(from: Transform2D, reveal: bool) -> void:
 	_tween.finished.connect(_on_float_finished.bind(target_z))
 
 
+func fly_off_top(top: float, delay: float, duration: float) -> void:
+	hover_enabled = false
+	var target := global_position
+	target.y = top - size.y * scale.y * 2.0 - 40.0
+	var spin := deg_to_rad(randf_range(-20.0, 20.0))
+
+	_kill_tween()
+	_tween = create_tween()
+	_tween.set_parallel()
+	_tween.set_trans(Tween.TRANS_CUBIC)
+	_tween.set_ease(Tween.EASE_IN)
+	_tween.tween_property(self, "global_position", target, duration).set_delay(delay)
+	_tween.tween_property(self, "rotation", rotation + spin, duration).set_delay(delay)
+	_tween.chain().tween_callback(queue_free)
+
+
 func _deal_step(t: float, start_scale: Vector2, target_scale: Vector2, reveal: bool) -> void:
 	var s := start_scale.lerp(target_scale, t)
 	if reveal:

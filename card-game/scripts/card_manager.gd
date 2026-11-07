@@ -8,6 +8,8 @@ const PLAY_ZONE_SIZE := Vector2(660, 400)
 const HAND_SIZE := 5
 const DEAL_INTERVAL := 0.12
 const DEAL_SETTLE_TIME := 0.45
+const CLEAR_TIME := 0.45
+const CLEAR_STAGGER := 0.08
 
 var table_root: Control
 
@@ -197,6 +199,23 @@ func turn_clean_up() -> void:
 		return
 	
 	played_cards_turn.empty()
+
+func clear_table() -> void:
+	if table_root == null:
+		return
+	var visuals: Array[CardVisual] = []
+	for child in table_root.get_children():
+		if child is CardVisual and played_cards_turn.cards.has(child.card):
+			visuals.append(child)
+	if visuals.is_empty():
+		return
+	var top := table_root.get_viewport().get_visible_rect().position.y
+	var duration := 0.0
+	for i in visuals.size():
+		var delay := i * CLEAR_STAGGER
+		visuals[i].fly_off_top(top, delay, CLEAR_TIME)
+		duration = maxf(duration, delay + CLEAR_TIME)
+	await get_tree().create_timer(duration, false).timeout
 
 func clear_all_cards() -> void:
 	turn_clean_up()

@@ -179,7 +179,10 @@ func _finish_turn() -> void:
 	CardManager.highlight_turn_winner()
 	
 	message(str(PLAYER_NAMES[winner]) + " won the turn")
-	
+
+	await get_tree().create_timer(1.0, false).timeout
+	await CardManager.clear_table()
+
 	turn_completed.emit(current_turn, owner_to_id(winner))
 
 	await get_tree().create_timer(3.0, false).timeout
