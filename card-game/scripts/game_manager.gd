@@ -16,6 +16,7 @@ signal send_message(text: String)
 const MAX_TURNS := 5
 const MAX_LIVES := 2
 const TRUMP_REVEAL_TIME := 1.2
+const TURN_WINNER_SHOW_TIME := 2.5
 
 const PLAYER_NAMES := ["YOU","AI player 1", "AI player 2"]
 
@@ -223,7 +224,7 @@ func _finish_turn() -> void:
 
 	message(str(PLAYER_NAMES[winner]) + " won the turn")
 
-	await get_tree().create_timer(1.0, false).timeout
+	await get_tree().create_timer(TURN_WINNER_SHOW_TIME, false).timeout
 	if token != round_token:
 		return
 	await CardManager.collect_table(winner)
