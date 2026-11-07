@@ -4,6 +4,9 @@ extends CanvasLayer
 
 var _hand_parent: Node
 var _hand_index := 0
+var _matches_finished := 0
+
+const GIFT_CIGARETTES := 8
 
 func _ready() -> void:
 	hide()
@@ -11,6 +14,11 @@ func _ready() -> void:
 	confirm_button.pressed.connect(_on_confirm_pressed)
 
 func open(looser_ids: Array[int]) -> void:
+	_matches_finished += 1
+	if _matches_finished == 1:
+		var pack: CigPack = InteractionManager.cigPack
+		if pack != null:
+			pack.add_cigarettes(GIFT_CIGARETTES)
 	CardManager.load_player_decks()
 	_lift_hand_pointer()
 	show()
