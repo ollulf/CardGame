@@ -1,0 +1,41 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/deck_pile.gd" id="1_pile"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_pile"]
+size = Vector2(64, 104)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_count"]
+content_margin_left = 5.0
+content_margin_top = 1.0
+content_margin_right = 5.0
+content_margin_bottom = 1.0
+bg_color = Color(0.08, 0.07, 0.07, 0.92)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.85, 0.8, 0.7, 1)
+
+[node name="DeckPile" type="Area2D"]
+script = ExtResource("1_pile")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(0, -6)
+shape = SubResource("RectangleShape2D_pile")
+
+[node name="Stack" type="Node2D" parent="."]
+
+[node name="Count" type="Label" parent="."]
+z_index = 5
+offset_left = -16.0
+offset_top = 38.0
+offset_right = 16.0
+offset_bottom = 60.0
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.95, 0.92, 0.85, 1)
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_count")
+text = "20"
+horizontal_alignment = 1
+vertical_alignment = 1

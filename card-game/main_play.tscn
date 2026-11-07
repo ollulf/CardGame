@@ -21,6 +21,7 @@
 [ext_resource type="Script" uid="uid://blqah5u23lspk" path="res://scripts/trump_display.gd" id="trump_display_script"]
 [ext_resource type="Script" uid="uid://lc3gscm8u4vo" path="res://scripts/wallet.gd" id="wallet_script"]
 [ext_resource type="Texture2D" uid="uid://5hwi7n46gelf" path="res://sprites/wallet.png" id="wallet_tex"]
+[ext_resource type="PackedScene" path="res://scenes/deck_pile.tscn" id="deck_pile_scene"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2ja4j"]
 size = Vector2(44, 56)
@@ -135,6 +136,19 @@ text = "99"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="DeckPiles" type="Node2D" parent="."]
+
+[node name="HumanDeckPile" parent="DeckPiles" instance=ExtResource("deck_pile_scene")]
+position = Vector2(790, 545)
+
+[node name="AI1DeckPile" parent="DeckPiles" instance=ExtResource("deck_pile_scene")]
+position = Vector2(190, 180)
+deck_owner = 1
+
+[node name="AI2DeckPile" parent="DeckPiles" instance=ExtResource("deck_pile_scene")]
+position = Vector2(962, 180)
+deck_owner = 2
+
 [node name="PlayerHand" type="Control" parent="." unique_id=1050822652]
 layout_mode = 3
 anchors_preset = 0
@@ -202,9 +216,10 @@ autowrap_mode = 2
 visible = false
 pointer = NodePath("../HandVisualisation")
 
-[node name="DeckVisualizer" type="CanvasLayer" parent="." unique_id=357559141]
+[node name="DeckVisualizer" type="CanvasLayer" parent="." unique_id=357559141 node_paths=PackedStringArray("pointer")]
 visible = false
 script = ExtResource("15_2ja4j")
+pointer = NodePath("../HandVisualisation")
 
 [node name="Panel" type="Control" parent="DeckVisualizer" unique_id=1764373731]
 layout_mode = 3

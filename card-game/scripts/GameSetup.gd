@@ -3,6 +3,8 @@ extends Node2D
 func _ready() -> void:
 	GameManager.set_table_root(%TableRoot)
 	$Wallet.clicked.connect($BarScreen.open)
+	for pile: DeckPile in $DeckPiles.get_children():
+		pile.clicked.connect($DeckVisualizer.toggle_for_owner)
 	
 	await CardManager.load_player_decks()
 	
