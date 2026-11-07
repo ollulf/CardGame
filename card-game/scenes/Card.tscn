@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://bufjmcin331k"]
+[gd_scene format=3 uid="uid://bufjmcin331k"]
 
 [ext_resource type="Script" uid="uid://c2nueds5ybrn1" path="res://scripts/card_visual.gd" id="1_dd2wi"]
 [ext_resource type="Texture2D" uid="uid://dvk00gefy0gis" path="res://sprites/card_Background.png" id="3_3ujke"]
@@ -12,7 +12,7 @@ border_width_bottom = 2
 border_color = Color(1, 1, 1, 1)
 anti_aliasing = false
 
-[node name="Card" type="Control"]
+[node name="Card" type="Control" unique_id=357411328]
 custom_minimum_size = Vector2(60, 90)
 layout_mode = 3
 anchors_preset = 8
@@ -31,7 +31,7 @@ size_flags_horizontal = 4
 size_flags_vertical = 4
 script = ExtResource("1_dd2wi")
 
-[node name="SuitIcon" type="TextureRect" parent="."]
+[node name="SuitIcon" type="TextureRect" parent="." unique_id=1671734317]
 layout_mode = 0
 offset_left = 6.0
 offset_top = 6.0
@@ -39,7 +39,7 @@ offset_right = 6.0
 offset_bottom = 6.0
 scale = Vector2(2, 2)
 
-[node name="SuitIcon2" type="TextureRect" parent="."]
+[node name="SuitIcon2" type="TextureRect" parent="." unique_id=844144486]
 layout_mode = 0
 offset_left = 36.0
 offset_top = 66.0
@@ -47,7 +47,7 @@ offset_right = 45.0
 offset_bottom = 75.0
 scale = Vector2(2, 2)
 
-[node name="RankLabel" type="Label" parent="."]
+[node name="RankLabel" type="Label" parent="." unique_id=135425941]
 layout_mode = 0
 offset_left = 34.0
 offset_top = 3.0
@@ -56,7 +56,7 @@ offset_bottom = 26.0
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="RankLabel2" type="Label" parent="."]
+[node name="RankLabel2" type="Label" parent="." unique_id=585276501]
 layout_mode = 0
 offset_left = 3.0
 offset_top = 64.0
@@ -65,7 +65,7 @@ offset_bottom = 87.0
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="Background" type="TextureRect" parent="." unique_id=1392963686]
 z_index = -1
 layout_mode = 1
 anchors_preset = 8
@@ -82,7 +82,7 @@ grow_vertical = 2
 scale = Vector2(3, 3)
 texture = ExtResource("3_3ujke")
 
-[node name="PlayableOutline" type="Panel" parent="."]
+[node name="PlayableOutline" type="Panel" parent="." unique_id=1914067993]
 visible = false
 layout_mode = 1
 anchors_preset = 15
