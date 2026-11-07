@@ -224,7 +224,7 @@ func _finish_turn() -> void:
 
 	message(str(PLAYER_NAMES[winner]) + " won the turn")
 
-	await get_tree().create_timer(1.0, false).timeout
+	await get_tree().create_timer(TURN_WINNER_SHOW_TIME, false).timeout
 	if token != round_token:
 		return
 	await CardManager.collect_table(winner)
