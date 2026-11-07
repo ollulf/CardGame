@@ -188,10 +188,8 @@ script = ExtResource("trump_display_script")
 [node name="WonRoundsUI" parent="." unique_id=423164636 instance=ExtResource("5_q6cnf")]
 
 [node name="DeckScreen" parent="." unique_id=434758144 instance=ExtResource("deck_screen")]
-visible = false
 
 [node name="MessageUI" type="CanvasLayer" parent="." unique_id=2122070329]
-visible = false
 script = ExtResource("6_bl2fu")
 
 [node name="MessageLabel" type="Label" parent="MessageUI" unique_id=913221804]

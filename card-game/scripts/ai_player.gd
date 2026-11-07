@@ -62,6 +62,11 @@ func choose_card() -> Card:
 	# Highest rank already played in lead suit
 	var lead_card := CardManager.leading_card
 
+	if lead_card.is_trump:
+		if hand.has_trump_card():
+			return hand.get_highest_trump_card()
+		return hand.get_lowest_card()
+
 	# Try play the highest card that follows the lead card
 	var highest_card = hand.get_random_higher_card_than(lead_card)
 	

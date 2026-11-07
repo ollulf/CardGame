@@ -46,6 +46,9 @@ func can_play(card: Card) -> bool:
 	if CardManager.leading_card == null:
 		return true
 
+	if CardManager.leading_card.is_trump:
+		return card.is_trump or not hand.has_trump_card()
+
 	var leading_suit = CardManager.leading_card.suit
 	return card.suit == leading_suit or not hand.contains_card_of_suit(leading_suit)
 
