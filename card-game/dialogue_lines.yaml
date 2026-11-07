@@ -1,6 +1,6 @@
 match: 1
 	dialogues:
-		when: start
+		when: match_start
 		lines:
 			1: Lets play some *cards*, shall we?
 			2: Alright, how did it work again?.
@@ -36,12 +36,17 @@ match: 1
 			1: Awesome idea... Cheers!
 			1: Alright, next round!
 
+		when: match_end
+		lines:
+			1: Dummy: end of the first match.
+			2: Dummy: see you in the next match.
+
 match: any
 	dialogues:
 		when: round_end
 		lines:
 			1: Light up. *Next round.*
 
-		when: end
+		when: match_end
 		lines:
 			1: That's it. *Out of lives.*

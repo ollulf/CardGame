@@ -6,7 +6,8 @@ signal closed
 const SPEECH_BUBBLE := preload("res://scenes/speech_bubble.tscn")
 const SEAT_COUNT := 3
 const SEAT_OFFSETS := [Vector2(-276, -18), Vector2(66, 0), Vector2(-66, 0)]
-const TRIGGERS := ["start", "turn_end", "round_end", "end"]
+const TRIGGERS := ["match_start", "turn_end", "round_end", "match_end"]
+const TRIGGER_ALIASES := {"start": "match_start", "end": "match_end"}
 const ANY := 0
 const NO_SEAT := -1
 const AUTO_ADVANCE_HOLD := 1.5
@@ -181,7 +182,7 @@ func _on_round_started() -> void:
 		_round = 0
 	_round += 1
 	if _round == 1:
-		_fire("start")
+		_fire("match_start")
 
 func _on_turn_completed(turn_index: int, _winner_id: int) -> void:
 	_fire("turn_end", _round, turn_index)
@@ -196,7 +197,7 @@ func _on_match_lost(_looser_id: int) -> void:
 		return
 	_match_running = false
 	_drop_waiting()
-	_fire("end")
+	_fire("match_end")
 
 func _fire(trigger: String, round_number := ANY, turn_number := ANY) -> void:
 	for entry in lines:
@@ -269,6 +270,8 @@ static func _clean_row(raw, line: int, match_number: int, yaml: YamlLite):
 	if not raw is Dictionary or not raw.get("when") is String:
 		push_error("DialogueLines line %d: dialogue needs a 'when'" % line)
 		return null
+	if TRIGGER_ALIASES.has(raw.when):
+		raw.when = TRIGGER_ALIASES[raw.when]
 	if not raw.when in TRIGGERS:
 		push_error("DialogueLines line %d: unknown 'when' '%s' (allowed: %s)" % [line, raw.when, ", ".join(TRIGGERS)])
 		return null

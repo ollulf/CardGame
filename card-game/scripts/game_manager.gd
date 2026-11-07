@@ -66,10 +66,10 @@ func start_round(starting_player_id: int) -> void:
 	await CardManager.load_player_decks()
 	var first_round := not _intro_done
 	_intro_done = true
-	if first_round and DialogueManager.has_cue(1, "start", "show_deck"):
+	if first_round and DialogueManager.has_cue(1, "match_start", "show_deck"):
 		for pile in get_tree().get_nodes_in_group(DECK_PILE_GROUP):
 			pile.hide_pile()
-	if first_round and DialogueManager.has_cue(1, "start", "deal_cards"):
+	if first_round and DialogueManager.has_cue(1, "match_start", "deal_cards"):
 		_deal_pending = true
 	else:
 		await _deal_and_reveal()
