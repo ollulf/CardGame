@@ -15,7 +15,7 @@ func _ready() -> void:
 	super._ready()
 	
 	GameManager.request_play_card.connect(_on_request_play_card)
-	GameManager.round_started.connect(_on_round_started)
+	GameManager.turn_started.connect(_on_turn_started)
 	
 	InteractionManager.register(self)
 	GameManager.register(self)
@@ -56,7 +56,7 @@ func try_play_card(card: Card) -> void:
 	CardManager.submit_play(player_id, card, from)
 
 
-func _on_round_started(_round_index: int, _starting_player_id: int) -> void:
+func _on_turn_started(_turn_index: int, _starting_player_id: int) -> void:
 	is_my_turn = false
 	_refresh_playable_cards()
 

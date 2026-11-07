@@ -24,7 +24,7 @@ var _waiting: Array = []
 var _speaking_seat := NO_SEAT
 var _running_cue := false
 var _auto_advance_time := 0.0
-var _game_running := false
+var _match_running := false
 var _turns := 0
 var _rounds := 0
 
@@ -39,11 +39,11 @@ func _ready() -> void:
 	_bubble = SPEECH_BUBBLE.instantiate()
 	layer.add_child(_bubble)
 
-	GameManager.match_started.connect(_on_match_started)
-	GameManager.round_completed.connect(_on_round_completed)
-	GameManager.match_finished.connect(_on_match_finished)
-	GameManager.game_lost.connect(_on_game_lost)
-	GameManager.new_game_started.connect(_drop_waiting)
+	GameManager.round_started.connect(_on_round_started)
+	GameManager.turn_completed.connect(_on_turn_completed)
+	GameManager.round_finished.connect(_on_round_finished)
+	GameManager.match_lost.connect(_on_match_lost)
+	GameManager.new_match_started.connect(_drop_waiting)
 	CardManager.card_played.connect(_on_card_played)
 
 	_check_lines()
@@ -168,14 +168,14 @@ func _tail_side(seat: int) -> SpeechBubble.TailSide:
 		_:
 			return SpeechBubble.TailSide.DOWN
 
-func _on_match_started() -> void:
+func _on_round_started() -> void:
 	_turns = 0
-	if not _game_running:
-		_game_running = true
+	if not _match_running:
+		_match_running = true
 		_rounds = 0
 		_fire("game_start")
 
-func _on_round_completed(_round_index: int, _winner_id: int) -> void:
+func _on_turn_completed(_turn_index: int, _winner_id: int) -> void:
 	_turns += 1
 	for entry in lines:
 		if entry.when == "after_turns" and entry.count == _turns:
@@ -183,7 +183,7 @@ func _on_round_completed(_round_index: int, _winner_id: int) -> void:
 		elif entry.when == "every_turns" and _turns % int(entry.count) == 0:
 			_queue_entry(entry)
 
-func _on_match_finished(_loosers) -> void:
+func _on_round_finished(_loosers) -> void:
 	_rounds += 1
 	if not GameManager.get_total_loosers().is_empty():
 		return
@@ -192,10 +192,10 @@ func _on_match_finished(_loosers) -> void:
 			_queue_entry(entry)
 	_fire("between_rounds")
 
-func _on_game_lost(_looser_id: int) -> void:
-	if not _game_running:
+func _on_match_lost(_looser_id: int) -> void:
+	if not _match_running:
 		return
-	_game_running = false
+	_match_running = false
 	_drop_waiting()
 	_turns = 0
 	_rounds = 0
@@ -289,5 +289,5 @@ func _check_lines() -> void:
 				push_error("DialogueLines: '%s' needs a count of 1 or more" % trigger)
 		elif not trigger in TRIGGERS_WITHOUT_COUNT:
 			push_error("DialogueLines: unknown trigger '%s'" % trigger)
-		if trigger in ["after_turns", "every_turns"] and int(entry.get("count", 0)) > GameManager.MAX_ROUNDS:
-			push_error("DialogueLines: a round only has %d turns" % GameManager.MAX_ROUNDS)
+		if trigger in ["after_turns", "every_turns"] and int(entry.get("count", 0)) > GameManager.MAX_TURNS:
+			push_error("DialogueLines: a round only has %d turns" % GameManager.MAX_TURNS)

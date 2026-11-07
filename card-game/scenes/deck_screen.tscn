@@ -67,7 +67,7 @@ theme_override_constants/separation = 16
 layout_mode = 2
 theme_override_colors/font_color = Color(0.95, 0.92, 0.85, 1)
 theme_override_font_sizes/font_size = 34
-text = "Game over"
+text = "Match over"
 horizontal_alignment = 1
 
 [node name="ResultLabel" type="Label" parent="Margin/Layout"]

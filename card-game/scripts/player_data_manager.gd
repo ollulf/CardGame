@@ -13,12 +13,12 @@ var smoking_stacks := {
 var drinking_level := 0
 
 func _ready() -> void:
-	GameManager.round_completed.connect(_on_round_completed)
+	GameManager.turn_completed.connect(_on_turn_completed)
 
 func smoke(player_id: int, amount: int, duration: int) -> void:
 	smoking_stacks[player_id].append({
 		"amount": amount,
-		"rounds_left": duration
+		"turns_left": duration
 	})
 	stats_changed.emit(player_id)
 
@@ -35,7 +35,7 @@ func get_drinking(player_id: int) -> int:
 	return drinking_level
 
 
-func _on_round_completed(_round_index: int,  _winner_id: int) -> void:
+func _on_turn_completed(_turn_index: int,  _winner_id: int) -> void:
 	for pid in PLAYERS:
 		var stacks: Array = smoking_stacks[pid]
 		var changed := false
@@ -43,10 +43,10 @@ func _on_round_completed(_round_index: int,  _winner_id: int) -> void:
 		for i in range(stacks.size() - 1, -1, -1):
 			var stack: Dictionary = stacks[i]
 
-			stack["rounds_left"] = int(stack.get("rounds_left", 0)) - 1
+			stack["turns_left"] = int(stack.get("turns_left", 0)) - 1
 			stack["amount"] = maxi(int(stack.get("amount", 0)) - 1, 0)
 
-			if stack["rounds_left"] <= 0 or stack["amount"] <= 0:
+			if stack["turns_left"] <= 0 or stack["amount"] <= 0:
 				stacks.remove_at(i)
 				changed = true
 			else:

@@ -111,7 +111,7 @@ func hide_deck():
 	_cleanup(card_instances_lower)
 
 func visualize_deck(deck: Deck, owner : Card.Owner):
-	var played_cards = CardManager.played_cards_match.cards
+	var played_cards = CardManager.played_cards_round.cards
 
 	var all_cards = []
 	all_cards.append_array(deck.cards)
