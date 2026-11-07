@@ -13,11 +13,11 @@ static func parse_file(path: String) -> YamlLite:
 	var result := YamlLite.new()
 	result._source = path.get_file()
 	if not FileAccess.file_exists(path):
-		push_warning("%s: file not found (%s)" % [result._source, path])
+		push_error("%s: file not found (%s)" % [result._source, path])
 		return result
 	var file := FileAccess.open(path, FileAccess.READ)
 	if file == null:
-		push_warning("%s: cannot open file (error %d)" % [result._source, FileAccess.get_open_error()])
+		push_error("%s: cannot open file (error %d)" % [result._source, FileAccess.get_open_error()])
 		return result
 	result.parse(file.get_as_text())
 	return result
@@ -60,7 +60,10 @@ func _tokenize(text: String) -> Array:
 			else:
 				break
 		while _has_open_quote(content) and number < lines.size():
-			content += " " + String(lines[number]).strip_edges()
+			var next := String(lines[number]).strip_edges()
+			if next.begins_with("- ") or next == "-" or _key_split(next) >= 0:
+				break
+			content += " " + next
 			number += 1
 		tokens.append({"indent": indent, "content": content, "line": start})
 	return tokens
@@ -95,7 +98,7 @@ func _has_open_quote(content: String) -> bool:
 
 func _warn(line: int, message: String) -> void:
 	_failed = true
-	push_warning("%s line %d: %s" % [_source, line, message])
+	push_error("%s line %d: %s" % [_source, line, message])
 
 func _is_item(content: String) -> bool:
 	return content == "-" or content.begins_with("- ")

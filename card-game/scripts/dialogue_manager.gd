@@ -48,7 +48,7 @@ func _ready() -> void:
 
 func say(player_id: int, text: String) -> void:
 	if player_id < 0 or player_id >= SEAT_COUNT:
-		push_warning("DialogueManager.say: no seat %d" % player_id)
+		push_error("DialogueManager.say: no seat %d" % player_id)
 		return
 	var was_open := is_open()
 	_queue.append([player_id, text])
@@ -102,7 +102,7 @@ func _show_next() -> void:
 		var line: Array = _queue.pop_front()
 		var seat_node := _seat_node(line[0])
 		if seat_node == null:
-			push_warning("DialogueManager: seat %d is not at the table" % line[0])
+			push_error("DialogueManager: seat %d is not at the table" % line[0])
 			continue
 		_speaking_seat = line[0]
 		_auto_advance_time = 0.0
@@ -225,28 +225,31 @@ static func rows_from_yaml(yaml: YamlLite) -> Array:
 
 static func _clean_row(raw, line: int):
 	if not raw is Dictionary or not raw.get("when") is String:
-		push_warning("DialogueLines line %d: row needs a 'when'" % line)
+		push_error("DialogueLines line %d: row needs a 'when'" % line)
 		return null
 	if not raw.get("lines") is Array or raw.lines.is_empty():
-		push_warning("DialogueLines line %d: row needs a list of 'lines'" % line)
+		push_error("DialogueLines line %d: row needs a list of 'lines'" % line)
 		return null
 	var row := {"when": raw.when, "lines": []}
 	if raw.has("count"):
 		if not raw.count is int:
-			push_warning("DialogueLines line %d: 'count' must be a whole number" % line)
+			push_error("DialogueLines line %d: 'count' must be a whole number" % line)
 			return null
 		row["count"] = raw.count
 	for spoken in raw.lines:
 		if not spoken is Dictionary or not spoken.get("seat") is int or not spoken.get("text") is String:
-			push_warning("DialogueLines line %d: every line needs a 'seat' number and a 'text'" % line)
+			push_error("DialogueLines line %d: every line needs a 'seat' number and a 'text'" % line)
 			return null
 		if spoken.seat < 0 or spoken.seat >= SEAT_COUNT:
-			push_warning("DialogueLines line %d: seat %d does not exist" % [line, spoken.seat])
+			push_error("DialogueLines line %d: seat %d does not exist" % [line, spoken.seat])
 			return null
+		for key in spoken.keys():
+			if not key in ["seat", "text", "after_played_cards"]:
+				push_error("DialogueLines line %d: unknown key '%s' in a line (allowed: seat, text, after_played_cards)" % [line, key])
 		var wait := 0
 		if spoken.has("after_played_cards"):
 			if not spoken.after_played_cards is int or spoken.after_played_cards < 1:
-				push_warning("DialogueLines line %d: 'after_played_cards' must be a whole number of 1 or more" % line)
+				push_error("DialogueLines line %d: 'after_played_cards' must be a whole number of 1 or more" % line)
 				return null
 			wait = spoken.after_played_cards
 		row.lines.append([spoken.seat, spoken.text, wait])
@@ -257,8 +260,8 @@ func _check_lines() -> void:
 		var trigger: String = entry.get("when", "")
 		if trigger in TRIGGERS_WITH_COUNT:
 			if int(entry.get("count", 0)) < 1:
-				push_warning("DialogueLines: '%s' needs a count of 1 or more" % trigger)
+				push_error("DialogueLines: '%s' needs a count of 1 or more" % trigger)
 		elif not trigger in TRIGGERS_WITHOUT_COUNT:
-			push_warning("DialogueLines: unknown trigger '%s'" % trigger)
+			push_error("DialogueLines: unknown trigger '%s'" % trigger)
 		if trigger in ["after_turns", "every_turns"] and int(entry.get("count", 0)) > GameManager.MAX_ROUNDS:
-			push_warning("DialogueLines: a round only has %d turns" % GameManager.MAX_ROUNDS)
+			push_error("DialogueLines: a round only has %d turns" % GameManager.MAX_ROUNDS)
