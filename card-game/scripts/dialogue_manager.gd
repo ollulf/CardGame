@@ -12,6 +12,7 @@ const NO_SEAT := -1
 const AUTO_ADVANCE_HOLD := 1.5
 const DIALOGUE_LAYER := 100
 const LINES_PATH := "res://dialogue_lines.yaml"
+const CUES := ["show_deck", "deal_cards"]
 
 var lines: Array = load_lines(LINES_PATH)
 var auto_advance := Engine.get_write_movie_path() != "" or DisplayServer.get_name() == "headless"
@@ -21,6 +22,7 @@ var _mouse_blocker: Control
 var _queue: Array = []
 var _waiting: Array = []
 var _speaking_seat := NO_SEAT
+var _running_cue := false
 var _auto_advance_time := 0.0
 var _game_running := false
 var _turns := 0
@@ -50,14 +52,26 @@ func say(player_id: int, text: String) -> void:
 	if player_id < 0 or player_id >= SEAT_COUNT:
 		push_error("DialogueManager.say: no seat %d" % player_id)
 		return
+	_enqueue(player_id, text, "")
+
+func _enqueue(player_id: int, text: String, cue: String) -> void:
 	var was_open := is_open()
-	_queue.append([player_id, text])
+	_queue.append([player_id, text, cue])
 	if not was_open:
 		_open()
 		_show_next()
 
 func is_open() -> bool:
-	return _speaking_seat != NO_SEAT or not _queue.is_empty()
+	return _speaking_seat != NO_SEAT or _running_cue or not _queue.is_empty()
+
+func has_cue(trigger: String, cue: String) -> bool:
+	for entry in lines:
+		if entry.when != trigger:
+			continue
+		for line in entry.lines:
+			if line[3] == cue:
+				return true
+	return false
 
 func wait_until_idle() -> void:
 	while is_open():
@@ -87,6 +101,8 @@ func _process(delta: float) -> void:
 			_advance()
 
 func _advance() -> void:
+	if _running_cue or _speaking_seat == NO_SEAT:
+		return
 	if _bubble.is_typed:
 		_end_line()
 	else:
@@ -100,6 +116,10 @@ func _end_line() -> void:
 func _show_next() -> void:
 	while not _queue.is_empty():
 		var line: Array = _queue.pop_front()
+		if line[2] != "":
+			_running_cue = true
+			await GameManager.run_cue(line[2])
+			_running_cue = false
 		var seat_node := _seat_node(line[0])
 		if seat_node == null:
 			push_error("DialogueManager: seat %d is not at the table" % line[0])
@@ -194,10 +214,10 @@ func _queue_lines(spoken_lines: Array) -> void:
 		var line: Array = spoken_lines[i]
 		if line[2] > 0:
 			var rest := spoken_lines.slice(i)
-			rest[0] = [line[0], line[1], 0]
+			rest[0] = [line[0], line[1], 0, line[3]]
 			_waiting.append({"cards_left": line[2], "lines": rest})
 			return
-		say(line[0], line[1])
+		_enqueue(line[0], line[1], line[3])
 
 func _on_card_played(_player_id: int, _card: Card) -> void:
 	var due: Array = []
@@ -244,15 +264,21 @@ static func _clean_row(raw, line: int):
 			push_error("DialogueLines line %d: seat %d does not exist" % [line, spoken.seat])
 			return null
 		for key in spoken.keys():
-			if not key in ["seat", "text", "after_played_cards"]:
-				push_error("DialogueLines line %d: unknown key '%s' in a line (allowed: seat, text, after_played_cards)" % [line, key])
+			if not key in ["seat", "text", "after_played_cards", "cue"]:
+				push_error("DialogueLines line %d: unknown key '%s' in a line (allowed: seat, text, after_played_cards, cue)" % [line, key])
 		var wait := 0
 		if spoken.has("after_played_cards"):
 			if not spoken.after_played_cards is int or spoken.after_played_cards < 1:
 				push_error("DialogueLines line %d: 'after_played_cards' must be a whole number of 1 or more" % line)
 				return null
 			wait = spoken.after_played_cards
-		row.lines.append([spoken.seat, spoken.text, wait])
+		var cue := ""
+		if spoken.has("cue"):
+			if not spoken.cue in CUES:
+				push_error("DialogueLines line %d: unknown cue '%s' (allowed: %s)" % [line, str(spoken.cue), ", ".join(CUES)])
+				return null
+			cue = spoken.cue
+		row.lines.append([spoken.seat, spoken.text, wait, cue])
 	return row
 
 func _check_lines() -> void:

@@ -6,11 +6,11 @@
 	  text: "Alright, how did it work again?."
 	- seat: 1
 	  text: "Everybody got their own *deck* with them?"
-	# show deck
 	- seat: 2
+	  cue: show_deck
 	  text: "Yes! Now, everybody draws *5 cards*, if I remember correctly."
-	# everybody draws cards
 	- seat: 1
+	  cue: deal_cards
 	  text: "Okay *you*, play a card now."
 	- seat: 1
 	  after_played_cards: 1

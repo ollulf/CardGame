@@ -20,6 +20,7 @@ const TRUMP_REVEAL_TIME := 1.2
 const PLAYER_NAMES := ["YOU","AI player 1", "AI player 2"]
 
 const MOVIE_WINDOW_POSITION := Vector2i(-10000, -10000)
+const DECK_PILE_GROUP := "deck_piles"
 
 # --- State ---
 var current_round := 0
@@ -32,6 +33,9 @@ var ai_player_1 = Player
 var ai_player_2 = Player
 
 var last_match_loosers : Array[int]
+
+var _intro_done := false
+var _deal_pending := false
 
 func _init() -> void:
 	if Engine.get_write_movie_path() != "":
@@ -55,15 +59,43 @@ func start_match(starting_player_id: int) -> void:
 	current_round = 0
 	CardManager.played_cards_match.empty()
 	await CardManager.load_player_decks()
-	await CardManager.generate_player_hands()
-
-	await reveal_trump()
+	var first_match := not _intro_done
+	_intro_done = true
+	if first_match and DialogueManager.has_cue("game_start", "show_deck"):
+		for pile in get_tree().get_nodes_in_group(DECK_PILE_GROUP):
+			pile.hide_pile()
+	if first_match and DialogueManager.has_cue("game_start", "deal_cards"):
+		_deal_pending = true
+	else:
+		await _deal_and_reveal()
 
 	match_started.emit()
 
 	await DialogueManager.wait_until_idle()
+	if _deal_pending:
+		await _deal_and_reveal()
 
 	start_new_round(starting_player_id)
+
+func run_cue(cue: String) -> void:
+	match cue:
+		"show_deck":
+			await _show_deck_piles()
+		"deal_cards":
+			if _deal_pending:
+				await _deal_and_reveal()
+
+func _show_deck_piles() -> void:
+	var hidden_piles: Array = get_tree().get_nodes_in_group(DECK_PILE_GROUP).filter(func(pile): return not pile.visible)
+	for pile in hidden_piles:
+		pile.show_pile()
+	if not hidden_piles.is_empty():
+		await get_tree().create_timer(DeckPile.SHOW_TIME, false).timeout
+
+func _deal_and_reveal() -> void:
+	_deal_pending = false
+	await CardManager.generate_player_hands()
+	await reveal_trump()
 
 func restart_match():
 	current_round = 0

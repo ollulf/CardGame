@@ -8,6 +8,8 @@ const CARD_SCALE := 3.0
 const LAYER_STEP := Vector2(0, -3)
 const CARDS_PER_LAYER := 4
 const EMPTY_COLOR := Color(1, 1, 1, 0.35)
+const SHOW_TIME := 0.45
+const HIDDEN_SCALE := 0.6
 
 @export var deck_owner: Card.Owner = Card.Owner.HUMAN
 @export var hover_offset: Vector2 = Vector2(0, -4)
@@ -19,6 +21,7 @@ const EMPTY_COLOR := Color(1, 1, 1, 0.35)
 var _layers: Array[Sprite2D] = []
 var _hovered: bool = false
 var _last_count: int = -1
+var _show_tween: Tween
 
 
 func _ready() -> void:
@@ -29,9 +32,27 @@ func _ready() -> void:
 		sprite.position = LAYER_STEP * float(i)
 		stack.add_child(sprite)
 		_layers.append(sprite)
+	add_to_group(GameManager.DECK_PILE_GROUP)
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
 	_refresh_stack()
+
+
+func hide_pile() -> void:
+	if _show_tween != null:
+		_show_tween.kill()
+	visible = false
+	modulate.a = 0.0
+	scale = Vector2.ONE * HIDDEN_SCALE
+
+
+func show_pile() -> void:
+	if _show_tween != null:
+		_show_tween.kill()
+	visible = true
+	_show_tween = create_tween().set_parallel()
+	_show_tween.tween_property(self, "modulate:a", 1.0, SHOW_TIME * 0.6)
+	_show_tween.tween_property(self, "scale", Vector2.ONE, SHOW_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 
 func _process(_delta: float) -> void:
@@ -66,7 +87,7 @@ func _refresh_stack() -> void:
 
 
 func _is_blocked() -> bool:
-	return DialogueManager.is_open() or InteractionManager.is_table_blocked() or get_tree().paused
+	return not visible or DialogueManager.is_open() or InteractionManager.is_table_blocked() or get_tree().paused
 
 
 func _on_mouse_entered() -> void:
