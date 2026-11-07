@@ -238,11 +238,3 @@ offset_right = 35.0
 offset_bottom = 20.0
 grow_horizontal = 0
 grow_vertical = 0
-
-[node name="NextRoundButton" type="Button" parent="."]
-unique_name_in_owner = true
-offset_left = 551.0
-offset_top = 338.0
-offset_right = 559.0
-offset_bottom = 346.0
-text = "Next Round"

@@ -10,8 +10,6 @@ var fade_tween: Tween
 var loosers_split := false
 var _life_cue_running := false
 
-@onready var next_round_button: Button = %NextRoundButton
-
 func _ready() -> void:
 	visible = true
 	add_to_group(GameManager.WON_ROUNDS_UI_GROUP)
@@ -21,15 +19,9 @@ func _ready() -> void:
 	GameManager.next_round_available.connect(on_next_round_available)
 	GameManager.new_match_started.connect(on_new_match_started)
 	
-	next_round_button.pressed.connect(on_next_round_pressed)
-	
 	reset_UI()
 	reset_lifes()
 	set_won_turns_alpha(0.0)
-
-func on_next_round_pressed():
-	reset_UI()
-	GameManager.restart_round()
 
 func on_round_started():
 	loosers_split = false
@@ -68,7 +60,12 @@ func split_round_loosers():
 		update_round_looser(i)
 
 func on_next_round_available():
-	next_round_button.visible = true
+	await DialogueManager.wait_until_idle()
+	await get_tree().create_timer(1.0, false).timeout
+	if not GameManager.round_over:
+		return
+	reset_UI()
+	GameManager.restart_round()
 
 func on_new_match_started():
 	reset_UI()
@@ -110,7 +107,6 @@ func _life_card(player_id: int, life: int) -> LifeCard:
 	return get_node("Player_%d/LostRounds/Hearts_%d" % [player_id, life])
 
 func reset_UI():
-	next_round_button.visible = false
 	
 	player_0.text = "0"
 	player_1.text = "0"
