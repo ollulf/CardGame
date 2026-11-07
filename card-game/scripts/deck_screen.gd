@@ -11,7 +11,7 @@ func _ready() -> void:
 	confirm_button.pressed.connect(_on_confirm_pressed)
 
 func open(looser_ids: Array[int]) -> void:
-	InteractionManager.set_table_blocked(true)
+	CardManager.load_player_decks()
 	_lift_hand_pointer()
 	show()
 
@@ -19,7 +19,6 @@ func _on_confirm_pressed() -> void:
 	hide()
 	_lower_hand_pointer()
 	InteractionManager.skip_next_double_click()
-	InteractionManager.set_table_blocked(false)
 	GameManager.start_new_match()
 
 func _lift_hand_pointer() -> void:

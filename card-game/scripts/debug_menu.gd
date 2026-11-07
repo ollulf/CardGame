@@ -13,7 +13,6 @@ const CIGARETTE_BONUS := 5
 var unlocked := false
 
 var _panel: PanelContainer
-var _status: Label
 var _skip_buttons: Array[Button] = []
 var _pointer_parent: Node
 var _pointer_index := 0
@@ -47,20 +46,10 @@ func _build() -> void:
 	box.add_theme_constant_override("separation", 6)
 	margin.add_child(box)
 
-	var title := Label.new()
-	title.text = "Debug menu (F1)"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	box.add_child(title)
-
-	_status = Label.new()
-	_status.autowrap_mode = TextServer.AUTOWRAP_WORD
-	box.add_child(_status)
-
 	for looser_id in [1, 2]:
 		var button := _add_button(box, "Skip round: %s loses" % GameManager.PLAYER_NAMES[looser_id], skip_round.bind(looser_id))
 		_skip_buttons.append(button)
 	_add_button(box, "Unlock all UI", unlock_all)
-	_add_button(box, "Skip dialogue line", DialogueManager.skip_line)
 	_add_button(box, "+%d cigarettes" % CIGARETTE_BONUS, add_cigarettes)
 	_add_button(box, "Close", close)
 
@@ -147,12 +136,6 @@ func _refresh() -> void:
 	var can_skip := GameManager.can_skip_round()
 	for button in _skip_buttons:
 		button.disabled = not can_skip
-	var lives: Array[String] = []
-	for id in range(3):
-		var player := GameManager.id_to_player(id)
-		if player is Player:
-			lives.append("%s: %d/%d lost" % [GameManager.PLAYER_NAMES[id], player.lost_rounds, GameManager.MAX_LIVES])
-	_status.text = "Turn %d/%d\n%s" % [GameManager.current_turn, GameManager.MAX_TURNS, "\n".join(lives)]
 
 
 func _lift_pointer() -> void:

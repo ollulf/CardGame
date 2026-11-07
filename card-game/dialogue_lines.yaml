@@ -43,12 +43,14 @@ match: 1
 
 		when: round_start
 		round: 3
-		turn: 0
 		lines:
 			wait_for_cards_played: 1
 			2: Finaly I am drawing my *smoking* cards.
 			2: It basically is *always* a *trump* card.
 			1: But if *you* are playing a *highter diamonds* trump card now, you would win this turn.
+
+		when: turn_start
+		round: 3
 		turn: 3
 		lines:
 			1: Well, beat this!
