@@ -83,8 +83,11 @@ func match_uses_cue(cue: String) -> bool:
 			return true
 	return false
 
+func upcoming_match() -> int:
+	return _match if _match_running else _match + 1
+
 func upcoming_match_uses_cue(cue: String) -> bool:
-	var number := _match if _match_running else _match + 1
+	var number := upcoming_match()
 	for trigger in TRIGGERS:
 		if has_cue(number, trigger, cue):
 			return true

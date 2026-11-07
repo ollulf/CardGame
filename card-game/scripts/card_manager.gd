@@ -61,10 +61,21 @@ func apply_buffs(player_id: int) -> void:
 			card.apply_modifiers()
 
 func load_player_decks():
-	player_deck = Deck.new(generate_cards(20, Card.Owner.HUMAN))
-	AI_1_deck = Deck.new(generate_cards(20, Card.Owner.AI_1))
-	AI_2_deck = Deck.new(generate_cards(20, Card.Owner.AI_2))
+	var match_number := DialogueManager.upcoming_match()
+	player_deck = Deck.new(_mission_cards(match_number, 0, Card.Owner.HUMAN))
+	AI_1_deck = Deck.new(_mission_cards(match_number, 1, Card.Owner.AI_1))
+	AI_2_deck = Deck.new(_mission_cards(match_number, 2, Card.Owner.AI_2))
 	print("Decks generated")
+
+func _mission_cards(match_number: int, seat: int, owner: Card.Owner) -> Array[Card]:
+	var listed: Array = Missions.deck_cards(match_number, seat)
+	var cards := generate_cards(Missions.DECK_SIZE - listed.size(), owner)
+	if listed.is_empty():
+		return cards
+	for entry in listed:
+		cards.append(Card.new(entry[0], entry[1], owner, false))
+	cards.shuffle()
+	return cards
 
 func pick_trump_suit() -> void:
 	trump_suit = TutorialScript.trump([Card.Suit.DIAMONDS, Card.Suit.HEARTS, Card.Suit.SPADES, Card.Suit.CLUBS].pick_random())

@@ -23,6 +23,7 @@ InteractionManager="*res://scripts/interaction_manager.gd"
 CardManager="*res://scripts/card_manager.gd"
 DialogueManager="*res://scripts/dialogue_manager.gd"
 TutorialScript="*res://scripts/tutorial_script.gd"
+Missions="*res://scripts/missions.gd"
 
 [display]
 
