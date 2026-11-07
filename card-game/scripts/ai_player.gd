@@ -44,6 +44,7 @@ func _on_request_play_card(requested_player_id: int) -> void:
 
 	if hand.is_empty():
 		print("AI Players hand is empty")
+		set_active(false)
 		CardManager.submit_play(player_id, null)
 		return
 
@@ -53,6 +54,7 @@ func _on_request_play_card(requested_player_id: int) -> void:
 
 	var from := get_card_transform(chosen_card)
 	hand.remove(chosen_card)
+	set_active(false)
 	CardManager.submit_play(player_id, chosen_card, from)
 
 
@@ -138,6 +140,16 @@ func layout_hand_cards() -> void:
 		cv.position = _slot_position(i, n) - cv.size * 0.5
 		cv.z_index = i
 		cv.update_layout()
+		_orient(cv)
+
+
+func _orient(cv: CardVisual) -> void:
+	cv.pivot_offset = cv.size * 0.5
+	cv.rotation = _outward_rotation()
+
+
+func _outward_rotation() -> float:
+	return -PI * 0.5 if player_id == 1 else PI * 0.5
 
 
 func _slot_position(index: int, count: int) -> Vector2:
@@ -159,6 +171,7 @@ func deal_card(card: Card, from_center: Vector2, slot: int, slot_count: int) -> 
 	c.position = _slot_position(slot, slot_count) - c.size * 0.5
 	c.z_index = slot
 	c.update_layout()
+	_orient(c)
 	c.deal_from(Transform2D(0.0, Vector2.ONE, 0.0, from_center - c.pivot_offset), show_hand)
 
 

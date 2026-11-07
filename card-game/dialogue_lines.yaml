@@ -36,10 +36,18 @@ match: 1
 			1: Awesome idea... Cheers!
 			1: Alright, next round!
 
+		when: turn_end
+		round: 2
+		turn: 1
+		lines:
+			2: ...couthing...
+
 		when: match_end
 		lines:
-			1: Dummy: end of the first match.
-			2: Dummy: see you in the next match.
+			cue: show_purse
+			1: Well this was the first match.
+			2: Let's count this as the trial round, but *you* can *buy* yourself some *boosters*.
+			2: With them you can *upgrade your deck* to keep up with us, hehe
 
 match: any
 	dialogues:

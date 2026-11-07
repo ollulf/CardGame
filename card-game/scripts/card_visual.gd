@@ -154,6 +154,8 @@ func float_in_from(from: Transform2D) -> void:
 	hover_enabled = false
 	z_index = drag_z_index
 	scale = from.get_scale()
+	pivot_offset = size * 0.5
+	rotation = from.get_rotation()
 	global_position = from.origin
 
 	_kill_tween()
@@ -162,6 +164,7 @@ func float_in_from(from: Transform2D) -> void:
 	_tween.set_trans(Tween.TRANS_CUBIC)
 	_tween.set_ease(Tween.EASE_OUT)
 	_tween.tween_property(self, "position", target_position, float_anim_time)
+	_tween.tween_property(self, "rotation", 0.0, float_anim_time)
 	_tween.tween_property(self, "scale", target_scale, float_anim_time)
 	_tween.finished.connect(_on_float_finished.bind(target_z))
 

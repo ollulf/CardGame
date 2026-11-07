@@ -11,6 +11,7 @@ signal clicked
 
 var _base_position: Vector2
 var _hovered: bool = false
+var _hidden_by_cue: bool = false
 
 
 func _ready() -> void:
@@ -18,6 +19,28 @@ func _ready() -> void:
 	tooltip.visible = false
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
+	add_to_group("wallet")
+	GameManager.new_match_started.connect(_on_new_match_started)
+	_on_new_match_started()
+
+
+func _on_new_match_started() -> void:
+	if DialogueManager.upcoming_match_uses_cue("show_purse"):
+		_hidden_by_cue = true
+		visible = false
+		input_pickable = false
+		modulate.a = 0.0
+
+
+func reveal() -> void:
+	if not _hidden_by_cue:
+		return
+	_hidden_by_cue = false
+	visible = true
+	input_pickable = true
+	var tween := create_tween()
+	tween.tween_property(self, "modulate:a", 1.0, 0.4)
+	await tween.finished
 
 
 func set_blocked(value: bool) -> void:

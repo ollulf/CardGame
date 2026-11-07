@@ -53,6 +53,7 @@ func try_play_card(card: Card) -> void:
 	var from := get_card_transform(card)
 	hand.remove(card)
 	_refresh_playable_cards()
+	set_active(false)
 	CardManager.submit_play(player_id, card, from)
 
 
@@ -107,6 +108,8 @@ func layout_hand_cards() -> void:
 	)
 	
 	var n = card_visuals.size()
+	if n > 0:
+		pivot_offset = card_visuals[0].size * 0.5
 
 	if n == 1:
 		if not card_visuals[0].dragging:

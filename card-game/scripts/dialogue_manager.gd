@@ -13,7 +13,7 @@ const NO_SEAT := -1
 const AUTO_ADVANCE_HOLD := 1.5
 const DIALOGUE_LAYER := 100
 const LINES_PATH := "res://dialogue_lines.yaml"
-const CUES := ["show_deck", "deal_cards", "show_won_turns", "show_life_cards"]
+const CUES := ["show_deck", "deal_cards", "show_won_turns", "show_one_turns", "show_life_cards", "show_purse"]
 
 var lines: Array = load_lines(LINES_PATH)
 var auto_advance := Engine.get_write_movie_path() != "" or DisplayServer.get_name() == "headless"
@@ -77,6 +77,13 @@ func has_cue(match_number: int, trigger: String, cue: String) -> bool:
 func match_uses_cue(cue: String) -> bool:
 	for trigger in TRIGGERS:
 		if has_cue(_match, trigger, cue):
+			return true
+	return false
+
+func upcoming_match_uses_cue(cue: String) -> bool:
+	var number := _match if _match_running else _match + 1
+	for trigger in TRIGGERS:
+		if has_cue(number, trigger, cue):
 			return true
 	return false
 
@@ -397,6 +404,8 @@ static func _check_cue(value, line: int) -> String:
 	if not value in CUES:
 		push_error("DialogueLines line %d: unknown cue '%s' (allowed: %s)" % [line, str(value), ", ".join(CUES)])
 		return ""
+	if value == "show_one_turns":
+		return "show_won_turns"
 	return value
 
 func _check_lines() -> void:
