@@ -9,44 +9,52 @@ class_name AIPlayer
 @export var MAX_GAP := 70.0
 
 @export var auto_smoke: bool = true
-@export_range(0.0, 1.0) var smoke_chance: float = 0.35
-@export var smoke_offset := Vector2(120.0, 190.0)
+@export_range(0.0, 1.0) var smoke_chance: float = 0.2
+@export var smoke_offset := Vector2(46.0, 6.0)
+@export var smoke_stack_step := Vector2(22.0, 26.0)
 
 var card_visuals : Array[CardVisual] = []
-var _smoked_this_round := false
+var _smoke_visuals: Array[AiSmoke] = []
 
 func _ready() -> void:
 	super._ready()
 
 	GameManager.request_play_card.connect(_on_request_play_card)
 	GameManager.turn_started.connect(_on_turn_started)
-	GameManager.round_started.connect(_on_round_started)
 
 	GameManager.register(self)
 
 
 func smoke(cigarettes: int = 1) -> void:
-	_smoked_this_round = true
 	if Missions.can_smoke(player_id):
 		Missions.use_cigarette(player_id)
 	var side := 1.0 if player_id == 1 else -1.0
-	var visual := AiSmoke.spawn(self, Vector2(smoke_offset.x * side, smoke_offset.y), 0.5 * side)
+	_smoke_visuals.assign(_smoke_visuals.filter(func(v): return is_instance_valid(v) and not v.is_queued_for_deletion()))
+	var slot := _free_smoke_slot()
+	var at := Vector2((smoke_offset.x + smoke_stack_step.x * slot) * side, smoke_offset.y + smoke_stack_step.y * slot)
+	var visual := AiSmoke.spawn(self, at, 0.5 * side)
+	visual.set_meta("slot", slot)
+	_smoke_visuals.append(visual)
 	await visual.lit
 	CardManager.update_cards(cigarettes, player_id)
 
 
+func _free_smoke_slot() -> int:
+	var used := _smoke_visuals.map(func(v): return v.get_meta("slot"))
+	var slot := 0
+	while used.has(slot):
+		slot += 1
+	return slot
+
+
 func _wants_to_smoke() -> bool:
-	if not auto_smoke or _smoked_this_round or TutorialScript.is_scripted():
+	if not auto_smoke or TutorialScript.is_scripted():
 		return false
 	if not Missions.can_smoke(player_id):
 		return false
 	if hand == null or not hand.has_trump_card():
 		return false
 	return randf() < smoke_chance
-
-
-func _on_round_started() -> void:
-	_smoked_this_round = false
 
 
 func recieve_hand(new_hand: Hand) -> void:

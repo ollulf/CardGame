@@ -18,7 +18,10 @@ const BURN_TEXTURES: Array[Texture2D] = [
 const PIXEL_SCALE := 3.0
 const APPEAR_TIME := 0.4
 const LIGHT_TIME := 0.7
-const BURN_TIME := 4.5
+const BURN_TIME := 30.0
+const PUFF_TIME := 1.6
+const PUFF_PAUSE_MIN := 2.0
+const PUFF_PAUSE_MAX := 4.5
 const STUB_TIME := 0.6
 const SMOKE_LIFETIME := 2.4
 
@@ -31,6 +34,7 @@ var _smoke: CPUParticles2D
 var _flame := 0.0
 var _ember := 0.0
 var _tip_rows: Array[int] = []
+var _burning := true
 
 
 static func spawn(parent: Node, at: Vector2, tilt_radians: float) -> AiSmoke:
@@ -84,6 +88,7 @@ func play() -> void:
 	lit.emit()
 
 	_smoke.emitting = true
+	_puff_loop()
 	var step_time := BURN_TIME / float(BURN_TEXTURES.size() - 1)
 	for index in range(1, BURN_TEXTURES.size()):
 		await get_tree().create_timer(step_time, false).timeout
@@ -91,6 +96,7 @@ func play() -> void:
 		_glow.queue_redraw()
 		_place_smoke()
 
+	_burning = false
 	_smoke.emitting = false
 	var stub := create_tween().set_parallel()
 	stub.tween_method(_set_ember, 1.0, 0.0, STUB_TIME * 0.5)
@@ -101,6 +107,17 @@ func play() -> void:
 
 	await get_tree().create_timer(SMOKE_LIFETIME, false).timeout
 	queue_free()
+
+
+func _puff_loop() -> void:
+	await get_tree().create_timer(PUFF_TIME, false).timeout
+	while _burning:
+		_smoke.emitting = false
+		await get_tree().create_timer(randf_range(PUFF_PAUSE_MIN, PUFF_PAUSE_MAX), false).timeout
+		if not _burning:
+			return
+		_smoke.emitting = true
+		await get_tree().create_timer(PUFF_TIME, false).timeout
 
 
 func _process(_delta: float) -> void:
