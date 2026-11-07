@@ -44,6 +44,7 @@ func _on_request_play_card(requested_player_id: int) -> void:
 
 	if hand.is_empty():
 		print("AI Players hand is empty")
+		set_active(false)
 		CardManager.submit_play(player_id, null)
 		return
 
@@ -53,6 +54,7 @@ func _on_request_play_card(requested_player_id: int) -> void:
 
 	var from := get_card_transform(chosen_card)
 	hand.remove(chosen_card)
+	set_active(false)
 	CardManager.submit_play(player_id, chosen_card, from)
 
 
