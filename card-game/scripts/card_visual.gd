@@ -8,6 +8,7 @@ var dragging: bool = false
 
 const RANK_INCREASED_COLOR := Color(0.4, 1.0, 0.45)
 const RANK_DECREASED_COLOR := Color(1.0, 0.4, 0.4)
+const CARD_BACK := preload("res://sprites/card_Background.png")
 
 # --- Hover FX (driven externally) ---
 @export var hover_scale: float = 1.4
@@ -204,6 +205,41 @@ func fly_off_top(top: float, delay: float, duration: float) -> void:
 	_tween.tween_property(self, "global_position", target, duration).set_delay(delay)
 	_tween.tween_property(self, "rotation", rotation + spin, duration).set_delay(delay)
 	_tween.chain().tween_callback(queue_free)
+
+
+func collect_to(gather_center: Vector2, pile_center: Vector2, pile_scale: Vector2, gather_time: float, flip_time: float, fly_time: float) -> void:
+	hover_enabled = false
+	pivot_offset = size * 0.5
+	var flat_scale := scale.x
+
+	_kill_tween()
+	_tween = create_tween()
+	_tween.set_trans(Tween.TRANS_CUBIC)
+	_tween.set_ease(Tween.EASE_OUT)
+	_tween.tween_property(self, "global_position", gather_center - size * 0.5, gather_time)
+	_tween.parallel().tween_property(self, "rotation", 0.0, gather_time)
+	_tween.tween_property(self, "scale:x", 0.0, flip_time * 0.5).set_ease(Tween.EASE_IN)
+	_tween.tween_callback(show_back)
+	_tween.tween_property(self, "scale:x", flat_scale, flip_time * 0.5)
+	_tween.tween_property(self, "global_position", pile_center - size * 0.5, fly_time).set_ease(Tween.EASE_IN_OUT)
+	_tween.parallel().tween_property(self, "scale", pile_scale, fly_time).set_ease(Tween.EASE_IN_OUT)
+	_tween.tween_callback(queue_free)
+
+
+func show_back() -> void:
+	face_down = true
+	set_winner(false)
+	if has_node("Back"):
+		return
+	var back := TextureRect.new()
+	back.name = "Back"
+	back.texture = CARD_BACK
+	back.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	back.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	back.stretch_mode = TextureRect.STRETCH_SCALE
+	back.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	back.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(back)
 
 
 func _deal_step(t: float, start_scale: Vector2, target_scale: Vector2, reveal: bool) -> void:

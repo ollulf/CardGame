@@ -1,9 +1,12 @@
 extends CanvasLayer
 
-@export var player_0: Label
-@export var player_1: Label
-@export var player_2: Label
+const PILE_OFFSETS := {
+	Card.Owner.HUMAN: Vector2(-428, 0),
+	Card.Owner.AI_1: Vector2(0, 125),
+	Card.Owner.AI_2: Vector2(0, 125),
+}
 
+var piles: Array[WonPile] = []
 var lifes_revealed := false
 var won_turns_shown := false
 var fade_tween: Tween
@@ -19,15 +22,23 @@ func _ready() -> void:
 	GameManager.next_round_available.connect(on_next_round_available)
 	GameManager.new_match_started.connect(on_new_match_started)
 	
-	reset_UI()
 	reset_lifes()
-	set_won_turns_alpha(0.0)
+	_create_piles.call_deferred()
+
+func _create_piles() -> void:
+	for deck_pile in get_tree().get_nodes_in_group(GameManager.DECK_PILE_GROUP):
+		var pile := WonPile.new()
+		pile.pile_owner = deck_pile.deck_owner
+		pile.position = deck_pile.position + PILE_OFFSETS[deck_pile.deck_owner]
+		deck_pile.get_parent().add_child(pile)
+		piles.append(pile)
+	set_won_turns_alpha(1.0 if won_turns_shown else 0.0)
 
 func on_round_started():
 	loosers_split = false
+	reset_UI(false)
 
-func on_turn_completed(turn_index: int, winner_id: int):
-	_update_labels(winner_id)
+func on_turn_completed(_turn_index: int, _winner_id: int):
 	if not DialogueManager.match_uses_cue("show_won_turns"):
 		show_won_turns()
 
@@ -64,11 +75,11 @@ func on_next_round_available():
 	await get_tree().create_timer(1.0, false).timeout
 	if not GameManager.round_over:
 		return
-	reset_UI()
+	reset_UI(true)
 	GameManager.restart_round()
 
 func on_new_match_started():
-	reset_UI()
+	reset_UI(false)
 	reset_lifes()
 	if fade_tween:
 		fade_tween.kill()
@@ -85,18 +96,8 @@ func show_won_turns():
 	fade_tween.tween_method(set_won_turns_alpha, 0.0, 1.0, 0.4)
 
 func set_won_turns_alpha(alpha: float):
-	for i in 3:
-		var panel: Panel = get_node("Player_%d" % i)
-		panel.self_modulate.a = alpha
-		for child in panel.get_children():
-			if child is Label:
-				child.modulate.a = alpha
-
-func _update_labels(id: int):
-	match id:
-		0: player_0.text = str(int(player_0.text)+1) 
-		1: player_1.text = str(int(player_1.text)+1)
-		2: player_2.text = str(int(player_2.text)+1)
+	for pile in piles:
+		pile.modulate.a = alpha
 
 func update_round_looser(looser_id : int):
 	var lost_rounds: int = GameManager.id_to_player(looser_id).lost_rounds
@@ -106,11 +107,9 @@ func update_round_looser(looser_id : int):
 func _life_card(player_id: int, life: int) -> LifeCard:
 	return get_node("Player_%d/LostRounds/Hearts_%d" % [player_id, life])
 
-func reset_UI():
-	
-	player_0.text = "0"
-	player_1.text = "0"
-	player_2.text = "0"
+func reset_UI(animate: bool):
+	for pile in piles:
+		pile.clear(animate and won_turns_shown)
 	
 func reset_lifes():
 	lifes_revealed = false

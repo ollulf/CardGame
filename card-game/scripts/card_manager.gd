@@ -10,6 +10,10 @@ const DEAL_INTERVAL := 0.12
 const DEAL_SETTLE_TIME := 0.45
 const CLEAR_TIME := 0.45
 const CLEAR_STAGGER := 0.08
+const COLLECT_GATHER_TIME := 0.25
+const COLLECT_FLIP_TIME := 0.15
+const COLLECT_FLY_TIME := 0.45
+const COLLECT_SCALE := 1.1
 
 var table_root: Control
 
@@ -241,6 +245,43 @@ func clear_table() -> void:
 		visuals[i].fly_off_top(top, delay, CLEAR_TIME)
 		duration = maxf(duration, delay + CLEAR_TIME)
 	await get_tree().create_timer(duration, false).timeout
+
+func collect_table(winner: Card.Owner) -> void:
+	var pile := won_pile_of(winner)
+	if table_root == null or pile == null:
+		await clear_table()
+		return
+	var winning_card := get_turn_winning_card()
+	var visuals: Array[CardVisual] = []
+	var winner_visual: CardVisual = null
+	for child in table_root.get_children():
+		if child is CardVisual and played_cards_turn.cards.has(child.card):
+			visuals.append(child)
+			if child.card == winning_card:
+				winner_visual = child
+	if visuals.is_empty():
+		return
+	if winner_visual == null:
+		winner_visual = visuals[visuals.size() - 1]
+	var gather_center := winner_visual.global_position + winner_visual.pivot_offset
+	var pile_center := pile.top_position()
+	winner_visual.z_index = top_z_of(visuals)
+	for visual in visuals:
+		visual.collect_to(gather_center, pile_center, Vector2.ONE * COLLECT_SCALE, COLLECT_GATHER_TIME, COLLECT_FLIP_TIME, COLLECT_FLY_TIME)
+	await get_tree().create_timer(COLLECT_GATHER_TIME + COLLECT_FLIP_TIME + COLLECT_FLY_TIME, false).timeout
+	pile.add_turn()
+
+func top_z_of(visuals: Array[CardVisual]) -> int:
+	var top := 0
+	for visual in visuals:
+		top = maxi(top, visual.z_index)
+	return top + 2
+
+func won_pile_of(owner: Card.Owner) -> WonPile:
+	for pile in get_tree().get_nodes_in_group(GameManager.WON_PILE_GROUP):
+		if pile.pile_owner == owner:
+			return pile
+	return null
 
 func clear_all_cards() -> void:
 	turn_clean_up()

@@ -21,6 +21,7 @@ const PLAYER_NAMES := ["YOU","AI player 1", "AI player 2"]
 
 const MOVIE_WINDOW_POSITION := Vector2i(-10000, -10000)
 const DECK_PILE_GROUP := "deck_piles"
+const WON_PILE_GROUP := "won_piles"
 const WON_ROUNDS_UI_GROUP := "won_rounds_ui"
 
 # --- State ---
@@ -225,7 +226,7 @@ func _finish_turn() -> void:
 	await get_tree().create_timer(1.0, false).timeout
 	if token != round_token:
 		return
-	await CardManager.clear_table()
+	await CardManager.collect_table(winner)
 	if token != round_token:
 		return
 
