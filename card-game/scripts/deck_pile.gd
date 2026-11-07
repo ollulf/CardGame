@@ -99,12 +99,12 @@ func _on_mouse_exited() -> void:
 
 
 func _refresh_hover() -> void:
-	var active := _hovered and not _is_blocked()
+	var active := _hovered and not _is_blocked() and deck_owner == Card.Owner.HUMAN
 	stack.position = hover_offset if active else Vector2.ZERO
 
 
 func _input_event(_viewport: Viewport, event: InputEvent, _shape_idx: int) -> void:
-	if _is_blocked() or get_deck() == null:
+	if deck_owner != Card.Owner.HUMAN or _is_blocked() or get_deck() == null:
 		return
 	if event is InputEventMouseButton \
 	and event.button_index == MOUSE_BUTTON_LEFT \
