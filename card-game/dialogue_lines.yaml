@@ -2,8 +2,8 @@ match: 1
 	dialogues:
 		when: match_start
 		lines:
-			1: Lets play some *cards*, shall we?
-			2: Alright, how did it work again?.
+			1: Let's play some *cards*, shall we?
+			2: Alright, how did it work again?
 			1: Everybody got their own *deck* with them?
 			cue: show_deck
 			2: Yes! Now, everybody draws *5 cards*, if I remember correctly.
@@ -11,17 +11,17 @@ match: 1
 			1: Okay *YOU*, play a card now.
 			wait_for_cards_played: 1
 			1: I have to *follow* your *played suit* if I have a card on my hand with that *suit.*
-			1: If I dont have it my other cards of a *different suit* are *worthless*.
+			1: If I don't have it, my other cards of a *different suit* are *worthless*.
 			1: That means the *highest* card of the *first played suit* wins the turn.
 			2: ... unless ...
-			2: Unless its of the *trump color*, that is *always higher*, right?
+			2: Unless it's of the *trump color*, that is *always higher*, right?
 			1: Yes.
 			1: But still the *highest trump* card wins.
 			wait_for_cards_played: 1
 			1: Nobody can beat my *hearts 9*.
-			1: Since its *trump* for this round its the *highest*.
-			2: Yeah I can not beat that... 
-			2: Guess I have to *play* something in that I *dont need*.
+			1: Since it's *trump* for this round, it's the *highest*.
+			2: Yeah, I cannot beat that...
+			2: Guess I have to *play* something in that I *don't need*.
 			2: That sometimes can be very helpful...
 
 		when: turn_end
@@ -30,14 +30,14 @@ match: 1
 		lines:
 			cue: show_won_turns
 			1: This was the first turn. Since I was the *winner* I will play the next *first card.*
-			1: After we played *5* turns, the players with the *least* won *turns* looses the round.
+			1: After we played *5* turns, the players with the *least* won *turns* loses the round.
 
 		when: round_end
 		round: 1
 		lines:
 			cue: show_life_cards
-			2: Well, that makes me the *looser*... I have to rip one of the two *life cards* now.
-			2: If I loose one more time I *loose* the whole *game*.
+			2: Well, that makes me the *loser*... I have to rip one of the two *life cards* now.
+			2: If I lose one more time I *lose* the whole *game*.
 			2: But since I lost, I will get us a round of *drinks*.
 			1: Awesome idea... 
 			1: Cheers!
@@ -47,11 +47,11 @@ match: 1
 		when: round_start
 		round: 2
 		lines:
-			2: Ahh important to say is that the *cards* from the *last round* stay out of the game.
+			2: Ahh, important to say is that the *cards* from the *last round* stay out of the game.
 			2: We will draw *5 new cards* from our *deck*.
 			2: We will get all of them back *after* the game.
 			1: I think *YOU* got it, right?
-			1: Lets continue!
+			1: Let's continue!
 
 		when: turn_start
 		round: 2
@@ -59,7 +59,7 @@ match: 1
 		lines: 
 			1: *YOU* are doing great!
 			1: This is *fun*.
-			2: Yeah I also remember everything and *enjoy* it!
+			2: Yeah, I also remember everything and *enjoy* it!
 
 		when: turn_start
 		round: 2
@@ -68,7 +68,7 @@ match: 1
 			cue: show_cigs
 			1: I will *smoke* a *cigarette* if that is fine for everybody.
 			2: Sure, I would also smoke one.
-			2. Can I use your lighter?
+			2: Can I use your lighter?
 
 		when: round_start
 		round: 3
@@ -76,7 +76,7 @@ match: 1
 			wait_for_cards_played: 2
 			2: Finally I am drawing my *smoking* cards.
 			2: It basically is *always* a *trump* card.
-			1: But if *YOU* would play a *highter diamonds* trump card now, *YOU* would win this turn.
+			1: But if *YOU* would play a *higher diamonds* trump card now, *YOU* would win this turn.
 
 		when: turn_start
 		round: 3
@@ -84,12 +84,12 @@ match: 1
 		lines:
 			1: Well, beat *this*!
 			wait_for_cards_played: 1
-			2: I will, by *smoking a cigarette* which makes my cigarettes *cards stronger* for every cigarette smoked this round.
+			2: I will, by *smoking a cigarette*, which makes my cigarette *cards stronger* for every cigarette smoked this round.
 
 		when: match_end
 		lines:
 			cue: show_purse
-			1: Well this was the first match and I lost...
+			1: Well, this was the first match and I lost...
 			2: Let's count this as the *trial round*, but *YOU* can *buy* yourself some *boosters*.
 			2: With them you can *upgrade your deck* to keep up with us, hehe
 
