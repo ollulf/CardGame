@@ -1,6 +1,5 @@
 extends CanvasLayer
 
-@onready var result_label: Label = %ResultLabel
 @onready var confirm_button: Button = %ConfirmDeckButton
 
 var _hand_parent: Node
@@ -12,10 +11,6 @@ func _ready() -> void:
 	confirm_button.pressed.connect(_on_confirm_pressed)
 
 func open(looser_ids: Array[int]) -> void:
-	var names: Array[String] = []
-	for id in looser_ids:
-		names.append(GameManager.PLAYER_NAMES[id])
-	result_label.text = " and ".join(names) + " lost all lives."
 	InteractionManager.set_table_blocked(true)
 	_lift_hand_pointer()
 	show()
