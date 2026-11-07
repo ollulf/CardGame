@@ -11,7 +11,7 @@
 	  text: "Yes! Now, everybody draws *5 cards*, if I remember correctly."
 	- seat: 1
 	  cue: deal_cards
-	  text: "Okay *you*, play a card now."
+	  text: "Okay *YOU*, play a card now."
 	- seat: 1
 	  after_played_cards: 1
 	  text: "I have to *follow your played suit*, and if I can't, I can *play whatever I want.*"
@@ -39,6 +39,8 @@
   lines:
 	- seat: 2
 	  text: "That's the first round gone."
+	- seat: 2
+	  text: "I will get us a ground of *drinks*."
 
 - when: between_rounds
   lines:
