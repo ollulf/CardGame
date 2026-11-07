@@ -4,6 +4,7 @@ signal stats_changed(player_id: int)
 signal money_changed(money: int)
 signal booster_bought
 signal collection_changed
+signal deck_changed
 
 const PLAYERS: Array[int] = [0, 1, 2]
 const SMOKE_BONUS_PER_CIGARETTE := 1
@@ -24,6 +25,8 @@ var money := 0
 var starting_money_granted := false
 
 var collection: Array[Card] = []
+var active_deck: Array[Card] = []
+var new_cards: Array[Card] = []
 
 func _ready() -> void:
 	GameManager.round_finished.connect(_on_round_finished)
@@ -103,4 +106,41 @@ func add_to_collection(cards: Array[Card]) -> void:
 	if cards.is_empty():
 		return
 	collection.append_array(cards)
+	new_cards.append_array(cards)
 	collection_changed.emit()
+
+func has_active_deck() -> bool:
+	return active_deck.size() == Missions.DECK_SIZE
+
+func init_active_deck(cards: Array[Card]) -> void:
+	if not active_deck.is_empty():
+		return
+	for card in cards:
+		active_deck.append(Card.new(card.suit, card.base_rank, Card.Owner.HUMAN, false))
+	deck_changed.emit()
+
+func move_to_deck(card: Card) -> bool:
+	if active_deck.size() >= Missions.DECK_SIZE or not collection.has(card):
+		return false
+	collection.erase(card)
+	active_deck.append(card)
+	deck_changed.emit()
+	return true
+
+func move_to_collection(card: Card) -> bool:
+	if not active_deck.has(card):
+		return false
+	active_deck.erase(card)
+	collection.append(card)
+	deck_changed.emit()
+	return true
+
+func clear_new_cards() -> void:
+	new_cards.clear()
+
+func active_deck_copy() -> Array[Card]:
+	var cards: Array[Card] = []
+	for card in active_deck:
+		cards.append(Card.new(card.suit, card.base_rank, Card.Owner.HUMAN, false))
+	cards.shuffle()
+	return cards
