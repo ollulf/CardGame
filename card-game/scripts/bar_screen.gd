@@ -8,6 +8,7 @@ signal closed
 
 @onready var back_button: Button = %BackButton
 @onready var machine: CigaretteMachine = %CigaretteMachine
+@onready var booster_stand: CigaretteMachine = %BoosterStand
 
 var _pointer_parent: Node
 var _pointer_index: int
@@ -16,6 +17,7 @@ var _pointer_index: int
 func _ready() -> void:
 	hide()
 	back_button.pressed.connect(close)
+	booster_stand.clicked.connect(_on_booster_stand_clicked)
 
 
 func open() -> void:
@@ -43,3 +45,7 @@ func close() -> void:
 	InteractionManager.skip_next_double_click()
 	get_tree().paused = false
 	closed.emit()
+
+
+func _on_booster_stand_clicked() -> void:
+	print("Booster stand clicked: coming soon")
