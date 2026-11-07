@@ -64,7 +64,10 @@ func _on_request_play_card(requested_player_id: int) -> void:
 	if requested_player_id != player_id:
 		return
 
-	if _wants_to_smoke():
+	var planned_cigarettes := TutorialScript.planned_smoke(player_id, GameManager.current_turn)
+	if planned_cigarettes > 0:
+		await smoke(planned_cigarettes)
+	elif _wants_to_smoke():
 		smoke()
 
 	# Play Delay
