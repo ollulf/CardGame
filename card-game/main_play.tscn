@@ -17,11 +17,11 @@
 [ext_resource type="Script" uid="uid://bhy3xlf41kv5r" path="res://deck_visualizer.gd" id="15_2ja4j"]
 [ext_resource type="Script" uid="uid://cvxwpok4ke1o" path="res://cards_panel.gd" id="16_yiaew"]
 [ext_resource type="PackedScene" path="res://scenes/bar_screen.tscn" id="bar_screen_scene"]
+[ext_resource type="PackedScene" path="res://scenes/deck_pile.tscn" id="deck_pile_scene"]
 [ext_resource type="PackedScene" path="res://scenes/deck_screen.tscn" id="deck_screen"]
 [ext_resource type="Script" uid="uid://blqah5u23lspk" path="res://scripts/trump_display.gd" id="trump_display_script"]
 [ext_resource type="Script" uid="uid://lc3gscm8u4vo" path="res://scripts/wallet.gd" id="wallet_script"]
 [ext_resource type="Texture2D" uid="uid://5hwi7n46gelf" path="res://sprites/wallet.png" id="wallet_tex"]
-[ext_resource type="PackedScene" path="res://scenes/deck_pile.tscn" id="deck_pile_scene"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2ja4j"]
 size = Vector2(44, 56)
@@ -55,7 +55,7 @@ offset_left = -386.0
 offset_right = -386.0
 
 [node name="Lighter" type="Area2D" parent="." unique_id=203386170]
-position = Vector2(965, 575)
+position = Vector2(313, 67)
 script = ExtResource("5_yiaew")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Lighter" unique_id=1417310012]
@@ -67,7 +67,7 @@ scale = Vector2(3, 3)
 texture = ExtResource("5_lcid1")
 
 [node name="AshTray" type="Area2D" parent="." unique_id=540914906]
-position = Vector2(937, 491)
+position = Vector2(386, 50)
 script = ExtResource("6_2ja4j")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="AshTray" unique_id=1591273039]
@@ -79,6 +79,7 @@ scale = Vector2(3, 3)
 texture = ExtResource("6_r2isv")
 
 [node name="Wallet" type="Area2D" parent="." unique_id=754162874]
+visible = false
 position = Vector2(1106, 606)
 script = ExtResource("wallet_script")
 
@@ -103,6 +104,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="CigPack" type="Area2D" parent="." unique_id=1731490681]
+visible = false
 position = Vector2(878, 608)
 scale = Vector2(3, 3)
 script = ExtResource("3_el7dg")
@@ -136,16 +138,16 @@ text = "99"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="DeckPiles" type="Node2D" parent="."]
+[node name="DeckPiles" type="Node2D" parent="." unique_id=1443153696]
 
-[node name="HumanDeckPile" parent="DeckPiles" instance=ExtResource("deck_pile_scene")]
+[node name="HumanDeckPile" parent="DeckPiles" unique_id=476875444 instance=ExtResource("deck_pile_scene")]
 position = Vector2(790, 545)
 
-[node name="AI1DeckPile" parent="DeckPiles" instance=ExtResource("deck_pile_scene")]
+[node name="AI1DeckPile" parent="DeckPiles" unique_id=872721785 instance=ExtResource("deck_pile_scene")]
 position = Vector2(190, 180)
 deck_owner = 1
 
-[node name="AI2DeckPile" parent="DeckPiles" instance=ExtResource("deck_pile_scene")]
+[node name="AI2DeckPile" parent="DeckPiles" unique_id=1909518212 instance=ExtResource("deck_pile_scene")]
 position = Vector2(962, 180)
 deck_owner = 2
 
@@ -183,13 +185,17 @@ anchors_preset = 0
 [node name="TurnIndicator" parent="." unique_id=1737411933 instance=ExtResource("4_fwnfr")]
 
 [node name="TrumpDisplay" type="CanvasLayer" parent="." unique_id=1283096204]
+visible = false
 script = ExtResource("trump_display_script")
 
 [node name="WonRoundsUI" parent="." unique_id=423164636 instance=ExtResource("5_q6cnf")]
+visible = false
 
 [node name="DeckScreen" parent="." unique_id=434758144 instance=ExtResource("deck_screen")]
+visible = false
 
 [node name="MessageUI" type="CanvasLayer" parent="." unique_id=2122070329]
+visible = false
 script = ExtResource("6_bl2fu")
 
 [node name="MessageLabel" type="Label" parent="MessageUI" unique_id=913221804]
