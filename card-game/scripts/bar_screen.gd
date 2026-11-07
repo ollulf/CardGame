@@ -11,9 +11,11 @@ const NOT_ENOUGH_MONEY_TEXT := "Not enough money"
 @onready var back_button: Button = %BackButton
 @onready var machine: CigaretteMachine = %CigaretteMachine
 @onready var booster_stand: CigaretteMachine = %BoosterStand
+@onready var cash_label: Label = %CashLabel
 
 var _pointer_parent: Node
 var _pointer_index: int
+var _cash_tween: Tween
 
 
 func _ready() -> void:
@@ -23,6 +25,8 @@ func _ready() -> void:
 	booster_stand.set_label_text("Buy Booster (%d$)" % PlayerDataManager.BOOSTER_PRICE)
 	machine.clicked.connect(_on_machine_clicked)
 	booster_stand.clicked.connect(_on_booster_stand_clicked)
+	PlayerDataManager.money_changed.connect(_on_money_changed)
+	_refresh_cash()
 
 
 func open() -> void:
@@ -36,6 +40,7 @@ func open() -> void:
 	pointer.reparent(self)
 	pointer.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_INHERITED
 	pointer.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_DISABLED
+	_refresh_cash()
 	show()
 	opened.emit()
 
@@ -55,10 +60,31 @@ func close() -> void:
 func _on_machine_clicked() -> void:
 	if not PlayerDataManager.buy_cigarettes():
 		machine.deny(NOT_ENOUGH_MONEY_TEXT)
+		_flash_cash(Color(1.0, 0.35, 0.3))
 
 
 func _on_booster_stand_clicked() -> void:
 	if not PlayerDataManager.buy_booster():
 		booster_stand.deny(NOT_ENOUGH_MONEY_TEXT)
+		_flash_cash(Color(1.0, 0.35, 0.3))
 		return
 	print("Booster bought: booster window coming soon")
+
+
+func _refresh_cash() -> void:
+	cash_label.text = "%d$" % PlayerDataManager.money
+
+
+func _on_money_changed(_money: int) -> void:
+	_refresh_cash()
+	_flash_cash(Color(1.0, 1.0, 0.7))
+
+
+func _flash_cash(color: Color) -> void:
+	if _cash_tween:
+		_cash_tween.kill()
+	cash_label.modulate = color
+	cash_label.scale = Vector2(1.2, 1.2)
+	_cash_tween = create_tween().set_parallel(true)
+	_cash_tween.tween_property(cash_label, "modulate", Color.WHITE, 0.5)
+	_cash_tween.tween_property(cash_label, "scale", Vector2.ONE, 0.3)
