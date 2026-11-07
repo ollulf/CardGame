@@ -21,6 +21,7 @@ const PLAYER_NAMES := ["YOU","AI player 1", "AI player 2"]
 
 const MOVIE_WINDOW_POSITION := Vector2i(-10000, -10000)
 const DECK_PILE_GROUP := "deck_piles"
+const WON_ROUNDS_UI_GROUP := "won_rounds_ui"
 
 # --- State ---
 var current_turn := 0
@@ -36,6 +37,7 @@ var last_round_loosers : Array[int]
 
 var _intro_done := false
 var _deal_pending := false
+var round_over := false
 
 func _init() -> void:
 	if Engine.get_write_movie_path() != "":
@@ -57,6 +59,7 @@ func set_table_root(node: Control) -> void:
 
 func start_round(starting_player_id: int) -> void:
 	current_turn = 0
+	round_over = false
 	CardManager.played_cards_round.empty()
 	TutorialScript.begin_round()
 	starting_player_id = TutorialScript.starter(starting_player_id)
@@ -86,6 +89,10 @@ func run_cue(cue: String) -> void:
 		"deal_cards":
 			if _deal_pending:
 				await _deal_and_reveal()
+		"show_won_turns", "show_life_cards":
+			var ui = get_tree().get_first_node_in_group(WON_ROUNDS_UI_GROUP)
+			if ui:
+				await ui.run_cue(cue)
 
 func _show_deck_piles() -> void:
 	var hidden_piles: Array = get_tree().get_nodes_in_group(DECK_PILE_GROUP).filter(func(pile): return not pile.visible)
@@ -101,6 +108,7 @@ func _deal_and_reveal() -> void:
 
 func restart_round():
 	current_turn = 0
+	round_over = false
 	TutorialScript.begin_round()
 	
 	await CardManager.generate_player_hands()
@@ -200,6 +208,7 @@ func _finish_turn() -> void:
 			message(str(PLAYER_NAMES[last_round_loosers[0]]) + " and " + 
 			str(PLAYER_NAMES[last_round_loosers[1]]) + " lost the round!")
 		
+		round_over = true
 		round_finished.emit(last_round_loosers)
 		
 		#Check if somebody lost twice

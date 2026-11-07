@@ -1,8 +1,12 @@
 class_name YamlLite
 extends RefCounted
 
+const TAB_WIDTH := 4
+
 var data: Array = []
 var item_lines: Array = []
+var entry_keys: Array = []
+var raw_keys: Array = []
 
 var _all_items: Array = []
 var _tokens: Array = []
@@ -10,9 +14,11 @@ var _pos := 0
 var _source := ""
 var _failed := false
 
-static func parse_file(path: String) -> YamlLite:
+static func parse_file(path: String, entry_keys_list: Array = [], raw_keys_list: Array = []) -> YamlLite:
 	var result := YamlLite.new()
 	result._source = path.get_file()
+	result.entry_keys = entry_keys_list
+	result.raw_keys = raw_keys_list
 	if not FileAccess.file_exists(path):
 		push_error("%s: file not found (%s)" % [result._source, path])
 		return result
@@ -35,6 +41,8 @@ func parse(text: String, source := "") -> Array:
 		var indent: int = _tokens[_pos].indent
 		if _is_item(_tokens[_pos].content):
 			_parse_list(indent, true)
+		elif _starts_entry(_tokens[_pos].content):
+			_parse_entries(indent, true)
 		else:
 			_warn(_tokens[_pos].line, "expected a list item starting with '- '")
 			_skip_block(indent)
@@ -64,7 +72,7 @@ func _tokenize(text: String) -> Array:
 			if c == " ":
 				indent += 1
 			elif c == "\t":
-				indent += 4
+				indent += TAB_WIDTH - indent % TAB_WIDTH
 			else:
 				break
 		while _has_open_quote(content) and number < lines.size():
@@ -123,6 +131,10 @@ func _key_split(content: String) -> int:
 		colon = content.find(":", colon + 1)
 	return -1
 
+func _starts_entry(content: String) -> bool:
+	var split := _key_split(content)
+	return split >= 0 and content.substr(0, split) in entry_keys
+
 func _skip_block(indent: int) -> void:
 	_pos += 1
 	while _pos < _tokens.size() and _tokens[_pos].indent > indent:
@@ -164,21 +176,44 @@ func _parse_list(indent: int, top: bool) -> Variant:
 	_failed = list_failed or _failed
 	return items
 
+func _parse_entries(indent: int, top: bool) -> Variant:
+	var items: Array = []
+	var list_failed := false
+	while _pos < _tokens.size() and _tokens[_pos].indent == indent and _starts_entry(_tokens[_pos].content):
+		var line: int = _tokens[_pos].line
+		_failed = false
+		var value: Variant = _parse_map(indent, true)
+		if _failed or value == null:
+			list_failed = true
+			continue
+		items.append(value)
+		_all_items.append([value, line])
+		if top:
+			data.append(value)
+			item_lines.append(line)
+	_check_leftover(indent)
+	_failed = list_failed or _failed
+	return items
+
 func _parse_block(indent: int) -> Variant:
 	var content: String = _tokens[_pos].content
 	if _is_item(content):
 		return _parse_list(indent, false)
+	if _starts_entry(content):
+		return _parse_entries(indent, false)
 	if _key_split(content) >= 0:
 		return _parse_map(indent)
 	var line: int = _tokens[_pos].line
 	_pos += 1
 	return _parse_scalar(content, line)
 
-func _parse_map(indent: int) -> Variant:
+func _parse_map(indent: int, entry := false) -> Variant:
 	var map := {}
 	var ok := true
 	while _pos < _tokens.size() and _tokens[_pos].indent == indent and not _is_item(_tokens[_pos].content):
 		var token: Dictionary = _tokens[_pos]
+		if entry and not map.is_empty() and _starts_entry(token.content):
+			break
 		var split := _key_split(token.content)
 		_pos += 1
 		if split < 0:
@@ -190,7 +225,9 @@ func _parse_map(indent: int) -> Variant:
 		if rest.begins_with("#"):
 			rest = ""
 		var value: Variant = null
-		if rest == "":
+		if rest == "" and key in raw_keys and _pos < _tokens.size() and _tokens[_pos].indent > indent and not _is_item(_tokens[_pos].content):
+			value = {"rows": _collect_rows(indent)}
+		elif rest == "":
 			if _pos < _tokens.size() and (_tokens[_pos].indent > indent or (_tokens[_pos].indent == indent and _is_item(_tokens[_pos].content))):
 				value = _parse_block(_tokens[_pos].indent)
 		else:
@@ -201,11 +238,30 @@ func _parse_map(indent: int) -> Variant:
 			_warn(token.line, "duplicate key '%s'" % key)
 			ok = false
 		map[key] = value
+		if entry and map.size() == 1 and rest != "" and _pos < _tokens.size() and _tokens[_pos].indent > indent and not _is_item(_tokens[_pos].content) and _key_split(_tokens[_pos].content) >= 0:
+			var inner_line: int = _tokens[_pos].line
+			var inner: Variant = _parse_map(_tokens[_pos].indent)
+			if inner == null:
+				ok = false
+				continue
+			for inner_key in inner:
+				if map.has(inner_key):
+					_warn(inner_line, "duplicate key '%s'" % inner_key)
+					ok = false
+				map[inner_key] = inner[inner_key]
 	_check_leftover(indent)
 	if not ok:
 		_failed = true
 		return null
 	return map
+
+func _collect_rows(indent: int) -> Array:
+	var rows: Array = []
+	while _pos < _tokens.size() and _tokens[_pos].indent > indent:
+		var token: Dictionary = _tokens[_pos]
+		rows.append({"line": token.line, "indent": token.indent, "text": token.content})
+		_pos += 1
+	return rows
 
 func _parse_scalar(text: String, line: int) -> Variant:
 	if text.begins_with("\""):

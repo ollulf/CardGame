@@ -1,66 +1,47 @@
-- match: 1
-  dialogues:
-	- when: start
-	  lines:
-		- seat: 1
-		  text: "Lets play some *cards*, shall we?"
-		- seat: 2
-		  text: "Alright, how did it work again?."
-		- seat: 1
-		  text: "Everybody got their own *deck* with them?"
-		- seat: 2
-		  cue: show_deck
-		  text: "Yes! Now, everybody draws *5 cards*, if I remember correctly."
-		- seat: 1
-		  cue: deal_cards
-		  text: "Okay *YOU*, play a card now."
-		- seat: 1
-		  wait_for_cards_played: 1
-		  text: "I have to *follow your played suit*, and if I can't, I can *play whatever I want.*"
-		- seat: 2
-		  text: "Ahh and there was a *trump color* that is *always higher*, right? "
-		- seat: 1
-		  text: "Yes."
-		- seat: 1
-		  wait_for_cards_played: 1
-		  text: "I think my card will be the highest no matter what you play."
-		- seat: 2
-		  text: "We will see..."
+match: 1
+	dialogues:
+		when: start
+		lines:
+			1: Lets play some *cards*, shall we?
+			2: Alright, how did it work again?.
+			1: Everybody got their own *deck* with them?
+			cue: show_deck
+			2: Yes! Now, everybody draws *5 cards*, if I remember correctly.
+			cue: deal_cards
+			1: Okay *YOU*, play a card now.
+			wait_for_cards_played: 1
+			1: I have to *follow your played suit*, and if I can't, I can *play whatever I want.*
+			2: Ahh and there was a *trump color* that is *always higher*, right?
+			1: Yes.
+			wait_for_cards_played: 1
+			1: I think my card will be the highest no matter what you play.
+			2: We will see...
 
-	- when: turn_end
-	  round: 1
-	  turn: 1
-	  lines:
-		- seat: 1
+		when: turn_end
+		round: 1
+		turn: 1
+		lines:
 			cue: show_won_turns
-		  text: "This was the first turn. Now the *winner* plays the *first card.*"
-		- seat: 1
-		  text: "After we played *5 turns* and nobody has hand cards anymore the players
-		with the *least won turns* looses the round."
+			1: This was the first turn. Now the *winner* plays the *first card.*
+			1: After we played *5 turns* and nobody has hand cards anymore the players
+				with the *least won turns* looses the round.
 
-	- when: round_end
-	  round: 1
-	  lines:
-		- seat: 2 
+		when: round_end
+		round: 1
+		lines:
 			cue: show_life_cards
-			text: "Well, that makes me the *looser*... I have to rip one of the two *life cards* now."
-		- seat: 2
-		  text: "If I loose one more time I *loose* the whole *game*."
-		- seat: 2
-		  text: "But since I lost, I will get us a round of *drinks*."
-		- seat: 1
-			text: "Awesome idea... Cheers!"
-		- seat: 1
-			text: "Alright, next round!"
+			2: Well, that makes me the *looser*... I have to rip one of the two *life cards* now.
+			2: If I loose one more time I *loose* the whole *game*.
+			2: But since I lost, I will get us a round of *drinks*.
+			1: Awesome idea... Cheers!
+			1: Alright, next round!
 
-- match: any
-  dialogues:
-	- when: round_end
-	  lines:
-		- seat: 1
-		  text: "Light up. *Next round.*"
+match: any
+	dialogues:
+		when: round_end
+		lines:
+			1: Light up. *Next round.*
 
-	- when: end
-	  lines:
-		- seat: 1
-		  text: "That's it. *Out of lives.*"
+		when: end
+		lines:
+			1: That's it. *Out of lives.*

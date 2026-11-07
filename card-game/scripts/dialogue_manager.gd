@@ -12,7 +12,7 @@ const NO_SEAT := -1
 const AUTO_ADVANCE_HOLD := 1.5
 const DIALOGUE_LAYER := 100
 const LINES_PATH := "res://dialogue_lines.yaml"
-const CUES := ["show_deck", "deal_cards"]
+const CUES := ["show_deck", "deal_cards", "show_won_turns", "show_life_cards"]
 
 var lines: Array = load_lines(LINES_PATH)
 var auto_advance := Engine.get_write_movie_path() != "" or DisplayServer.get_name() == "headless"
@@ -71,6 +71,12 @@ func has_cue(match_number: int, trigger: String, cue: String) -> bool:
 		for line in entry.lines:
 			if line[3] == cue:
 				return true
+	return false
+
+func match_uses_cue(cue: String) -> bool:
+	for trigger in TRIGGERS:
+		if has_cue(_match, trigger, cue):
+			return true
 	return false
 
 func wait_until_idle() -> void:
@@ -229,7 +235,7 @@ func _drop_waiting() -> void:
 	_waiting.clear()
 
 static func load_lines(path: String) -> Array:
-	return rows_from_yaml(YamlLite.parse_file(path))
+	return rows_from_yaml(YamlLite.parse_file(path, ["match", "when"], ["lines"]))
 
 static func rows_from_yaml(yaml: YamlLite) -> Array:
 	var rows: Array = []
@@ -239,7 +245,7 @@ static func rows_from_yaml(yaml: YamlLite) -> Array:
 
 static func _clean_group(raw, line: int, yaml: YamlLite, rows: Array) -> void:
 	if raw is Dictionary and raw.has("when"):
-		push_error("DialogueLines line %d: dialogues now sit in match groups ('- match: 1' with a 'dialogues:' list)" % line)
+		push_error("DialogueLines line %d: dialogues now sit in match groups ('match: 1' with a 'dialogues:' block)" % line)
 		return
 	if not raw is Dictionary or not raw.get("dialogues") is Array or raw.dialogues.is_empty():
 		push_error("DialogueLines line %d: a match group needs a list of 'dialogues'" % line)
@@ -266,7 +272,7 @@ static func _clean_row(raw, line: int, match_number: int, yaml: YamlLite):
 	if not raw.when in TRIGGERS:
 		push_error("DialogueLines line %d: unknown 'when' '%s' (allowed: %s)" % [line, raw.when, ", ".join(TRIGGERS)])
 		return null
-	if not raw.get("lines") is Array or raw.lines.is_empty():
+	if not (raw.get("lines") is Array or raw.get("lines") is Dictionary) or raw.lines.is_empty():
 		push_error("DialogueLines line %d: dialogue needs a list of 'lines'" % line)
 		return null
 	for key in raw.keys():
@@ -284,7 +290,73 @@ static func _clean_row(raw, line: int, match_number: int, yaml: YamlLite):
 			push_error("DialogueLines line %d: '%s' must be a whole number of 1 or more" % [line, filter])
 			return null
 		row[filter] = raw[filter]
-	for spoken in raw.lines:
+	var spoken_lines = _rows_to_lines(raw.lines.rows) if raw.lines is Dictionary else _items_to_lines(raw.lines, line, yaml)
+	if spoken_lines == null:
+		return null
+	row.lines = spoken_lines
+	return row
+
+static func _rows_to_lines(rows: Array):
+	var spoken_lines: Array = []
+	var base: int = rows[0].indent
+	var cue := ""
+	var wait := 0
+	var last_line := NO_SEAT
+	for raw_row in rows:
+		var row_line: int = raw_row.line
+		if raw_row.indent > base:
+			if spoken_lines.is_empty() or last_line == NO_SEAT:
+				push_error("DialogueLines line %d: this row is indented deeper, but there is no spoken line above it to continue" % row_line)
+				return null
+			spoken_lines[-1][1] += " " + raw_row.text
+			continue
+		if raw_row.indent < base:
+			push_error("DialogueLines line %d: indentation does not match the rows above it" % row_line)
+			return null
+		last_line = NO_SEAT
+		var colon: int = raw_row.text.find(":")
+		var key: String = raw_row.text.substr(0, colon).strip_edges() if colon >= 0 else ""
+		var value: String = raw_row.text.substr(colon + 1).strip_edges() if colon >= 0 else ""
+		if key.is_valid_int():
+			var seat := key.to_int()
+			if seat < 0 or seat >= SEAT_COUNT:
+				push_error("DialogueLines line %d: seat %d does not exist" % [row_line, seat])
+				return null
+			if value == "":
+				push_error("DialogueLines line %d: seat %d has no text" % [row_line, seat])
+				return null
+			spoken_lines.append([seat, value, wait, cue])
+			cue = ""
+			wait = 0
+			last_line = row_line
+		elif key == "cue":
+			if cue != "":
+				push_error("DialogueLines line %d: only one cue per spoken line" % row_line)
+				return null
+			cue = _check_cue(value, row_line)
+			if cue == "":
+				return null
+		elif key == "wait_for_cards_played":
+			if wait > 0:
+				push_error("DialogueLines line %d: only one 'wait_for_cards_played' per spoken line" % row_line)
+				return null
+			wait = _check_wait(value.to_int() if value.is_valid_int() else value, row_line)
+			if wait == 0:
+				return null
+		else:
+			push_error("DialogueLines line %d: expected '<seat>: <text>', 'cue: <name>' or 'wait_for_cards_played: <number>'" % row_line)
+			return null
+	if cue != "" or wait > 0:
+		push_error("DialogueLines line %d: 'cue' and 'wait_for_cards_played' need a spoken line below them" % rows[-1].line)
+		return null
+	if spoken_lines.is_empty():
+		push_error("DialogueLines line %d: a dialogue needs at least one spoken line" % rows[0].line)
+		return null
+	return spoken_lines
+
+static func _items_to_lines(items: Array, line: int, yaml: YamlLite):
+	var spoken_lines: Array = []
+	for spoken in items:
 		var spoken_line := yaml.line_of(spoken)
 		if spoken_line == 0:
 			spoken_line = line
@@ -301,18 +373,28 @@ static func _clean_row(raw, line: int, match_number: int, yaml: YamlLite):
 				push_error("DialogueLines line %d: unknown key '%s' in a line (allowed: seat, text, wait_for_cards_played, cue)" % [spoken_line, key])
 		var wait := 0
 		if spoken.has("wait_for_cards_played"):
-			if not spoken.wait_for_cards_played is int or spoken.wait_for_cards_played < 1:
-				push_error("DialogueLines line %d: 'wait_for_cards_played' must be a whole number of 1 or more" % spoken_line)
+			wait = _check_wait(spoken.wait_for_cards_played, spoken_line)
+			if wait == 0:
 				return null
-			wait = spoken.wait_for_cards_played
 		var cue := ""
 		if spoken.has("cue"):
-			if not spoken.cue in CUES:
-				push_error("DialogueLines line %d: unknown cue '%s' (allowed: %s)" % [spoken_line, str(spoken.cue), ", ".join(CUES)])
+			cue = _check_cue(spoken.cue, spoken_line)
+			if cue == "":
 				return null
-			cue = spoken.cue
-		row.lines.append([spoken.seat, spoken.text, wait, cue])
-	return row
+		spoken_lines.append([spoken.seat, spoken.text, wait, cue])
+	return spoken_lines
+
+static func _check_wait(value, line: int) -> int:
+	if not value is int or value < 1:
+		push_error("DialogueLines line %d: 'wait_for_cards_played' must be a whole number of 1 or more" % line)
+		return 0
+	return value
+
+static func _check_cue(value, line: int) -> String:
+	if not value in CUES:
+		push_error("DialogueLines line %d: unknown cue '%s' (allowed: %s)" % [line, str(value), ", ".join(CUES)])
+		return ""
+	return value
 
 func _check_lines() -> void:
 	for entry in lines:

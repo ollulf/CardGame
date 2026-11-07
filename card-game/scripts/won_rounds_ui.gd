@@ -7,10 +7,14 @@ extends CanvasLayer
 var lifes_revealed := false
 var won_turns_shown := false
 var fade_tween: Tween
+var loosers_split := false
+var _life_cue_running := false
 
 @onready var next_round_button: Button = %NextRoundButton
 
 func _ready() -> void:
+	add_to_group(GameManager.WON_ROUNDS_UI_GROUP)
+	GameManager.round_started.connect(on_round_started)
 	GameManager.turn_completed.connect(on_turn_completed)
 	GameManager.round_finished.connect(on_round_finished)
 	GameManager.next_round_available.connect(on_next_round_available)
@@ -26,13 +30,40 @@ func on_next_round_pressed():
 	reset_UI()
 	GameManager.restart_round()
 
+func on_round_started():
+	loosers_split = false
+
 func on_turn_completed(turn_index: int, winner_id: int):
 	_update_labels(winner_id)
-	show_won_turns()
+	if not DialogueManager.match_uses_cue("show_won_turns"):
+		show_won_turns()
 
-func on_round_finished(looser_id : Array[int]):
+func on_round_finished(_looser_id : Array[int]):
+	if _life_cue_running:
+		return
+	if not lifes_revealed and DialogueManager.match_uses_cue("show_life_cards"):
+		return
 	await reveal_lifes()
-	for i in looser_id:
+	split_round_loosers()
+
+func run_cue(cue: String):
+	match cue:
+		"show_won_turns":
+			show_won_turns()
+			if fade_tween and fade_tween.is_running():
+				await fade_tween.finished
+		"show_life_cards":
+			_life_cue_running = true
+			await reveal_lifes()
+			if GameManager.round_over:
+				split_round_loosers()
+			_life_cue_running = false
+
+func split_round_loosers():
+	if loosers_split:
+		return
+	loosers_split = true
+	for i in GameManager.last_round_loosers:
 		update_round_looser(i)
 
 func on_next_round_available():
