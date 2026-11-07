@@ -21,8 +21,7 @@ match: 1
 			1: Nobody can beat my *hearts 9*.
 			1: Since it's *trump* for this round, it's the *highest*.
 			2: Yeah, I cannot beat that...
-			2: Guess I have to *play* something in that I *don't need*.
-			2: That sometimes can be very helpful...
+			2: And I also have to follow the *suit*.
 
 		when: turn_end
 		round: 1
@@ -90,8 +89,19 @@ match: 1
 		lines:
 			cue: show_purse
 			1: Well, this was the first match and I lost...
-			2: Let's count this as the *trial round*, but *YOU* can *buy* yourself some *boosters*.
+			2: Let's count this as the *trial round*, but *YOU* can *buy* yourself a *booster*.
 			2: With them you can *upgrade your deck* to keep up with us, hehe
+
+match: 2
+	dialogues:
+		when: match_start
+		lines:
+			1: Ahh *YOU* ...
+			1: Have some of my *cigarettes*. You can smoke them whenever you want.
+			1: I hope you already added *smokeing cards* to your *deck*.
+			2: I hope not...
+			2: Thats going to make it harder for us, to win.
+
 
 match: any
 	dialogues:
