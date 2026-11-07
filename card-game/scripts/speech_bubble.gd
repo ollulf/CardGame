@@ -29,7 +29,13 @@ func _process(delta: float) -> void:
 
 static func format_text(text: String) -> String:
 	var highlight := RegEx.create_from_string("\\*([^*]+)\\*")
-	return highlight.sub(text, "[color=%s]$1[/color]" % HIGHLIGHT_COLOR, true)
+	var result := ""
+	var last := 0
+	for m in highlight.search_all(text):
+		result += text.substr(last, m.get_start() - last)
+		result += "[color=%s]%s[/color]" % [HIGHLIGHT_COLOR, m.get_string(1).to_upper()]
+		last = m.get_end()
+	return result + text.substr(last)
 
 func show_line(text: String) -> void:
 	is_typed = false
