@@ -2,7 +2,7 @@ extends CanvasLayer
 class_name DebugMenu
 
 const TOGGLE_ACTION := "toggle_debug_menu"
-const UNLOCK_CUES := ["show_deck", "show_won_turns", "show_life_cards", "show_purse", "show_trump"]
+const UNLOCK_CUES := ["show_deck", "show_won_turns", "show_life_cards", "show_purse", "show_cigs", "show_trump"]
 const PANEL_WIDTH := 260.0
 const MARGIN := 16.0
 const TOP_OFFSET := 60.0

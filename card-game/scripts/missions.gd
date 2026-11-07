@@ -1,5 +1,7 @@
 extends Node
 
+signal cigarettes_changed(seat: int)
+
 const MISSIONS_PATH := "res://missions.yaml"
 const ANY := 0
 const DECK_SIZE := 20
@@ -41,6 +43,7 @@ func can_smoke(seat: int) -> bool:
 
 func use_cigarette(seat: int) -> void:
 	_cigarettes_used[seat] = _cigarettes_used.get(seat, 0) + 1
+	cigarettes_changed.emit(seat)
 
 func _on_new_match_started() -> void:
 	_cigarettes_used.clear()
