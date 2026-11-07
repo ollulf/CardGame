@@ -7,22 +7,22 @@ const RULE_WORDS := ["highest", "lowest", "trump"]
 const AUTO_WORDS := ["auto", "-"]
 const HAND_KEYS := ["you", "ai_one", "ai_two"]
 const PLAY_KEYS := ["ai_one_plays", "ai_two_plays"]
-const ALLOWED_KEYS := ["match", "trump", "starter", "you", "ai_one", "ai_two", "ai_one_plays", "ai_two_plays"]
+const ALLOWED_KEYS := ["round", "trump", "starter", "you", "ai_one", "ai_two", "ai_one_plays", "ai_two_plays"]
 
-var matches: Dictionary = load_matches(SCRIPT_PATH)
+var rounds: Dictionary = load_rounds(SCRIPT_PATH)
 var active := true
-var _match_index := 0
+var _round_index := 0
 var _current: Dictionary = {}
 
 func _ready() -> void:
-	GameManager.game_finished.connect(_on_game_finished)
+	GameManager.match_finished.connect(_on_match_finished)
 
-func begin_match() -> void:
+func begin_round() -> void:
 	_current = {}
 	if not active:
 		return
-	_match_index += 1
-	_current = matches.get(_match_index, {})
+	_round_index += 1
+	_current = rounds.get(_round_index, {})
 
 func is_scripted() -> bool:
 	return not _current.is_empty()
@@ -36,11 +36,11 @@ func trump(fallback: Card.Suit) -> Card.Suit:
 func hand_cards(seat: int) -> Array:
 	return _current.get("hands", {}).get(seat, [])
 
-func planned_card(seat: int, hand: Hand, trick: int) -> Card:
+func planned_card(seat: int, hand: Hand, turn: int) -> Card:
 	var plan: Array = _current.get("plays", {}).get(seat, [])
-	if trick < 1 or trick > plan.size():
+	if turn < 1 or turn > plan.size():
 		return null
-	var step = plan[trick - 1]
+	var step = plan[turn - 1]
 	var legal: Array = hand.cards.filter(func(c): return CardManager.is_legal_play(hand, c))
 	if legal.is_empty():
 		return null
@@ -48,7 +48,7 @@ func planned_card(seat: int, hand: Hand, trick: int) -> Card:
 		for card in legal:
 			if card.suit == step[0] and card.rank == step[1]:
 				return card
-		push_warning("TutorialGame match %d: seat %d cannot play %s %d on trick %d, playing normally" % [_match_index, seat, Card.Suit.keys()[step[0]], step[1], trick])
+		push_warning("TutorialGame round %d: seat %d cannot play %s %d on turn %d, playing normally" % [_round_index, seat, Card.Suit.keys()[step[0]], step[1], turn])
 		return null
 	match step:
 		"highest":
@@ -69,34 +69,37 @@ func _pick(cards: Array, highest: bool) -> Card:
 			best = card
 	return best
 
-func _on_game_finished(_loosers) -> void:
+func _on_match_finished(_loosers) -> void:
 	active = false
 	_current = {}
 
-static func load_matches(path: String) -> Dictionary:
+static func load_rounds(path: String) -> Dictionary:
 	if not FileAccess.file_exists(path):
 		return {}
 	var yaml := YamlLite.parse_file(path)
 	var result := {}
 	for i in yaml.data.size():
-		var entry = _clean_match(yaml.data[i], yaml.item_lines[i])
+		var entry = _clean_round(yaml.data[i], yaml.item_lines[i])
 		if entry == null:
 			continue
-		if result.has(entry.match):
-			push_error("TutorialGame line %d: match %d is listed twice" % [yaml.item_lines[i], entry.match])
+		if result.has(entry.round):
+			push_error("TutorialGame line %d: round %d is listed twice" % [yaml.item_lines[i], entry.round])
 			continue
-		result[entry.match] = entry
+		result[entry.round] = entry
 	return result
 
-static func _clean_match(raw, line: int):
-	if not raw is Dictionary or not raw.get("match") is int or raw.match < 1:
-		push_error("TutorialGame line %d: entry needs 'match' with a number of 1 or more" % line)
+static func _clean_round(raw, line: int):
+	if raw is Dictionary and raw.has("match"):
+		push_error("TutorialGame line %d: 'match' was renamed to 'round', write 'round: %s'" % [line, str(raw["match"])])
+		return null
+	if not raw is Dictionary or not raw.get("round") is int or raw.round < 1:
+		push_error("TutorialGame line %d: entry needs 'round' with a number of 1 or more" % line)
 		return null
 	for key in raw.keys():
 		if not key in ALLOWED_KEYS:
 			push_error("TutorialGame line %d: unknown key '%s' (allowed: %s)" % [line, key, ", ".join(ALLOWED_KEYS)])
 			return null
-	var entry := {"match": raw.match, "hands": {}, "plays": {}}
+	var entry := {"round": raw.round, "hands": {}, "plays": {}}
 	if raw.has("trump"):
 		var suit := _suit(raw.trump)
 		if suit < 0 or suit > Card.Suit.CLUBS:
@@ -141,7 +144,7 @@ static func _clean_match(raw, line: int):
 				return null
 			plan.append(card)
 		if plan.size() > HAND_SIZE:
-			push_error("TutorialGame line %d: %s lists %d plays, a match has only %d tricks" % [line, key, plan.size(), HAND_SIZE])
+			push_error("TutorialGame line %d: %s lists %d plays, a round has only %d turns" % [line, key, plan.size(), HAND_SIZE])
 			return null
 		entry.plays[seat] = plan
 	return entry

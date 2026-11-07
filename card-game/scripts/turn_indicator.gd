@@ -28,13 +28,13 @@ func _process(_delta: float) -> void:
 
 func _get_current_player_id() -> int:
 	# Safety checks
-	if GameManager.turn_order.is_empty():
+	if GameManager.play_order.is_empty():
 		return -1
 
-	if GameManager.current_turn_index < 0:
+	if GameManager.current_play_index < 0:
 		return -1
 
-	if GameManager.current_turn_index >= GameManager.turn_order.size():
+	if GameManager.current_play_index >= GameManager.play_order.size():
 		return -1
 
-	return GameManager.turn_order[GameManager.current_turn_index]
+	return GameManager.play_order[GameManager.current_play_index]

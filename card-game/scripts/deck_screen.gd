@@ -8,7 +8,7 @@ var _hand_index := 0
 
 func _ready() -> void:
 	hide()
-	GameManager.game_finished.connect(open)
+	GameManager.match_finished.connect(open)
 	confirm_button.pressed.connect(_on_confirm_pressed)
 
 func open(looser_ids: Array[int]) -> void:
@@ -25,7 +25,7 @@ func _on_confirm_pressed() -> void:
 	_lower_hand_pointer()
 	InteractionManager.skip_next_double_click()
 	InteractionManager.set_table_blocked(false)
-	GameManager.start_new_game()
+	GameManager.start_new_match()
 
 func _lift_hand_pointer() -> void:
 	var hand: Control = InteractionManager.hand

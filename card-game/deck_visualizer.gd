@@ -61,6 +61,8 @@ func _on_backdrop_input(event: InputEvent):
 		close()
 
 func open_for_owner(owner: Card.Owner):
+	if owner != Card.Owner.HUMAN:
+		return
 	var deck := _deck_of(owner)
 	if deck == null or DialogueManager.is_open() or InteractionManager.is_table_blocked():
 		return
@@ -111,7 +113,7 @@ func hide_deck():
 	_cleanup(card_instances_lower)
 
 func visualize_deck(deck: Deck, owner : Card.Owner):
-	var played_cards = CardManager.played_cards_match.cards
+	var played_cards = CardManager.played_cards_round.cards
 
 	var all_cards = []
 	all_cards.append_array(deck.cards)
