@@ -97,11 +97,6 @@ func wait_until_idle() -> void:
 func clear_waiting() -> void:
 	_drop_waiting()
 
-func skip_line() -> void:
-	if _running_cue or _speaking_seat == NO_SEAT:
-		return
-	_end_line()
-
 func _input(event: InputEvent) -> void:
 	if not is_open() or not event is InputEventMouse or InteractionManager.is_table_blocked():
 		return
