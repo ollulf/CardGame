@@ -58,6 +58,8 @@ func set_table_root(node: Control) -> void:
 func start_match(starting_player_id: int) -> void:
 	current_round = 0
 	CardManager.played_cards_match.empty()
+	TutorialScript.begin_match()
+	starting_player_id = TutorialScript.starter(starting_player_id)
 	await CardManager.load_player_decks()
 	var first_match := not _intro_done
 	_intro_done = true
@@ -99,6 +101,7 @@ func _deal_and_reveal() -> void:
 
 func restart_match():
 	current_round = 0
+	TutorialScript.begin_match()
 	
 	await CardManager.generate_player_hands()
 
@@ -108,7 +111,7 @@ func restart_match():
 
 	await DialogueManager.wait_until_idle()
 
-	start_new_round(last_match_loosers.pick_random())
+	start_new_round(TutorialScript.starter(last_match_loosers.pick_random()))
 
 func reveal_trump() -> void:
 	CardManager.pick_trump_suit()

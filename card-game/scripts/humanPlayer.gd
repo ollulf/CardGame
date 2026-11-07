@@ -40,17 +40,7 @@ func can_play(card: Card) -> bool:
 	if not is_my_turn:
 		return false
 
-	if not hand.contains(card):
-		return false
-
-	if CardManager.leading_card == null:
-		return true
-
-	if CardManager.leading_card.is_trump:
-		return card.is_trump or not hand.has_trump_card()
-
-	var leading_suit = CardManager.leading_card.suit
-	return card.suit == leading_suit or not hand.contains_card_of_suit(leading_suit)
+	return CardManager.is_legal_play(hand, card)
 
 func has_hand_visual(card_visual: CardVisual) -> bool:
 	return not card_visual.is_queued_for_deletion() and card_visuals.has(card_visual) and hand.contains(card_visual.card)

@@ -1,0 +1,8 @@
+- match: 1
+  trump: HEARTS
+  starter: 0
+  you: "SPADES 6, SPADES 3, CLUBS 8, CLUBS 4, CLUBS 1"
+  ai_one: "HEARTS 9, HEARTS 2, DIAMONDS 7, DIAMONDS 5, DIAMONDS 0"
+  ai_two: "SPADES 7, CLUBS 9, DIAMONDS 8, HEARTS 5, SPADES 2"
+  ai_one_plays: "HEARTS 9, DIAMONDS 7, auto, auto, auto"
+  ai_two_plays: "lowest, highest, auto, auto, auto"

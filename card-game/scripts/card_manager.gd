@@ -42,12 +42,15 @@ func load_player_decks():
 	print("Decks generated")
 
 func pick_trump_suit() -> void:
-	trump_suit = [Card.Suit.DIAMONDS, Card.Suit.HEARTS, Card.Suit.SPADES, Card.Suit.CLUBS].pick_random()
+	trump_suit = TutorialScript.trump([Card.Suit.DIAMONDS, Card.Suit.HEARTS, Card.Suit.SPADES, Card.Suit.CLUBS].pick_random())
 	print("Trump suit: ", Card.Suit.keys()[trump_suit])
 	trump_chosen.emit(trump_suit)
 
 func generate_player_hands():	
 	print("Drawing player hands")
+	_place_scripted_cards(player_deck, 0, Card.Owner.HUMAN)
+	_place_scripted_cards(AI_1_deck, 1, Card.Owner.AI_1)
+	_place_scripted_cards(AI_2_deck, 2, Card.Owner.AI_2)
 	player_hand = player_deck.draw(5)
 	AI_1_hand = AI_1_deck.draw(5)
 	AI_2_hand = AI_2_deck.draw(5)
@@ -57,6 +60,21 @@ func generate_player_hands():
 	GameManager.ai_player_2.recieve_hand(AI_2_hand)
 	
 	print("All Hands drawn")
+
+func _place_scripted_cards(deck: Deck, seat: int, owner: Card.Owner) -> void:
+	var planned: Array = TutorialScript.hand_cards(seat)
+	for i in min(planned.size(), deck.cards.size()):
+		var index: int = deck.cards.size() - 1 - i
+		deck.cards[index] = Card.new(planned[i][0], planned[i][1], owner, false)
+
+func is_legal_play(hand: Hand, card: Card) -> bool:
+	if not hand.contains(card):
+		return false
+	if leading_card == null:
+		return true
+	if leading_card.is_trump:
+		return card.is_trump or not hand.has_trump_card()
+	return card.suit == leading_card.suit or not hand.contains_card_of_suit(leading_card.suit)
 
 func generate_cards(amount: int, owner : Card.Owner) -> Array[Card]:
 	var cards: Array[Card] = []

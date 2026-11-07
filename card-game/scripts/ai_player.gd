@@ -47,7 +47,9 @@ func _on_request_play_card(requested_player_id: int) -> void:
 		CardManager.submit_play(player_id, null)
 		return
 
-	var chosen_card = choose_card()
+	var chosen_card = TutorialScript.planned_card(player_id, hand, GameManager.current_round)
+	if chosen_card == null:
+		chosen_card = choose_card()
 
 	var from := get_card_transform(chosen_card)
 	hand.remove(chosen_card)
