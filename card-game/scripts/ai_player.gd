@@ -65,6 +65,9 @@ func _on_request_play_card(requested_player_id: int) -> void:
 		return
 
 	var token := GameManager.round_token
+	await DialogueManager.wait_until_idle()
+	if token != GameManager.round_token:
+		return
 	var planned_cigarettes := TutorialScript.planned_smoke(player_id, GameManager.current_turn)
 	if planned_cigarettes > 0:
 		await smoke(planned_cigarettes)

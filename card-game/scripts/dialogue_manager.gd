@@ -6,7 +6,9 @@ signal closed
 const SPEECH_BUBBLE := preload("res://scenes/speech_bubble.tscn")
 const SEAT_COUNT := 3
 const SEAT_OFFSETS := [Vector2(-276, -18), Vector2(66, 0), Vector2(-66, 0)]
-const TRIGGERS := ["match_start", "turn_end", "round_end", "match_end"]
+const TRIGGERS := ["match_start", "round_start", "turn_start", "turn_end", "round_end", "match_end"]
+const ROUND_TRIGGERS := ["round_start", "turn_start", "turn_end", "round_end"]
+const TURN_TRIGGERS := ["turn_start", "turn_end"]
 const TRIGGER_ALIASES := {"start": "match_start", "end": "match_end"}
 const ANY := 0
 const NO_SEAT := -1
@@ -41,6 +43,7 @@ func _ready() -> void:
 	layer.add_child(_bubble)
 
 	GameManager.round_started.connect(_on_round_started)
+	GameManager.turn_started.connect(_on_turn_started)
 	GameManager.turn_completed.connect(_on_turn_completed)
 	GameManager.round_finished.connect(_on_round_finished)
 	GameManager.match_lost.connect(_on_match_lost)
@@ -198,6 +201,10 @@ func _on_round_started() -> void:
 	_round += 1
 	if _round == 1:
 		_fire("match_start")
+	_fire("round_start", _round)
+
+func _on_turn_started(turn_index: int, _starting_player_id: int) -> void:
+	_fire("turn_start", _round, turn_index)
 
 func _on_turn_completed(turn_index: int, _winner_id: int) -> void:
 	_fire("turn_end", _round, turn_index)
@@ -300,9 +307,10 @@ static func _clean_row(raw, line: int, match_number: int, yaml: YamlLite):
 	for filter in ["round", "turn"]:
 		if not raw.has(filter):
 			continue
-		var allowed: Array = ["turn_end", "round_end"] if filter == "round" else ["turn_end"]
+		var allowed: Array = ROUND_TRIGGERS if filter == "round" else TURN_TRIGGERS
 		if not raw.when in allowed:
-			push_error("DialogueLines line %d: '%s' only works with when: %s" % [line, filter, " or ".join(allowed)])
+			var hint := " (use when: turn_start to speak at the start of a turn)" if raw.when == "round_start" else ""
+			push_error("DialogueLines line %d: '%s' only works with when: %s%s" % [line, filter, ", ".join(allowed), hint])
 			return null
 		if not raw[filter] is int or raw[filter] < 1:
 			push_error("DialogueLines line %d: '%s' must be a whole number of 1 or more" % [line, filter])

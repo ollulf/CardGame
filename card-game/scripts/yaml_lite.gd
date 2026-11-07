@@ -235,7 +235,7 @@ func _parse_map(indent: int, entry := false) -> Variant:
 		if _failed:
 			ok = false
 		if map.has(key):
-			_warn(token.line, "duplicate key '%s'" % key)
+			_warn(token.line, "duplicate key '%s': each key may appear only once per entry, start a new entry for a second block" % key)
 			ok = false
 		map[key] = value
 		if entry and map.size() == 1 and rest != "" and _pos < _tokens.size() and _tokens[_pos].indent > indent and not _is_item(_tokens[_pos].content) and _key_split(_tokens[_pos].content) >= 0:
