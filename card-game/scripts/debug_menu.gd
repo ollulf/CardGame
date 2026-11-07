@@ -1,0 +1,170 @@
+extends CanvasLayer
+class_name DebugMenu
+
+const TOGGLE_ACTION := "toggle_debug_menu"
+const UNLOCK_CUES := ["show_deck", "show_won_turns", "show_life_cards", "show_purse", "show_trump"]
+const PANEL_WIDTH := 260.0
+const MARGIN := 16.0
+const TOP_OFFSET := 60.0
+const CIGARETTE_BONUS := 5
+
+@export var pointer: Control
+
+var unlocked := false
+
+var _panel: PanelContainer
+var _status: Label
+var _skip_buttons: Array[Button] = []
+var _pointer_parent: Node
+var _pointer_index := 0
+var _was_blocked := false
+
+
+func _ready() -> void:
+	layer = 120
+	_build()
+	hide()
+	GameManager.new_match_started.connect(_on_new_match_started)
+	GameManager.match_finished.connect(_on_match_finished)
+
+
+func _build() -> void:
+	_panel = PanelContainer.new()
+	_panel.position = Vector2(MARGIN, TOP_OFFSET)
+	_panel.custom_minimum_size = Vector2(PANEL_WIDTH, 0.0)
+	var style := StyleBoxFlat.new()
+	style.bg_color = Color(0.08, 0.08, 0.1, 0.95)
+	style.set_corner_radius_all(4)
+	_panel.add_theme_stylebox_override("panel", style)
+	add_child(_panel)
+
+	var margin := MarginContainer.new()
+	for side in ["margin_left", "margin_right", "margin_top", "margin_bottom"]:
+		margin.add_theme_constant_override(side, 10)
+	_panel.add_child(margin)
+
+	var box := VBoxContainer.new()
+	box.add_theme_constant_override("separation", 6)
+	margin.add_child(box)
+
+	var title := Label.new()
+	title.text = "Debug menu (F1)"
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	box.add_child(title)
+
+	_status = Label.new()
+	_status.autowrap_mode = TextServer.AUTOWRAP_WORD
+	box.add_child(_status)
+
+	for looser_id in [1, 2]:
+		var button := _add_button(box, "Skip round: %s loses" % GameManager.PLAYER_NAMES[looser_id], skip_round.bind(looser_id))
+		_skip_buttons.append(button)
+	_add_button(box, "Unlock all UI", unlock_all)
+	_add_button(box, "Skip dialogue line", DialogueManager.skip_line)
+	_add_button(box, "+%d cigarettes" % CIGARETTE_BONUS, add_cigarettes)
+	_add_button(box, "Close", close)
+
+
+func _add_button(box: VBoxContainer, text: String, action: Callable) -> Button:
+	var button := Button.new()
+	button.text = text
+	button.focus_mode = Control.FOCUS_NONE
+	button.pressed.connect(action)
+	box.add_child(button)
+	return button
+
+
+func _input(event: InputEvent) -> void:
+	if event.is_action_pressed(TOGGLE_ACTION) and not event.is_echo():
+		get_viewport().set_input_as_handled()
+		toggle()
+
+
+func _process(_delta: float) -> void:
+	if visible:
+		_refresh()
+
+
+func toggle() -> void:
+	if visible:
+		close()
+	else:
+		open()
+
+
+func open() -> void:
+	if visible:
+		return
+	_was_blocked = InteractionManager.is_table_blocked()
+	InteractionManager.set_table_blocked(true)
+	_lift_pointer()
+	_refresh()
+	show()
+
+
+func close() -> void:
+	if not visible:
+		return
+	hide()
+	_lower_pointer()
+	InteractionManager.skip_next_double_click()
+	if not _was_blocked:
+		InteractionManager.set_table_blocked(false)
+		if DialogueManager.is_open():
+			get_viewport().physics_object_picking = false
+
+
+func skip_round(looser_id: int) -> void:
+	if not GameManager.can_skip_round():
+		return
+	GameManager.skip_round(looser_id)
+	_refresh()
+
+
+func unlock_all() -> void:
+	unlocked = true
+	for cue in UNLOCK_CUES:
+		GameManager.run_cue(cue)
+
+
+func add_cigarettes() -> void:
+	var pack: CigPack = InteractionManager.cigPack
+	if pack:
+		pack.add_cigarettes(CIGARETTE_BONUS)
+
+
+func _on_new_match_started() -> void:
+	if unlocked:
+		unlock_all.call_deferred()
+
+
+func _on_match_finished(_loosers: Array[int]) -> void:
+	if visible:
+		_was_blocked = true
+
+
+func _refresh() -> void:
+	var can_skip := GameManager.can_skip_round()
+	for button in _skip_buttons:
+		button.disabled = not can_skip
+	var lives: Array[String] = []
+	for id in range(3):
+		var player := GameManager.id_to_player(id)
+		if player is Player:
+			lives.append("%s: %d/%d lost" % [GameManager.PLAYER_NAMES[id], player.lost_rounds, GameManager.MAX_LIVES])
+	_status.text = "Turn %d/%d\n%s" % [GameManager.current_turn, GameManager.MAX_TURNS, "\n".join(lives)]
+
+
+func _lift_pointer() -> void:
+	if pointer == null or pointer.get_parent() == self:
+		return
+	_pointer_parent = pointer.get_parent()
+	_pointer_index = pointer.get_index()
+	pointer.reparent(self)
+
+
+func _lower_pointer() -> void:
+	if pointer == null or _pointer_parent == null or pointer.get_parent() != self:
+		return
+	pointer.reparent(_pointer_parent)
+	_pointer_parent.move_child(pointer, _pointer_index)

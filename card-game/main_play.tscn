@@ -22,6 +22,7 @@
 [ext_resource type="Script" uid="uid://lc3gscm8u4vo" path="res://scripts/wallet.gd" id="wallet_script"]
 [ext_resource type="Script" path="res://scripts/player_buffs.gd" id="player_buffs_script"]
 [ext_resource type="Texture2D" uid="uid://5hwi7n46gelf" path="res://sprites/wallet.png" id="wallet_tex"]
+[ext_resource type="PackedScene" path="res://scenes/debug_menu.tscn" id="debug_menu_scene"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2ja4j"]
 size = Vector2(44, 56)
@@ -328,3 +329,6 @@ theme_override_constants/margin_bottom = 8
 [node name="CardContainer" type="GridContainer" parent="DeckVisualizer/Panel/HBoxContainer/CardsPanel/LowerPanel/MarginContainer" unique_id=1823882559]
 layout_mode = 2
 columns = 12
+
+[node name="DebugMenu" parent="." node_paths=PackedStringArray("pointer") instance=ExtResource("debug_menu_scene")]
+pointer = NodePath("../HandVisualisation")

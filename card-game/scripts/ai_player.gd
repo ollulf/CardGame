@@ -64,6 +64,7 @@ func _on_request_play_card(requested_player_id: int) -> void:
 	if requested_player_id != player_id:
 		return
 
+	var token := GameManager.round_token
 	var planned_cigarettes := TutorialScript.planned_smoke(player_id, GameManager.current_turn)
 	if planned_cigarettes > 0:
 		await smoke(planned_cigarettes)
@@ -73,6 +74,8 @@ func _on_request_play_card(requested_player_id: int) -> void:
 	# Play Delay
 	await get_tree().create_timer(3.0, false).timeout
 	await DialogueManager.wait_until_idle()
+	if token != GameManager.round_token:
+		return
 
 	if hand.is_empty():
 		print("AI Players hand is empty")

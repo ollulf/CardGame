@@ -39,6 +39,7 @@ var _intro_done := false
 var _deal_pending := false
 var _trump_pending := false
 var round_over := false
+var round_token := 0
 
 func _init() -> void:
 	if Engine.get_write_movie_path() != "":
@@ -186,7 +187,10 @@ func _build_play_order(starting_player_id: int) -> Array[int]:
 
 
 func _request_current_player() -> void:
+	var token := round_token
 	await DialogueManager.wait_until_idle()
+	if token != round_token:
+		return
 
 	if current_play_index >= play_order.size():
 		_finish_turn()
@@ -203,52 +207,82 @@ func play_callback(player_id: int) -> void:
 
 
 func _finish_turn() -> void:
+	var token := round_token
 	await get_tree().create_timer(2.0, false).timeout
 	await DialogueManager.wait_until_idle()
+	if token != round_token:
+		return
 
 	var winner : Card.Owner = CardManager.get_turn_winner()
 	CardManager.highlight_turn_winner()
-	
+
 	message(str(PLAYER_NAMES[winner]) + " won the turn")
 
 	await get_tree().create_timer(1.0, false).timeout
+	if token != round_token:
+		return
 	await CardManager.clear_table()
+	if token != round_token:
+		return
 
 	turn_completed.emit(current_turn, owner_to_id(winner))
 
 	await get_tree().create_timer(3.0, false).timeout
 	await DialogueManager.wait_until_idle()
+	if token != round_token:
+		return
 
 	#Checks if round is over
 	if current_turn >= MAX_TURNS:
-		last_round_loosers = get_round_looser()
-		
-		notify_round_loosers(last_round_loosers)
-		
-		if(last_round_loosers.size() == 1):
-			message(str(PLAYER_NAMES[last_round_loosers[0]]) + " lost the round!")
-		else:
-			message(str(PLAYER_NAMES[last_round_loosers[0]]) + " and " + 
-			str(PLAYER_NAMES[last_round_loosers[1]]) + " lost the round!")
-		
-		round_over = true
-		round_finished.emit(last_round_loosers)
-		
-		#Check if somebody lost twice
-		var total_loosers := get_total_loosers()
-		for total_looser in total_loosers:
-			match_lost.emit(total_looser)
-
-		await DialogueManager.wait_until_idle()
-
-		if total_loosers.is_empty():
-			next_round_available.emit()
-		else:
-			match_finished.emit(total_loosers)
-
+		await _end_round(get_round_looser())
 		return
-	
+
 	start_new_turn(owner_to_id(winner))
+
+func _end_round(loosers: Array[int]) -> void:
+	last_round_loosers = loosers
+
+	notify_round_loosers(last_round_loosers)
+
+	if(last_round_loosers.size() == 1):
+		message(str(PLAYER_NAMES[last_round_loosers[0]]) + " lost the round!")
+	else:
+		message(str(PLAYER_NAMES[last_round_loosers[0]]) + " and " +
+		str(PLAYER_NAMES[last_round_loosers[1]]) + " lost the round!")
+
+	round_over = true
+	round_finished.emit(last_round_loosers)
+
+	#Check if somebody lost twice
+	var total_loosers := get_total_loosers()
+	for total_looser in total_loosers:
+		match_lost.emit(total_looser)
+
+	await DialogueManager.wait_until_idle()
+
+	if total_loosers.is_empty():
+		next_round_available.emit()
+	else:
+		match_finished.emit(total_loosers)
+
+func can_skip_round() -> bool:
+	return current_turn > 0 and not round_over
+
+func skip_round(looser_id: int) -> void:
+	if not can_skip_round():
+		return
+	round_token += 1
+	current_turn = MAX_TURNS
+	round_over = true
+	if human_player is HumanPlayer:
+		human_player.is_my_turn = false
+	for id in range(3):
+		id_to_player(id).set_active(false)
+	DialogueManager.clear_waiting()
+	await CardManager.clear_table()
+	CardManager.clear_all_cards()
+	var loosers: Array[int] = [looser_id]
+	await _end_round(loosers)
 
 func get_total_loosers() -> Array[int]:
 	var result: Array[int] = []
