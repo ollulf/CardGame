@@ -3,6 +3,7 @@ extends Node
 signal stats_changed(player_id: int)
 
 const PLAYERS: Array[int] = [0, 1, 2]
+const SMOKE_BONUS_PER_CIGARETTE := 1
 
 var smoking_stacks := {
 	0: [],
@@ -13,12 +14,14 @@ var smoking_stacks := {
 var drinking_level := 0
 
 func _ready() -> void:
-	GameManager.turn_completed.connect(_on_turn_completed)
+	GameManager.round_finished.connect(_on_round_finished)
+	GameManager.new_match_started.connect(clear_smoking)
 
-func smoke(player_id: int, amount: int, duration: int) -> void:
+func smoke(player_id: int, amount: int) -> void:
+	if amount <= 0:
+		return
 	smoking_stacks[player_id].append({
-		"amount": amount,
-		"turns_left": duration
+		"amount": amount
 	})
 	stats_changed.emit(player_id)
 
@@ -31,27 +34,18 @@ func get_smoking(player_id: int) -> int:
 		total += int(stack.get("amount", 0))
 	return total
 
+func get_smoking_stack_count(player_id: int) -> int:
+	return smoking_stacks[player_id].size()
+
 func get_drinking(player_id: int) -> int:
 	return drinking_level
 
-
-func _on_turn_completed(_turn_index: int,  _winner_id: int) -> void:
+func clear_smoking() -> void:
 	for pid in PLAYERS:
-		var stacks: Array = smoking_stacks[pid]
-		var changed := false
+		if smoking_stacks[pid].is_empty():
+			continue
+		smoking_stacks[pid].clear()
+		stats_changed.emit(pid)
 
-		for i in range(stacks.size() - 1, -1, -1):
-			var stack: Dictionary = stacks[i]
-
-			stack["turns_left"] = int(stack.get("turns_left", 0)) - 1
-			stack["amount"] = maxi(int(stack.get("amount", 0)) - 1, 0)
-
-			if stack["turns_left"] <= 0 or stack["amount"] <= 0:
-				stacks.remove_at(i)
-				changed = true
-			else:
-				stacks[i] = stack
-				changed = true
-
-		if changed:
-			stats_changed.emit(pid)
+func _on_round_finished(_loosers) -> void:
+	clear_smoking()

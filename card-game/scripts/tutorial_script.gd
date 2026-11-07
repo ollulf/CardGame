@@ -5,6 +5,7 @@ const SEAT_COUNT := 3
 const HAND_SIZE := 5
 const RULE_WORDS := ["highest", "lowest", "trump"]
 const AUTO_WORDS := ["auto", "-"]
+const SMOKE_WORD := "smoke"
 const HAND_KEYS := ["you", "ai_one", "ai_two"]
 const PLAY_KEYS := ["ai_one_plays", "ai_two_plays"]
 const ALLOWED_KEYS := ["round", "trump", "starter", "you", "ai_one", "ai_two", "ai_one_plays", "ai_two_plays"]
@@ -36,6 +37,9 @@ func trump(fallback: Card.Suit) -> Card.Suit:
 func hand_cards(seat: int) -> Array:
 	return _current.get("hands", {}).get(seat, [])
 
+func planned_smoke(seat: int, turn: int) -> int:
+	return _current.get("smokes", {}).get(seat, {}).get(turn, 0)
+
 func planned_card(seat: int, hand: Hand, turn: int) -> Card:
 	var plan: Array = _current.get("plays", {}).get(seat, [])
 	if turn < 1 or turn > plan.size():
@@ -46,7 +50,7 @@ func planned_card(seat: int, hand: Hand, turn: int) -> Card:
 		return null
 	if step is Array:
 		for card in legal:
-			if card.suit == step[0] and card.rank == step[1]:
+			if card.suit == step[0] and card.base_rank == step[1]:
 				return card
 		push_warning("TutorialGame round %d: seat %d cannot play %s %d on turn %d, playing normally" % [_round_index, seat, Card.Suit.keys()[step[0]], step[1], turn])
 		return null
@@ -99,7 +103,7 @@ static func _clean_round(raw, line: int):
 		if not key in ALLOWED_KEYS:
 			push_error("TutorialGame line %d: unknown key '%s' (allowed: %s)" % [line, key, ", ".join(ALLOWED_KEYS)])
 			return null
-	var entry := {"round": raw.round, "hands": {}, "plays": {}}
+	var entry := {"round": raw.round, "hands": {}, "plays": {}, "smokes": {}}
 	if raw.has("trump"):
 		var suit := _suit(raw.trump)
 		if suit < 0 or suit > Card.Suit.CLUBS:
@@ -131,7 +135,13 @@ static func _clean_round(raw, line: int):
 		if not raw.has(key):
 			continue
 		var plan: Array = []
-		for word in _words(raw[key]):
+		var smokes := {}
+		for raw_word in _words(raw[key]):
+			var word: String = raw_word
+			var parts := word.split("+", false, 1)
+			if parts.size() == 2 and parts[0].strip_edges().to_lower() == SMOKE_WORD:
+				smokes[plan.size() + 1] = 1
+				word = parts[1].strip_edges()
 			if word in RULE_WORDS or word in AUTO_WORDS:
 				plan.append(word)
 				continue
@@ -147,6 +157,7 @@ static func _clean_round(raw, line: int):
 			push_error("TutorialGame line %d: %s lists %d plays, a round has only %d turns" % [line, key, plan.size(), HAND_SIZE])
 			return null
 		entry.plays[seat] = plan
+		entry.smokes[seat] = smokes
 	return entry
 
 static func _words(value) -> Array:

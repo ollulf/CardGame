@@ -30,6 +30,8 @@ func _on_new_match_started() -> void:
 		visible = false
 		input_pickable = false
 		modulate.a = 0.0
+	else:
+		visible = true
 
 
 func reveal() -> void:

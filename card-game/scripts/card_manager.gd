@@ -30,14 +30,34 @@ var leading_card : Card
 var first_trump_card : Card
 
 func _ready() -> void:
-	GameManager.turn_completed.connect(_on_turn_completed)
+	PlayerDataManager.stats_changed.connect(apply_buffs)
+	trump_chosen.connect(_on_trump_chosen)
 
-func _on_turn_completed(_turn_index: int, _winner_id: int) -> void:
-	if player_hand == null:
+func _on_trump_chosen(_suit: Card.Suit) -> void:
+	for player_id in PlayerDataManager.PLAYERS:
+		apply_buffs(player_id)
+
+func hand_of(player_id: int) -> Hand:
+	match player_id:
+		0:
+			return player_hand
+		1:
+			return AI_1_hand
+		2:
+			return AI_2_hand
+	return null
+
+func apply_buffs(player_id: int) -> void:
+	var hand := hand_of(player_id)
+	if hand == null:
 		return
-	for card in player_hand.cards:
-		if card.rank != card.base_rank:
-			card.rank = card.base_rank
+	var smoke_bonus := PlayerDataManager.get_smoking(player_id)
+	for card in hand.cards:
+		var target := card.base_rank
+		if card.is_trump:
+			target += smoke_bonus
+		if card.rank != target:
+			card.rank = target
 			card.apply_modifiers()
 
 func load_player_decks():
@@ -131,16 +151,10 @@ func generate_cards(amount: int, owner : Card.Owner) -> Array[Card]:
 
 
 # In this function the Card Manager should get through the active buffs and update the cards of that player
-func update_cards(cigarettes_lit: int) -> void:
-	if player_hand == null or cigarettes_lit <= 0:
+func update_cards(cigarettes_lit: int, player_id: int = 0) -> void:
+	if cigarettes_lit <= 0:
 		return
-
-	# Create Array of Cards for each player
-
-	# For each Array of Cards, Go through each card and then apply the buff for that player
-	for card in player_hand.get_cards_of_suit(Card.Suit.SMOKE):
-		card.rank += cigarettes_lit
-		card.apply_modifiers()
+	PlayerDataManager.smoke(player_id, cigarettes_lit * PlayerDataManager.SMOKE_BONUS_PER_CIGARETTE)
 
 func submit_play(player_id: int, card: Card, from: Transform2D = Transform2D.IDENTITY) -> void:
 	if card == null:

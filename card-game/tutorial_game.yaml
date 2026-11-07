@@ -15,3 +15,12 @@
   ai_two: "SPADES 9, SPADES 1, DIAMONDS 2, DIAMONDS 0, HEARTS 1"
   ai_one_plays: "auto, auto, auto, auto, auto"
   ai_two_plays: "SPADES 9, auto, auto, auto, auto"
+
+- round: 3
+  trump: DIAMONDS
+  starter: 1
+  you: "HEARTS 7, HEARTS 2, CLUBS 4, SPADES 9, SPADES 8"
+  ai_one: "HEARTS 5, DIAMONDS 3, DIAMONDS 6, SPADES 2, HEARTS 1"
+  ai_two: "SMOKE 2, CLUBS 8, SMOKE 6, SPADES 3, CLUBS 1"
+  ai_one_plays: "HEARTS 5, DIAMONDS 3, DIAMONDS 6, auto, auto"
+  ai_two_plays: "SMOKE 2, CLUBS 8, smoke + SMOKE 6, SPADES 3, auto"

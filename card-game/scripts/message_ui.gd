@@ -13,6 +13,7 @@ func _message(text: String) -> void:
 	var my_token := _message_token
 
 	message_label.text = text
+	visible = true
 	message_label.visible = true
 
 	await get_tree().create_timer(3.0, false).timeout
@@ -25,3 +26,4 @@ func _message(text: String) -> void:
 
 func clear():
 	message_label.text = ""
+	visible = false
