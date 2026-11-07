@@ -5,6 +5,9 @@ signal card_played(player_id: int, card: Card)
 
 const PLAY_ZONE_OFFSET := Vector2(-330, -290)
 const PLAY_ZONE_SIZE := Vector2(660, 400)
+const HAND_SIZE := 5
+const DEAL_INTERVAL := 0.12
+const DEAL_SETTLE_TIME := 0.45
 
 var table_root: Control
 
@@ -51,15 +54,44 @@ func generate_player_hands():
 	_place_scripted_cards(player_deck, 0, Card.Owner.HUMAN)
 	_place_scripted_cards(AI_1_deck, 1, Card.Owner.AI_1)
 	_place_scripted_cards(AI_2_deck, 2, Card.Owner.AI_2)
-	player_hand = player_deck.draw(5)
-	AI_1_hand = AI_1_deck.draw(5)
-	AI_2_hand = AI_2_deck.draw(5)
-	
+	player_hand = Hand.new()
+	AI_1_hand = Hand.new()
+	AI_2_hand = Hand.new()
+
 	GameManager.human_player.recieve_hand(player_hand)
 	GameManager.ai_player_1.recieve_hand(AI_1_hand)
 	GameManager.ai_player_2.recieve_hand(AI_2_hand)
-	
+
+	await _deal_cards([
+		[player_deck, GameManager.human_player, Card.Owner.HUMAN],
+		[AI_1_deck, GameManager.ai_player_1, Card.Owner.AI_1],
+		[AI_2_deck, GameManager.ai_player_2, Card.Owner.AI_2],
+	])
+
 	print("All Hands drawn")
+
+func _deal_cards(seats: Array) -> void:
+	var counts: Array[int] = []
+	for seat in seats:
+		counts.append(mini(HAND_SIZE, seat[0].cards.size()))
+
+	for slot in range(HAND_SIZE):
+		for i in range(seats.size()):
+			if slot >= counts[i]:
+				continue
+			var deck: Deck = seats[i][0]
+			seats[i][1].deal_card(deck.cards.pop_back(), _deck_pile_center(seats[i][2], seats[i][1]), slot, counts[i])
+			await get_tree().create_timer(DEAL_INTERVAL, false).timeout
+
+	await get_tree().create_timer(DEAL_SETTLE_TIME, false).timeout
+	for seat in seats:
+		seat[1].finish_deal()
+
+func _deck_pile_center(owner: Card.Owner, fallback: Control) -> Vector2:
+	for pile in get_tree().get_nodes_in_group(GameManager.DECK_PILE_GROUP):
+		if pile.deck_owner == owner:
+			return pile.global_position
+	return fallback.global_position
 
 func _place_scripted_cards(deck: Deck, seat: int, owner: Card.Owner) -> void:
 	var planned: Array = TutorialScript.hand_cards(seat)

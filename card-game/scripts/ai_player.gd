@@ -133,16 +133,36 @@ func layout_hand_cards() -> void:
 	if n == 0:
 		return
 
-	var gap = MAX_GAP
-
-	if n > 1:
-		gap = min(card_space / float(n - 1), MAX_GAP)
-
-	var total_span = gap * float(n - 1)
-	var start_y = -total_span * 0.5
-
 	for i in range(n):
 		var cv = card_visuals[i]
-		cv.position = Vector2(0.0, start_y + gap * float(i)) - cv.size * 0.5
+		cv.position = _slot_position(i, n) - cv.size * 0.5
 		cv.z_index = i
 		cv.update_layout()
+
+
+func _slot_position(index: int, count: int) -> Vector2:
+	var gap = MAX_GAP
+
+	if count > 1:
+		gap = min(card_space / float(count - 1), MAX_GAP)
+
+	var start_y = -gap * float(count - 1) * 0.5
+	return Vector2(0.0, start_y + gap * float(index))
+
+
+func deal_card(card: Card, from_center: Vector2, slot: int, slot_count: int) -> void:
+	hand.append(card)
+	var c := preload("res://scenes/Card.tscn").instantiate() as CardVisual
+	c.setup(card, true)
+	add_child(c)
+	card_visuals.append(c)
+	c.position = _slot_position(slot, slot_count) - c.size * 0.5
+	c.z_index = slot
+	c.update_layout()
+	c.deal_from(Transform2D(0.0, Vector2.ONE, 0.0, from_center - c.pivot_offset), show_hand)
+
+
+func finish_deal() -> void:
+	layout_hand_cards()
+	for card_visual in card_visuals:
+		card_visual.hover_enabled = false

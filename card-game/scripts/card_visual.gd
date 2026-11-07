@@ -15,6 +15,7 @@ const RANK_DECREASED_COLOR := Color(1.0, 0.4, 0.4)
 @export var hover_anim_time: float = 0.12
 @export var drag_z_index: int = 50
 @export var float_anim_time: float = 0.35
+@export var deal_anim_time: float = 0.4
 
 var _base_scale: Vector2
 var _base_z: int
@@ -146,6 +147,37 @@ func float_in_from(from: Transform2D) -> void:
 	_tween.tween_property(self, "position", target_position, float_anim_time)
 	_tween.tween_property(self, "scale", target_scale, float_anim_time)
 	_tween.finished.connect(_on_float_finished.bind(target_z))
+
+
+func deal_from(from: Transform2D, reveal: bool) -> void:
+	var target_position := position
+	var target_scale := scale
+	var target_z := z_index
+	var start_scale := from.get_scale()
+
+	hover_enabled = false
+	z_index = drag_z_index
+	scale = start_scale
+	global_position = from.origin
+
+	_kill_tween()
+	_tween = create_tween()
+	_tween.set_parallel()
+	_tween.set_trans(Tween.TRANS_CUBIC)
+	_tween.set_ease(Tween.EASE_OUT)
+	_tween.tween_property(self, "position", target_position, deal_anim_time)
+	_tween.tween_method(_deal_step.bind(start_scale, target_scale, reveal), 0.0, 1.0, deal_anim_time)
+	_tween.finished.connect(_on_float_finished.bind(target_z))
+
+
+func _deal_step(t: float, start_scale: Vector2, target_scale: Vector2, reveal: bool) -> void:
+	var s := start_scale.lerp(target_scale, t)
+	if reveal:
+		s.x *= maxf(absf(cos(t * PI)), 0.05)
+		if t >= 0.5 and face_down:
+			face_down = false
+			update_visuals()
+	scale = s
 
 
 func _on_float_finished(target_z: int) -> void:
