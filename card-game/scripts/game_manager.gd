@@ -89,6 +89,10 @@ func run_cue(cue: String) -> void:
 		"deal_cards":
 			if _deal_pending:
 				await _deal_and_reveal()
+		"show_purse":
+			var wallet = get_tree().get_first_node_in_group("wallet")
+			if wallet:
+				await wallet.reveal()
 		"show_won_turns", "show_life_cards":
 			var ui = get_tree().get_first_node_in_group(WON_ROUNDS_UI_GROUP)
 			if ui:
