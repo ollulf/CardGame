@@ -1,53 +1,58 @@
-- when: game_start
-  lines:
-	- seat: 1
-	  text: "Lets play some *cards*, shall we?"
-	- seat: 2
-	  text: "Alright, how did it work again?."
-	- seat: 1
-	  text: "Everybody got their own *deck* with them?"
-	- seat: 2
-	  cue: show_deck
-	  text: "Yes! Now, everybody draws *5 cards*, if I remember correctly."
-	- seat: 1
-	  cue: deal_cards
-	  text: "Okay *YOU*, play a card now."
-	- seat: 1
-	  after_played_cards: 1
-	  text: "I have to *follow your played suit*, and if I can't, I can *play whatever I want.*"
-	- seat: 2
-	  text: "Ahh and there was a *trump color* that is *always higher*, right? "
-	- seat: 1
-	  text: "Yes."
-	- seat: 1
-	  after_played_cards: 1
-	  text: "I think my card will be the highest no matter what you play."
-	- seat: 2
-	  text: "We will see..."
+- match: 1
+  dialogues:
+	- when: start
+	  lines:
+		- seat: 1
+		  text: "Lets play some *cards*, shall we?"
+		- seat: 2
+		  text: "Alright, how did it work again?."
+		- seat: 1
+		  text: "Everybody got their own *deck* with them?"
+		- seat: 2
+		  cue: show_deck
+		  text: "Yes! Now, everybody draws *5 cards*, if I remember correctly."
+		- seat: 1
+		  cue: deal_cards
+		  text: "Okay *YOU*, play a card now."
+		- seat: 1
+		  wait_for_cards_played: 1
+		  text: "I have to *follow your played suit*, and if I can't, I can *play whatever I want.*"
+		- seat: 2
+		  text: "Ahh and there was a *trump color* that is *always higher*, right? "
+		- seat: 1
+		  text: "Yes."
+		- seat: 1
+		  wait_for_cards_played: 1
+		  text: "I think my card will be the highest no matter what you play."
+		- seat: 2
+		  text: "We will see..."
 
-- when: after_turns
-  count: 1
-  lines:
-	- seat: 1
-	  text: "This was the first turn. Now the *winner* plays the *first card.*"
-	- seat: 1
-	  text: "After we played *5 turns* and nobody has hand cards anymore the players
-	with the *least won rounds looses the game*."
+	- when: turn_end
+	  round: 1
+	  turn: 1
+	  lines:
+		- seat: 1
+		  text: "This was the first turn. Now the *winner* plays the *first card.*"
+		- seat: 1
+		  text: "After we played *5 turns* and nobody has hand cards anymore the players
+		with the *least won rounds looses the game*."
 
-- when: after_rounds
-  count: 1
-  lines:
-	- seat: 2
-	  text: "That's the first round gone."
-	- seat: 2
-	  text: "I will get us a ground of *drinks*."
+	- when: round_end
+	  round: 1
+	  lines:
+		- seat: 2
+		  text: "That's the first round gone."
+		- seat: 2
+		  text: "I will get us a ground of *drinks*."
 
-- when: between_rounds
-  lines:
-	- seat: 1
-	  text: "Light up. *Next round.*"
+- match: any
+  dialogues:
+	- when: round_end
+	  lines:
+		- seat: 1
+		  text: "Light up. *Next round.*"
 
-- when: game_over
-  lines:
-	- seat: 1
-	  text: "That's it. *Out of lives.*"
+	- when: end
+	  lines:
+		- seat: 1
+		  text: "That's it. *Out of lives.*"

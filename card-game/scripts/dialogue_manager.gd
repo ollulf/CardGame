@@ -6,8 +6,8 @@ signal closed
 const SPEECH_BUBBLE := preload("res://scenes/speech_bubble.tscn")
 const SEAT_COUNT := 3
 const SEAT_OFFSETS := [Vector2(-276, -18), Vector2(66, 0), Vector2(-66, 0)]
-const TRIGGERS_WITH_COUNT := ["after_turns", "every_turns", "after_rounds"]
-const TRIGGERS_WITHOUT_COUNT := ["game_start", "between_rounds", "game_over"]
+const TRIGGERS := ["start", "turn_end", "round_end", "end"]
+const ANY := 0
 const NO_SEAT := -1
 const AUTO_ADVANCE_HOLD := 1.5
 const DIALOGUE_LAYER := 100
@@ -25,8 +25,8 @@ var _speaking_seat := NO_SEAT
 var _running_cue := false
 var _auto_advance_time := 0.0
 var _match_running := false
-var _turns := 0
-var _rounds := 0
+var _match := 0
+var _round := 0
 
 func _ready() -> void:
 	var layer := CanvasLayer.new()
@@ -64,9 +64,9 @@ func _enqueue(player_id: int, text: String, cue: String) -> void:
 func is_open() -> bool:
 	return _speaking_seat != NO_SEAT or _running_cue or not _queue.is_empty()
 
-func has_cue(trigger: String, cue: String) -> bool:
+func has_cue(match_number: int, trigger: String, cue: String) -> bool:
 	for entry in lines:
-		if entry.when != trigger:
+		if entry.when != trigger or not _matches(entry.match_number, match_number):
 			continue
 		for line in entry.lines:
 			if line[3] == cue:
@@ -169,42 +169,38 @@ func _tail_side(seat: int) -> SpeechBubble.TailSide:
 			return SpeechBubble.TailSide.DOWN
 
 func _on_round_started() -> void:
-	_turns = 0
 	if not _match_running:
 		_match_running = true
-		_rounds = 0
-		_fire("game_start")
+		_match += 1
+		_round = 0
+	_round += 1
+	if _round == 1:
+		_fire("start")
 
-func _on_turn_completed(_turn_index: int, _winner_id: int) -> void:
-	_turns += 1
-	for entry in lines:
-		if entry.when == "after_turns" and entry.count == _turns:
-			_queue_entry(entry)
-		elif entry.when == "every_turns" and _turns % int(entry.count) == 0:
-			_queue_entry(entry)
+func _on_turn_completed(turn_index: int, _winner_id: int) -> void:
+	_fire("turn_end", _round, turn_index)
 
 func _on_round_finished(_loosers) -> void:
-	_rounds += 1
 	if not GameManager.get_total_loosers().is_empty():
 		return
-	for entry in lines:
-		if entry.when == "after_rounds" and entry.count == _rounds:
-			_queue_entry(entry)
-	_fire("between_rounds")
+	_fire("round_end", _round)
 
 func _on_match_lost(_looser_id: int) -> void:
 	if not _match_running:
 		return
 	_match_running = false
 	_drop_waiting()
-	_turns = 0
-	_rounds = 0
-	_fire("game_over")
+	_fire("end")
 
-func _fire(trigger: String) -> void:
+func _fire(trigger: String, round_number := ANY, turn_number := ANY) -> void:
 	for entry in lines:
-		if entry.when == trigger:
+		if entry.when != trigger or not _matches(entry.match_number, _match):
+			continue
+		if _matches(entry.round, round_number) and _matches(entry.turn, turn_number):
 			_queue_entry(entry)
+
+func _matches(wanted: int, actual: int) -> bool:
+	return wanted == ANY or wanted == actual
 
 func _queue_entry(entry: Dictionary) -> void:
 	_queue_lines(entry.lines)
@@ -238,44 +234,81 @@ static func load_lines(path: String) -> Array:
 static func rows_from_yaml(yaml: YamlLite) -> Array:
 	var rows: Array = []
 	for i in yaml.data.size():
-		var row = _clean_row(yaml.data[i], yaml.item_lines[i])
-		if row != null:
-			rows.append(row)
+		_clean_group(yaml.data[i], yaml.item_lines[i], yaml, rows)
 	return rows
 
-static func _clean_row(raw, line: int):
+static func _clean_group(raw, line: int, yaml: YamlLite, rows: Array) -> void:
+	if raw is Dictionary and raw.has("when"):
+		push_error("DialogueLines line %d: dialogues now sit in match groups ('- match: 1' with a 'dialogues:' list)" % line)
+		return
+	if not raw is Dictionary or not raw.get("dialogues") is Array or raw.dialogues.is_empty():
+		push_error("DialogueLines line %d: a match group needs a list of 'dialogues'" % line)
+		return
+	for key in raw.keys():
+		if not key in ["match", "dialogues"]:
+			push_error("DialogueLines line %d: unknown key '%s' in a match group (allowed: match, dialogues)" % [line, key])
+	var match_number := ANY
+	if raw.has("match") and not (raw["match"] is String and raw["match"] == "any"):
+		if not raw["match"] is int or raw["match"] < 1:
+			push_error("DialogueLines line %d: 'match' must be a whole number of 1 or more, or 'any'" % line)
+			return
+		match_number = raw["match"]
+	for dialogue in raw.dialogues:
+		var row_line := yaml.line_of(dialogue)
+		var row = _clean_row(dialogue, row_line if row_line > 0 else line, match_number, yaml)
+		if row != null:
+			rows.append(row)
+
+static func _clean_row(raw, line: int, match_number: int, yaml: YamlLite):
 	if not raw is Dictionary or not raw.get("when") is String:
-		push_error("DialogueLines line %d: row needs a 'when'" % line)
+		push_error("DialogueLines line %d: dialogue needs a 'when'" % line)
+		return null
+	if not raw.when in TRIGGERS:
+		push_error("DialogueLines line %d: unknown 'when' '%s' (allowed: %s)" % [line, raw.when, ", ".join(TRIGGERS)])
 		return null
 	if not raw.get("lines") is Array or raw.lines.is_empty():
-		push_error("DialogueLines line %d: row needs a list of 'lines'" % line)
+		push_error("DialogueLines line %d: dialogue needs a list of 'lines'" % line)
 		return null
-	var row := {"when": raw.when, "lines": []}
-	if raw.has("count"):
-		if not raw.count is int:
-			push_error("DialogueLines line %d: 'count' must be a whole number" % line)
+	for key in raw.keys():
+		if not key in ["when", "round", "turn", "lines"]:
+			push_error("DialogueLines line %d: unknown key '%s' in a dialogue (allowed: when, round, turn, lines)" % [line, key])
+	var row := {"when": raw.when, "match_number": match_number, "round": ANY, "turn": ANY, "line": line, "lines": []}
+	for filter in ["round", "turn"]:
+		if not raw.has(filter):
+			continue
+		var allowed: Array = ["turn_end", "round_end"] if filter == "round" else ["turn_end"]
+		if not raw.when in allowed:
+			push_error("DialogueLines line %d: '%s' only works with when: %s" % [line, filter, " or ".join(allowed)])
 			return null
-		row["count"] = raw.count
+		if not raw[filter] is int or raw[filter] < 1:
+			push_error("DialogueLines line %d: '%s' must be a whole number of 1 or more" % [line, filter])
+			return null
+		row[filter] = raw[filter]
 	for spoken in raw.lines:
+		var spoken_line := yaml.line_of(spoken)
+		if spoken_line == 0:
+			spoken_line = line
 		if not spoken is Dictionary or not spoken.get("seat") is int or not spoken.get("text") is String:
-			push_error("DialogueLines line %d: every line needs a 'seat' number and a 'text'" % line)
+			push_error("DialogueLines line %d: every line needs a 'seat' number and a 'text'" % spoken_line)
 			return null
 		if spoken.seat < 0 or spoken.seat >= SEAT_COUNT:
-			push_error("DialogueLines line %d: seat %d does not exist" % [line, spoken.seat])
+			push_error("DialogueLines line %d: seat %d does not exist" % [spoken_line, spoken.seat])
 			return null
 		for key in spoken.keys():
-			if not key in ["seat", "text", "after_played_cards", "cue"]:
-				push_error("DialogueLines line %d: unknown key '%s' in a line (allowed: seat, text, after_played_cards, cue)" % [line, key])
+			if key == "after_played_cards":
+				push_error("DialogueLines line %d: 'after_played_cards' was renamed to 'wait_for_cards_played'" % spoken_line)
+			elif not key in ["seat", "text", "wait_for_cards_played", "cue"]:
+				push_error("DialogueLines line %d: unknown key '%s' in a line (allowed: seat, text, wait_for_cards_played, cue)" % [spoken_line, key])
 		var wait := 0
-		if spoken.has("after_played_cards"):
-			if not spoken.after_played_cards is int or spoken.after_played_cards < 1:
-				push_error("DialogueLines line %d: 'after_played_cards' must be a whole number of 1 or more" % line)
+		if spoken.has("wait_for_cards_played"):
+			if not spoken.wait_for_cards_played is int or spoken.wait_for_cards_played < 1:
+				push_error("DialogueLines line %d: 'wait_for_cards_played' must be a whole number of 1 or more" % spoken_line)
 				return null
-			wait = spoken.after_played_cards
+			wait = spoken.wait_for_cards_played
 		var cue := ""
 		if spoken.has("cue"):
 			if not spoken.cue in CUES:
-				push_error("DialogueLines line %d: unknown cue '%s' (allowed: %s)" % [line, str(spoken.cue), ", ".join(CUES)])
+				push_error("DialogueLines line %d: unknown cue '%s' (allowed: %s)" % [spoken_line, str(spoken.cue), ", ".join(CUES)])
 				return null
 			cue = spoken.cue
 		row.lines.append([spoken.seat, spoken.text, wait, cue])
@@ -283,11 +316,5 @@ static func _clean_row(raw, line: int):
 
 func _check_lines() -> void:
 	for entry in lines:
-		var trigger: String = entry.get("when", "")
-		if trigger in TRIGGERS_WITH_COUNT:
-			if int(entry.get("count", 0)) < 1:
-				push_error("DialogueLines: '%s' needs a count of 1 or more" % trigger)
-		elif not trigger in TRIGGERS_WITHOUT_COUNT:
-			push_error("DialogueLines: unknown trigger '%s'" % trigger)
-		if trigger in ["after_turns", "every_turns"] and int(entry.get("count", 0)) > GameManager.MAX_TURNS:
-			push_error("DialogueLines: a round only has %d turns" % GameManager.MAX_TURNS)
+		if entry.turn > GameManager.MAX_TURNS:
+			push_error("DialogueLines line %d: a round only has %d turns" % [entry.line, GameManager.MAX_TURNS])

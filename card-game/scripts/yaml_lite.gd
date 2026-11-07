@@ -4,6 +4,7 @@ extends RefCounted
 var data: Array = []
 var item_lines: Array = []
 
+var _all_items: Array = []
 var _tokens: Array = []
 var _pos := 0
 var _source := ""
@@ -27,6 +28,7 @@ func parse(text: String, source := "") -> Array:
 		_source = source
 	data = []
 	item_lines = []
+	_all_items = []
 	_tokens = _tokenize(text)
 	_pos = 0
 	while _pos < _tokens.size():
@@ -37,6 +39,12 @@ func parse(text: String, source := "") -> Array:
 			_warn(_tokens[_pos].line, "expected a list item starting with '- '")
 			_skip_block(indent)
 	return data
+
+func line_of(item: Variant) -> int:
+	for entry in _all_items:
+		if is_same(entry[0], item):
+			return entry[1]
+	return 0
 
 func _tokenize(text: String) -> Array:
 	var tokens: Array = []
@@ -148,6 +156,7 @@ func _parse_list(indent: int, top: bool) -> Variant:
 			list_failed = true
 			continue
 		items.append(value)
+		_all_items.append([value, token.line])
 		if top:
 			data.append(value)
 			item_lines.append(token.line)
