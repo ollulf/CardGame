@@ -8,15 +8,41 @@ class_name AIPlayer
 @export var card_space: float = 320
 @export var MAX_GAP := 70.0
 
+@export var auto_smoke: bool = true
+@export_range(0.0, 1.0) var smoke_chance: float = 0.35
+@export var smoke_offset := Vector2(120.0, 190.0)
+
 var card_visuals : Array[CardVisual] = []
+var _smoked_this_round := false
 
 func _ready() -> void:
 	super._ready()
-	
+
 	GameManager.request_play_card.connect(_on_request_play_card)
 	GameManager.turn_started.connect(_on_turn_started)
-	
+	GameManager.round_started.connect(_on_round_started)
+
 	GameManager.register(self)
+
+
+func smoke(cigarettes: int = 1) -> void:
+	_smoked_this_round = true
+	var side := 1.0 if player_id == 1 else -1.0
+	var visual := AiSmoke.spawn(self, Vector2(smoke_offset.x * side, smoke_offset.y), 0.5 * side)
+	await visual.lit
+	CardManager.update_cards(cigarettes, player_id)
+
+
+func _wants_to_smoke() -> bool:
+	if not auto_smoke or _smoked_this_round or TutorialScript.is_scripted():
+		return false
+	if hand == null or not hand.has_trump_card():
+		return false
+	return randf() < smoke_chance
+
+
+func _on_round_started() -> void:
+	_smoked_this_round = false
 
 
 func recieve_hand(new_hand: Hand) -> void:
@@ -37,6 +63,9 @@ func _on_turn_started(_turn_index: int, _starting_player_id: int) -> void:
 func _on_request_play_card(requested_player_id: int) -> void:
 	if requested_player_id != player_id:
 		return
+
+	if _wants_to_smoke():
+		smoke()
 
 	# Play Delay
 	await get_tree().create_timer(3.0, false).timeout
