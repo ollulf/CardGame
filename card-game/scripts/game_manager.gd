@@ -37,6 +37,7 @@ var last_round_loosers : Array[int]
 
 var _intro_done := false
 var _deal_pending := false
+var _trump_pending := false
 var round_over := false
 
 func _init() -> void:
@@ -66,6 +67,7 @@ func start_round(starting_player_id: int) -> void:
 	await CardManager.load_player_decks()
 	var first_round := not _intro_done
 	_intro_done = true
+	_trump_pending = first_round and DialogueManager.has_cue(1, "match_start", "show_trump")
 	if first_round and DialogueManager.has_cue(1, "match_start", "show_deck"):
 		for pile in get_tree().get_nodes_in_group(DECK_PILE_GROUP):
 			pile.hide_pile()
@@ -79,6 +81,8 @@ func start_round(starting_player_id: int) -> void:
 	await DialogueManager.wait_until_idle()
 	if _deal_pending:
 		await _deal_and_reveal()
+	if _trump_pending:
+		await _reveal_pending_trump()
 
 	start_new_turn(starting_player_id)
 
@@ -89,6 +93,9 @@ func run_cue(cue: String) -> void:
 		"deal_cards":
 			if _deal_pending:
 				await _deal_and_reveal()
+		"show_trump":
+			if _trump_pending:
+				await _reveal_pending_trump()
 		"show_purse":
 			var wallet = get_tree().get_first_node_in_group("wallet")
 			if wallet:
@@ -108,6 +115,12 @@ func _show_deck_piles() -> void:
 func _deal_and_reveal() -> void:
 	_deal_pending = false
 	await CardManager.generate_player_hands()
+	if _trump_pending:
+		return
+	await reveal_trump()
+
+func _reveal_pending_trump() -> void:
+	_trump_pending = false
 	await reveal_trump()
 
 func restart_round():
