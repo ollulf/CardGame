@@ -10,21 +10,27 @@ match: 1
 			cue: deal_cards
 			1: Okay *YOU*, play a card now.
 			wait_for_cards_played: 1
-			1: I have to *follow your played suit*, and if I can't, I can *play whatever I want.*
-			2: Ahh and there was a *trump color* that is *always higher*, right?
+			1: I have to *follow* your *played suit* if I have a card on my hand with that *suit.*
+			1: If I dont have it my other cards of a *different suit* are *worthless*.
+			1: That means the *highest* card of the *first played suit* wins the turn.
+			2: ... unless ...
+			2: Unless its of the *trump color*, that is *always higher*, right?
 			1: Yes.
+			1: But still the *highest trump* card wins.
 			wait_for_cards_played: 1
-			1: I think my card will be the highest no matter what you play.
-			2: We will see...
+			1: Nobody can beat my *hearts 9*.
+			1: Since its *trump* for this round its the *highest*.
+			2: Yeah I can not beat that... 
+			2: Guess I have to *play* something in that I *dont need*.
+			2: That sometimes can be very helpful...
 
 		when: turn_end
 		round: 1
 		turn: 1
 		lines:
 			cue: show_won_turns
-			1: This was the first turn. Now the *winner* plays the *first card.*
-			1: After we played *5 turns* and nobody has hand cards anymore the players
-				with the *least won turns* looses the round.
+			1: This was the first turn. Since I was the *winner* I will play the next *first card.*
+			1: After we played *5* turns, the players with the *least* won *turns* looses the round.
 
 		when: round_end
 		round: 1
@@ -33,39 +39,61 @@ match: 1
 			2: Well, that makes me the *looser*... I have to rip one of the two *life cards* now.
 			2: If I loose one more time I *loose* the whole *game*.
 			2: But since I lost, I will get us a round of *drinks*.
-			1: Awesome idea... Cheers!
+			1: Awesome idea... 
+			1: Cheers!
+			2: Cheers.
 			1: Alright, next round!
 
 		when: round_start
 		round: 2
 		lines:
-			2: ...couthing...
+			2: Ahh important to say is that the *cards* from the *last round* stay out of the game.
+			2: We will draw *5 new cards* from our *deck*.
+			2: We will get all of them back *after* the game.
+			1: I think *YOU* got it, right?
+			1: Lets continue!
+
+		when: turn_start
+		round: 2
+		turn: 2
+		lines: 
+			1: *YOU* are doing great!
+			1: This is *fun*.
+			2: Yeah I also remember everything and *enjoy* it!
+
+		when: turn_start
+		round: 2
+		turn: 4
+		lines: 
+			cue: show_cigs
+			1: I will *smoke* a *cigarette* if that is fine for everybody.
+			2: Sure, I would also smoke one.
+			2. Can I use your lighter?
 
 		when: round_start
 		round: 3
 		lines:
-			wait_for_cards_played: 1
-			2: Finaly I am drawing my *smoking* cards.
+			wait_for_cards_played: 2
+			2: Finally I am drawing my *smoking* cards.
 			2: It basically is *always* a *trump* card.
-			1: But if *you* are playing a *highter diamonds* trump card now, you would win this turn.
+			1: But if *YOU* would play a *highter diamonds* trump card now, *YOU* would win this turn.
 
 		when: turn_start
 		round: 3
 		turn: 3
 		lines:
-			1: Well, beat this!
+			1: Well, beat *this*!
 			wait_for_cards_played: 1
-			2: I will by smoking a cigarette which makes my cigarettes cards better.
+			2: I will, by *smoking a cigarette* which makes my cigarettes *cards stronger* for every cigarette smoked this round.
 
 		when: match_end
 		lines:
 			cue: show_purse
-			1: Well this was the first match.
-			2: Let's count this as the trial round, but *you* can *buy* yourself some *boosters*.
+			1: Well this was the first match and I lost...
+			2: Let's count this as the *trial round*, but *YOU* can *buy* yourself some *boosters*.
 			2: With them you can *upgrade your deck* to keep up with us, hehe
 
 match: any
 	dialogues:
 		when: match_end
 		lines:
-			1: That's it. *Out of lives.*

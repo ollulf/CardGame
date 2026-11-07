@@ -1,3 +1,15 @@
 match: 2
-	ai_one_deck: HEARTS 9, HEARTS 8, HEARTS 7, SPADES 9, SPADES 8, CLUBS 9, CLUBS 8, DIAMONDS 9, DIAMONDS 8, SMOKE 6, SMOKE 3, ALK 5, HEARTS 6, SPADES 7, CLUBS 7, DIAMONDS 7, HEARTS 5, SPADES 6, CLUBS 6, DIAMONDS 6
-	ai_two_deck: CLUBS 0, CLUBS 1, DIAMONDS 0, DIAMONDS 1, SMOKE 2
+	ai_one_deck: 
+		H: 7,4,2
+		S: 9,6,1 
+		C: 9,0,5,6 
+		D: 6,7,0,2 
+		SM: 6,3,7
+		AL: 2,5,6
+	ai_two_deck: 
+		D 1,4,6,8
+		H 7,5,1
+		S 5,5,2
+		C 5,3,9
+		SM 7,1,2,4,5
+		AL 4,7

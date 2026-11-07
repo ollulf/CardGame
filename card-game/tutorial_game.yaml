@@ -3,7 +3,7 @@
   starter: 0
   you: "HEARTS 8, HEARTS 6, SPADES 9, CLUBS 7, CLUBS 4"
   ai_one: "HEARTS 9, HEARTS 3, HEARTS 2, HEARTS 1, HEARTS 0"
-  ai_two: "DIAMONDS 6, DIAMONDS 5, DIAMONDS 3, DIAMONDS 2, DIAMONDS 0"
+  ai_two: "DIAMONDS 6, DIAMONDS 5, DIAMONDS 3, CLUBS 2, CLUBS 0"
   ai_one_plays: "HEARTS 9, auto, auto, auto, auto"
   ai_two_plays: "auto, auto, auto, auto, auto"
 

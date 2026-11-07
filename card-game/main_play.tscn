@@ -16,13 +16,13 @@
 [ext_resource type="Script" uid="uid://bhy3xlf41kv5r" path="res://deck_visualizer.gd" id="15_2ja4j"]
 [ext_resource type="Script" uid="uid://cvxwpok4ke1o" path="res://cards_panel.gd" id="16_yiaew"]
 [ext_resource type="PackedScene" path="res://scenes/bar_screen.tscn" id="bar_screen_scene"]
+[ext_resource type="PackedScene" path="res://scenes/debug_menu.tscn" id="debug_menu_scene"]
 [ext_resource type="PackedScene" path="res://scenes/deck_pile.tscn" id="deck_pile_scene"]
 [ext_resource type="PackedScene" path="res://scenes/deck_screen.tscn" id="deck_screen"]
+[ext_resource type="Script" uid="uid://c80n6b1k87gya" path="res://scripts/player_buffs.gd" id="player_buffs_script"]
 [ext_resource type="Script" uid="uid://blqah5u23lspk" path="res://scripts/trump_display.gd" id="trump_display_script"]
 [ext_resource type="Script" uid="uid://lc3gscm8u4vo" path="res://scripts/wallet.gd" id="wallet_script"]
-[ext_resource type="Script" path="res://scripts/player_buffs.gd" id="player_buffs_script"]
 [ext_resource type="Texture2D" uid="uid://5hwi7n46gelf" path="res://sprites/wallet.png" id="wallet_tex"]
-[ext_resource type="PackedScene" path="res://scenes/debug_menu.tscn" id="debug_menu_scene"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2ja4j"]
 size = Vector2(44, 56)
@@ -330,5 +330,5 @@ theme_override_constants/margin_bottom = 8
 layout_mode = 2
 columns = 12
 
-[node name="DebugMenu" parent="." node_paths=PackedStringArray("pointer") instance=ExtResource("debug_menu_scene")]
+[node name="DebugMenu" parent="." unique_id=1067264748 node_paths=PackedStringArray("pointer") instance=ExtResource("debug_menu_scene")]
 pointer = NodePath("../HandVisualisation")
