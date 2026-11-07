@@ -54,7 +54,7 @@ func apply_buffs(player_id: int) -> void:
 	var smoke_bonus := PlayerDataManager.get_smoking(player_id)
 	for card in hand.cards:
 		var target := card.base_rank
-		if card.is_trump:
+		if card.suit == Card.Suit.SMOKE:
 			target += smoke_bonus
 		if card.rank != target:
 			card.rank = target
