@@ -44,7 +44,7 @@ func is_higher_than(card : Card) -> bool:
 	return rank > card.rank
 
 func get_is_trump() -> bool:
-	return suit == CardManager.trump_suit
+	return suit == Suit.ALK or suit == Suit.SMOKE or suit == CardManager.trump_suit
 
 func apply_modifiers():
 	values_changed.emit()

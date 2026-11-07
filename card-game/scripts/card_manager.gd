@@ -30,7 +30,7 @@ func load_player_decks():
 	print("Decks generated")
 
 func pick_trump_suit() -> void:
-	trump_suit = Card.Suit.values().pick_random()
+	trump_suit = [Card.Suit.DIAMONDS, Card.Suit.HEARTS, Card.Suit.SPADES, Card.Suit.CLUBS].pick_random()
 	print("Trump suit: ", Card.Suit.keys()[trump_suit])
 	trump_chosen.emit(trump_suit)
 
