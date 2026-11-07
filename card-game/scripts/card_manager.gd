@@ -23,6 +23,17 @@ var trump_suit : Card.Suit = Card.Suit.SMOKE
 var leading_card : Card
 var first_trump_card : Card
 
+func _ready() -> void:
+	GameManager.round_completed.connect(_on_round_completed)
+
+func _on_round_completed(_round_index: int, _winner_id: int) -> void:
+	if player_hand == null:
+		return
+	for card in player_hand.cards:
+		if card.rank != card.base_rank:
+			card.rank = card.base_rank
+			card.apply_modifiers()
+
 func load_player_decks():
 	player_deck = Deck.new(generate_cards(20, Card.Owner.HUMAN))
 	AI_1_deck = Deck.new(generate_cards(20, Card.Owner.AI_1))
