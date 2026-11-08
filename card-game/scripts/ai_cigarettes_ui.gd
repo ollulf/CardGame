@@ -1,8 +1,6 @@
 extends CanvasLayer
 
 const PACK_ICON := preload("res://sprites/Cigarettes_icon.png")
-const CHIP_BG := Color("2d2b38")
-const CHIP_BORDER := Color("4a4658")
 const EMPTY_COLOR := Color("d9645a")
 const AI_OFFSET := Vector2(6.0, 122.0)
 const SEATS := [1, 2]
@@ -83,16 +81,7 @@ func _build_chip(seat: int) -> PanelContainer:
 	var chip := PanelContainer.new()
 	chip.name = "Cigs_%d" % seat
 	chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var style := StyleBoxFlat.new()
-	style.bg_color = CHIP_BG
-	style.border_color = CHIP_BORDER
-	style.set_border_width_all(1)
-	style.set_corner_radius_all(3)
-	style.content_margin_left = 6
-	style.content_margin_right = 6
-	style.content_margin_top = 2
-	style.content_margin_bottom = 2
-	chip.add_theme_stylebox_override("panel", style)
+	chip.theme_type_variation = &"ChipPanel"
 
 	var row := HBoxContainer.new()
 	row.name = "Row"
