@@ -16,8 +16,10 @@ const SMOKE_COUNT_WEIGHTS: Array[float] = [0.4, 0.4, 0.2]
 const PANEL_RECT := Rect2(176, 124, 800, 400)
 const PACK_TEXTURE := preload("res://sprites/booster_pack.png")
 const SHINE_SHADER := preload("res://shaders/booster_shine.gdshader")
+const SHADING_MAP := preload("res://sprites/booster_pack_map.png")
 const PACK_SCALE := 2
 const FLAP_PIXELS := 8
+const LOGO_PADDING := 12
 const PACK_SIZE := Vector2(43, 80) * PACK_SCALE
 const CARD_SIZE := Vector2(60, 90)
 const CARD_SCALE := 1.5
@@ -72,6 +74,7 @@ func _build() -> void:
 
 	var shine := ShaderMaterial.new()
 	shine.shader = SHINE_SHADER
+	shine.set_shader_parameter("shading_map", SHADING_MAP)
 
 	_body = _pack_piece(Rect2(0, FLAP_PIXELS, PACK_TEXTURE.get_width(), PACK_TEXTURE.get_height() - FLAP_PIXELS), shine)
 	_body.position = Vector2(0, FLAP_PIXELS * PACK_SCALE)
@@ -82,11 +85,11 @@ func _build() -> void:
 	_logo.add_theme_color_override("font_color", Color(0.98, 0.84, 0.55, 1))
 	_logo.add_theme_color_override("font_outline_color", Color(0.12, 0.12, 0.15, 1))
 	_logo.add_theme_constant_override("outline_size", 4)
-	_logo.add_theme_font_size_override("font_size", 13)
+	_logo.add_theme_font_size_override("font_size", 11)
 	_logo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_logo.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_logo.position = Vector2(0, 45)
-	_logo.size = Vector2(PACK_SIZE.x, 70)
+	_logo.position = Vector2(LOGO_PADDING, 45)
+	_logo.size = Vector2(PACK_SIZE.x - LOGO_PADDING * 2, 70)
 	_pack.add_child(_logo)
 
 	_flap = _pack_piece(Rect2(0, 0, PACK_TEXTURE.get_width(), FLAP_PIXELS), shine)

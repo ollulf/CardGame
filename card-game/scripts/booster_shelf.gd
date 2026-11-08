@@ -5,8 +5,9 @@ signal closed
 signal denied
 
 const PANEL_RECT := Rect2(206, 104, 740, 440)
-const ENTRY_SIZE := Vector2(210, 300)
-const ENTRY_GAP := 25.0
+const ENTRY_SIZE := Vector2(222, 300)
+const ENTRY_GAP := 18.0
+const ENTRY_PADDING := Vector2(18, 16)
 const BG_COLOR := Color(0.121569, 0.117647, 0.14902, 1)
 const BORDER_COLOR := Color(0.239216, 0.219608, 0.329412, 1)
 const TEXT_COLOR := Color(0.956863, 0.952941, 0.968627, 1)
@@ -19,6 +20,7 @@ const NOT_ENOUGH_MONEY_TEXT := "Not enough money"
 const PACK_COLORS: Array[Color] = [Color(0.8, 0.8, 0.84, 1), Color(0.78, 0.88, 1.0, 1), Color(1.0, 0.86, 0.6, 1)]
 const PACK_TEXTURE := preload("res://sprites/booster_pack.png")
 const SHINE_SHADER := preload("res://shaders/booster_shine.gdshader")
+const SHADING_MAP := preload("res://sprites/booster_pack_map.png")
 const SHINE_STAGGER := 0.35
 
 var entries: Array[PanelContainer] = []
@@ -90,6 +92,10 @@ func _build_entry(booster: Dictionary, pack_color: Color) -> PanelContainer:
 	entry.pivot_offset = ENTRY_SIZE / 2.0
 	var style := _box_style(BORDER_COLOR)
 	style.bg_color = BG_COLOR.lightened(0.06)
+	style.content_margin_left = ENTRY_PADDING.x
+	style.content_margin_right = ENTRY_PADDING.x
+	style.content_margin_top = ENTRY_PADDING.y
+	style.content_margin_bottom = ENTRY_PADDING.y
 	entry.add_theme_stylebox_override("panel", style)
 	_styles.append(style)
 
@@ -109,6 +115,7 @@ func _build_entry(booster: Dictionary, pack_color: Color) -> PanelContainer:
 	var shine := ShaderMaterial.new()
 	shine.shader = SHINE_SHADER
 	shine.set_shader_parameter("time_offset", entries.size() * SHINE_STAGGER)
+	shine.set_shader_parameter("shading_map", SHADING_MAP)
 	pack.material = shine
 	pack_holder.add_child(pack)
 
