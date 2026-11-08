@@ -16,7 +16,10 @@ const SELECTED_COLOR := Color(0.98, 0.84, 0.55, 1)
 const DENY_COLOR := Color(1.0, 0.45, 0.4)
 const CONFIRM_TEXT := "Really?"
 const NOT_ENOUGH_MONEY_TEXT := "Not enough money"
-const PACK_COLORS: Array[Color] = [Color(0.55, 0.55, 0.6, 1), Color(0.45, 0.6, 0.85, 1), Color(0.85, 0.35, 0.35, 1)]
+const PACK_COLORS: Array[Color] = [Color(0.8, 0.8, 0.84, 1), Color(0.78, 0.88, 1.0, 1), Color(1.0, 0.86, 0.6, 1)]
+const PACK_TEXTURE := preload("res://sprites/booster_pack.png")
+const SHINE_SHADER := preload("res://shaders/booster_shine.gdshader")
+const SHINE_STAGGER := 0.35
 
 var entries: Array[PanelContainer] = []
 var _footers: Array[Label] = []
@@ -65,7 +68,7 @@ func _build() -> void:
 	var row_width := PlayerDataManager.BOOSTERS.size() * ENTRY_SIZE.x + (PlayerDataManager.BOOSTERS.size() - 1) * ENTRY_GAP
 	var left := PANEL_RECT.get_center().x - row_width / 2.0
 	for i in PlayerDataManager.BOOSTERS.size():
-		var entry := _build_entry(PlayerDataManager.BOOSTERS[i], PACK_COLORS[i % PACK_COLORS.size()])
+		var entry := _build_entry(PlayerDataManager.BOOSTERS[i], pack_tint(i))
 		entry.position = Vector2(left + i * (ENTRY_SIZE.x + ENTRY_GAP), PANEL_RECT.position.y + 70)
 		add_child(entry)
 		entries.append(entry)
@@ -99,17 +102,15 @@ func _build_entry(booster: Dictionary, pack_color: Color) -> PanelContainer:
 	var pack_holder := CenterContainer.new()
 	pack_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	box.add_child(pack_holder)
-	var pack := ColorRect.new()
+	var pack := TextureRect.new()
 	pack.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	pack.color = Color(0.1, 0.1, 0.1, 1)
-	pack.custom_minimum_size = Vector2(56, 84)
+	pack.texture = PACK_TEXTURE
+	pack.self_modulate = pack_color
+	var shine := ShaderMaterial.new()
+	shine.shader = SHINE_SHADER
+	shine.set_shader_parameter("time_offset", entries.size() * SHINE_STAGGER)
+	pack.material = shine
 	pack_holder.add_child(pack)
-	var stripe := ColorRect.new()
-	stripe.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	stripe.color = pack_color
-	stripe.position = Vector2(0, 30)
-	stripe.size = Vector2(56, 22)
-	pack.add_child(stripe)
 
 	box.add_child(_centered(_label(booster["name"], 20, TEXT_COLOR)))
 	box.add_child(_centered(_label("%d$" % booster["price"], 22, PRICE_COLOR)))
@@ -121,6 +122,10 @@ func _build_entry(booster: Dictionary, pack_color: Color) -> PanelContainer:
 	box.add_child(footer)
 	_footers.append(footer)
 	return entry
+
+
+static func pack_tint(index: int) -> Color:
+	return PACK_COLORS[index % PACK_COLORS.size()]
 
 
 func _box_style(border: Color) -> StyleBoxFlat:

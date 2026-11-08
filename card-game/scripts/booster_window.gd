@@ -14,7 +14,11 @@ const MAX_RANK := 9
 const SMOKE_COUNT_WEIGHTS: Array[float] = [0.4, 0.4, 0.2]
 
 const PANEL_RECT := Rect2(176, 124, 800, 400)
-const PACK_SIZE := Vector2(110, 170)
+const PACK_TEXTURE := preload("res://sprites/booster_pack.png")
+const SHINE_SHADER := preload("res://shaders/booster_shine.gdshader")
+const PACK_SCALE := 2
+const FLAP_PIXELS := 8
+const PACK_SIZE := Vector2(43, 80) * PACK_SCALE
 const CARD_SIZE := Vector2(60, 90)
 const CARD_SCALE := 1.5
 const CARD_GAP := 16.0
@@ -27,7 +31,8 @@ var flipped: Array[bool] = []
 
 var _panel: Panel
 var _pack: Control
-var _flap: ColorRect
+var _body: TextureRect
+var _flap: TextureRect
 var _collection_button: Button
 var _logo: Label
 var _booster: Dictionary = {}
@@ -65,34 +70,27 @@ func _build() -> void:
 	_pack.pivot_offset = PACK_SIZE / 2.0
 	add_child(_pack)
 
-	var body := ColorRect.new()
-	body.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	body.color = Color(0.1, 0.1, 0.1, 1)
-	body.size = PACK_SIZE
-	_pack.add_child(body)
+	var shine := ShaderMaterial.new()
+	shine.shader = SHINE_SHADER
 
-	var tear := ColorRect.new()
-	tear.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	tear.color = Color(0.45, 0.45, 0.45, 1)
-	tear.position = Vector2(4, 22)
-	tear.size = Vector2(PACK_SIZE.x - 8, 4)
-	_pack.add_child(tear)
+	_body = _pack_piece(Rect2(0, FLAP_PIXELS, PACK_TEXTURE.get_width(), PACK_TEXTURE.get_height() - FLAP_PIXELS), shine)
+	_body.position = Vector2(0, FLAP_PIXELS * PACK_SCALE)
+	_pack.add_child(_body)
 
 	_logo = Label.new()
 	_logo.text = "BOOSTER"
 	_logo.add_theme_color_override("font_color", Color(0.98, 0.84, 0.55, 1))
-	_logo.add_theme_font_size_override("font_size", 16)
+	_logo.add_theme_color_override("font_outline_color", Color(0.12, 0.12, 0.15, 1))
+	_logo.add_theme_constant_override("outline_size", 4)
+	_logo.add_theme_font_size_override("font_size", 13)
 	_logo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_logo.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_logo.position = Vector2(0, 50)
+	_logo.position = Vector2(0, 45)
 	_logo.size = Vector2(PACK_SIZE.x, 70)
 	_pack.add_child(_logo)
 
-	_flap = ColorRect.new()
-	_flap.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_flap.color = Color(0.16, 0.16, 0.16, 1)
-	_flap.size = Vector2(PACK_SIZE.x, 22)
-	_flap.pivot_offset = Vector2(PACK_SIZE.x, 22)
+	_flap = _pack_piece(Rect2(0, 0, PACK_TEXTURE.get_width(), FLAP_PIXELS), shine)
+	_flap.pivot_offset = _flap.size
 	_pack.add_child(_flap)
 
 	_collection_button = Button.new()
@@ -104,9 +102,26 @@ func _build() -> void:
 	add_child(_collection_button)
 
 
+func _pack_piece(region: Rect2, shine: ShaderMaterial) -> TextureRect:
+	var atlas := AtlasTexture.new()
+	atlas.atlas = PACK_TEXTURE
+	atlas.region = region
+	var piece := TextureRect.new()
+	piece.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	piece.texture = atlas
+	piece.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	piece.stretch_mode = TextureRect.STRETCH_SCALE
+	piece.size = region.size * PACK_SCALE
+	piece.material = shine
+	return piece
+
+
 func open(booster: Dictionary = PlayerDataManager.BOOSTERS[0]) -> void:
 	_booster = booster
 	_logo.text = String(booster.get("name", "Booster")).to_upper().replace(" ", "\n")
+	var tint := BoosterShelf.pack_tint(maxi(PlayerDataManager.BOOSTERS.find(booster), 0))
+	_body.self_modulate = tint
+	_flap.self_modulate = tint
 	for visual in card_visuals:
 		visual.queue_free()
 	card_visuals.clear()
