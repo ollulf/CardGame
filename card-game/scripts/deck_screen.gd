@@ -7,9 +7,6 @@ var _hand_parent: Node
 var _hand_index := 0
 var deck_builder: DeckBuilder
 
-const GIFT_CIGARETTES := 8
-const GIFT_MATCH := 1
-
 func _ready() -> void:
 	hide()
 	GameManager.match_finished.connect(open)
@@ -22,10 +19,6 @@ func _ready() -> void:
 	_refresh_buttons(false)
 
 func open(looser_ids: Array[int]) -> void:
-	if DialogueManager.upcoming_match() == GIFT_MATCH + 1:
-		var pack: CigPack = InteractionManager.cigPack
-		if pack != null:
-			pack.add_cigarettes(GIFT_CIGARETTES)
 	CardManager.load_player_decks()
 	_lift_hand_pointer()
 	_refresh_buttons(false)
