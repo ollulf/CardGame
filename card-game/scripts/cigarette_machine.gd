@@ -112,6 +112,7 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func on_clicked() -> void:
+	Sfx.play_button()
 	if out_of_order:
 		deny(OUT_OF_ORDER_TEXT)
 		return

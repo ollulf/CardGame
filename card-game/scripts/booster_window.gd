@@ -185,6 +185,7 @@ func click_at(point: Vector2) -> void:
 	match state:
 		State.CLOSED:
 			if Rect2(_pack.position, PACK_SIZE).has_point(point):
+				Sfx.play_button()
 				_rip_open()
 		State.REVEAL:
 			for i in card_visuals.size():
