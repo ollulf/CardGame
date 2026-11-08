@@ -114,6 +114,8 @@ func skip_round(looser_id: int) -> void:
 
 func unlock_all() -> void:
 	unlocked = true
+	PlayerDataManager.mark_booster_collected()
+	PlayerDataManager.mark_deck_edited()
 	for cue in UNLOCK_CUES:
 		GameManager.run_cue(cue)
 

@@ -324,6 +324,7 @@ func retry_match() -> void:
 
 func start_over() -> void:
 	_intro_done = false
+	PlayerDataManager.reset_buttons_unlock()
 	_restore_state(_game_start_state)
 	start_new_match()
 

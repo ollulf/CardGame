@@ -5,6 +5,24 @@ signal money_changed(money: int)
 signal booster_bought
 signal collection_changed
 signal deck_changed
+signal buttons_unlock_changed
+
+var booster_collected := false
+var deck_edited := false
+
+func mark_booster_collected() -> void:
+	booster_collected = true
+	buttons_unlock_changed.emit()
+
+func mark_deck_edited() -> void:
+	deck_edited = true
+	buttons_unlock_changed.emit()
+
+func reset_buttons_unlock() -> void:
+	booster_collected = false
+	deck_edited = false
+	buttons_unlock_changed.emit()
+
 
 const PLAYERS: Array[int] = [0, 1, 2]
 const SMOKE_BONUS_PER_CIGARETTE := 1

@@ -29,6 +29,7 @@ func _ready() -> void:
 	booster_window = BoosterWindow.new()
 	add_child(booster_window)
 	PlayerDataManager.booster_bought.connect(booster_window.open)
+	booster_window.finished.connect(PlayerDataManager.mark_booster_collected)
 	PlayerDataManager.money_changed.connect(_on_money_changed)
 	_refresh_cash()
 
