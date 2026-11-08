@@ -128,8 +128,8 @@ match: 2
 		when: zero_beats_nine
 		lines:
 			1: Wait what? A *0* just took the turn from a *9*?
-			2: Hehe, yes! A *0* beats every card with *9 or higher*, no matter the suit or trump.
-			2: But if nobody plays a *9 or higher*, the *0* is just the lowest card.
+			2: Hehe, yes! A *0* beats a *9 or higher*, but only of the *same suit*.
+			2: So only a *trump 0* beats a *trump 9*, and a *hearts 0* cannot beat a *smoking 9*.
 			1: So the tiny ones are dangerous... I should keep mine for the big ones.
 
 match: any

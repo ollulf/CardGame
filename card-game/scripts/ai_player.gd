@@ -163,10 +163,11 @@ func choose_card() -> Card:
 func _zero_beating_table() -> Card:
 	if CardManager.turn_won_by_zero():
 		return null
-	if not CardManager.has_rank_at_least(CardManager.played_cards_turn.cards, CardManager.ZERO_BEATS_RANK):
+	var best := CardManager.get_normal_winning_card()
+	if best == null or best.rank < CardManager.ZERO_BEATS_RANK:
 		return null
 	for card in hand.cards:
-		if card.rank == 0 and CardManager.is_legal_play(hand, card):
+		if card.rank == 0 and card.suit == best.suit and CardManager.is_legal_play(hand, card):
 			return card
 	return null
 
