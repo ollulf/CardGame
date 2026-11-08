@@ -6,14 +6,21 @@ signal finished
 enum State { HIDDEN, CLOSED, OPENING, REVEAL, COLLECTING }
 
 const CARD_SCENE := preload("res://scenes/Card.tscn")
-const CARDS_PER_BOOSTER := 5
+const MAX_ROW_CARDS := 5
 const SPECIAL_SUIT_CHANCE := 0.15
 const NORMAL_SUITS: Array[Card.Suit] = [Card.Suit.DIAMONDS, Card.Suit.HEARTS, Card.Suit.SPADES, Card.Suit.CLUBS]
-const MIN_RANK := 0
+const MIN_RANK := 1
 const MAX_RANK := 9
+const SMOKE_COUNT_WEIGHTS: Array[float] = [0.4, 0.4, 0.2]
 
 const PANEL_RECT := Rect2(176, 124, 800, 400)
-const PACK_SIZE := Vector2(110, 170)
+const PACK_TEXTURE := preload("res://sprites/booster_pack.png")
+const SHINE_SHADER := preload("res://shaders/booster_shine.gdshader")
+const SHADING_MAP := preload("res://sprites/booster_pack_map.png")
+const PACK_SCALE := 2
+const FLAP_PIXELS := 8
+const LOGO_PADDING := 12
+const PACK_SIZE := Vector2(43, 80) * PACK_SCALE
 const CARD_SIZE := Vector2(60, 90)
 const CARD_SCALE := 1.5
 const CARD_GAP := 16.0
@@ -26,8 +33,11 @@ var flipped: Array[bool] = []
 
 var _panel: Panel
 var _pack: Control
-var _flap: ColorRect
+var _body: TextureRect
+var _flap: TextureRect
 var _collection_button: Button
+var _logo: Label
+var _booster: Dictionary = {}
 
 
 func _ready() -> void:
@@ -62,34 +72,28 @@ func _build() -> void:
 	_pack.pivot_offset = PACK_SIZE / 2.0
 	add_child(_pack)
 
-	var body := ColorRect.new()
-	body.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	body.color = Color(0.1, 0.1, 0.1, 1)
-	body.size = PACK_SIZE
-	_pack.add_child(body)
+	var shine := ShaderMaterial.new()
+	shine.shader = SHINE_SHADER
+	shine.set_shader_parameter("shading_map", SHADING_MAP)
 
-	var tear := ColorRect.new()
-	tear.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	tear.color = Color(0.45, 0.45, 0.45, 1)
-	tear.position = Vector2(4, 22)
-	tear.size = Vector2(PACK_SIZE.x - 8, 4)
-	_pack.add_child(tear)
+	_body = _pack_piece(Rect2(0, FLAP_PIXELS, PACK_TEXTURE.get_width(), PACK_TEXTURE.get_height() - FLAP_PIXELS), shine)
+	_body.position = Vector2(0, FLAP_PIXELS * PACK_SCALE)
+	_pack.add_child(_body)
 
-	var logo := Label.new()
-	logo.text = "BOOSTER"
-	logo.add_theme_color_override("font_color", Color(0.98, 0.84, 0.55, 1))
-	logo.add_theme_font_size_override("font_size", 16)
-	logo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	logo.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	logo.position = Vector2(0, 60)
-	logo.size = Vector2(PACK_SIZE.x, 50)
-	_pack.add_child(logo)
+	_logo = Label.new()
+	_logo.text = "BOOSTER"
+	_logo.add_theme_color_override("font_color", Color(0.98, 0.84, 0.55, 1))
+	_logo.add_theme_color_override("font_outline_color", Color(0.12, 0.12, 0.15, 1))
+	_logo.add_theme_constant_override("outline_size", 4)
+	_logo.add_theme_font_size_override("font_size", 11)
+	_logo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_logo.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_logo.position = Vector2(LOGO_PADDING, 45)
+	_logo.size = Vector2(PACK_SIZE.x - LOGO_PADDING * 2, 70)
+	_pack.add_child(_logo)
 
-	_flap = ColorRect.new()
-	_flap.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_flap.color = Color(0.16, 0.16, 0.16, 1)
-	_flap.size = Vector2(PACK_SIZE.x, 22)
-	_flap.pivot_offset = Vector2(PACK_SIZE.x, 22)
+	_flap = _pack_piece(Rect2(0, 0, PACK_TEXTURE.get_width(), FLAP_PIXELS), shine)
+	_flap.pivot_offset = _flap.size
 	_pack.add_child(_flap)
 
 	_collection_button = Button.new()
@@ -101,7 +105,26 @@ func _build() -> void:
 	add_child(_collection_button)
 
 
-func open() -> void:
+func _pack_piece(region: Rect2, shine: ShaderMaterial) -> TextureRect:
+	var atlas := AtlasTexture.new()
+	atlas.atlas = PACK_TEXTURE
+	atlas.region = region
+	var piece := TextureRect.new()
+	piece.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	piece.texture = atlas
+	piece.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	piece.stretch_mode = TextureRect.STRETCH_SCALE
+	piece.size = region.size * PACK_SCALE
+	piece.material = shine
+	return piece
+
+
+func open(booster: Dictionary = PlayerDataManager.BOOSTERS[0]) -> void:
+	_booster = booster
+	_logo.text = String(booster.get("name", "Booster")).to_upper().replace(" ", "\n")
+	var tint := BoosterShelf.pack_tint(maxi(PlayerDataManager.BOOSTERS.find(booster), 0))
+	_body.self_modulate = tint
+	_flap.self_modulate = tint
 	for visual in card_visuals:
 		visual.queue_free()
 	card_visuals.clear()
@@ -121,13 +144,48 @@ func open() -> void:
 
 
 func roll_cards() -> Array[Card]:
+	if _booster.get("every_suit", false):
+		return _every_suit_cards()
+	var count: int = _booster.get("cards", MAX_ROW_CARDS)
+	var min_rank: int = maxi(_booster.get("min_rank", MIN_RANK), MIN_RANK)
+	var max_rank: int = mini(_booster.get("max_rank", MAX_RANK), MAX_RANK)
+	var smoke_count := mini(_roll_smoke_count(), count)
 	var result: Array[Card] = []
-	for i in CARDS_PER_BOOSTER:
-		result.append(Card.new(_roll_suit(), randi_range(MIN_RANK, MAX_RANK), Card.Owner.HUMAN, false))
+	for i in count:
+		var suit := Card.Suit.SMOKE if i < smoke_count else _roll_suit(smoke_count > 0)
+		result.append(Card.new(suit, randi_range(min_rank, max_rank), Card.Owner.HUMAN, false))
+	result.shuffle()
 	return result
 
 
-func _roll_suit() -> Card.Suit:
+func _every_suit_cards() -> Array[Card]:
+	var rank: int = clampi(_booster.get("min_rank", 0), 0, MAX_RANK)
+	var result: Array[Card] = []
+	for suit in Card.Suit.values():
+		if suit == Card.Suit.ALK and not Missions.allows_alk(DialogueManager.upcoming_match()):
+			continue
+		result.append(Card.new(suit, rank, Card.Owner.HUMAN, false))
+	return result
+
+
+func _roll_smoke_count() -> int:
+	var low: int = _booster.get("smoke_min", 0)
+	var high: int = _booster.get("smoke_max", 0)
+	if high <= 0:
+		return 0
+	var roll := randf()
+	for i in high - low + 1:
+		roll -= SMOKE_COUNT_WEIGHTS[i] if i < SMOKE_COUNT_WEIGHTS.size() else 0.0
+		if roll < 0.0:
+			return low + i
+	return high
+
+
+func _roll_suit(no_smoke := false) -> Card.Suit:
+	if not Missions.allows_alk(DialogueManager.upcoming_match()):
+		return Card.Suit.SMOKE if not no_smoke and randf() < SPECIAL_SUIT_CHANCE else NORMAL_SUITS.pick_random()
+	if no_smoke:
+		return NORMAL_SUITS.pick_random() if randf() >= SPECIAL_SUIT_CHANCE else Card.Suit.ALK
 	var roll := randf()
 	if roll < SPECIAL_SUIT_CHANCE:
 		return Card.Suit.SMOKE
@@ -155,8 +213,13 @@ func click_at(point: Vector2) -> void:
 
 
 func _card_center(index: int) -> Vector2:
-	var step := CARD_SIZE.x * CARD_SCALE + CARD_GAP
-	return Vector2(ROW_LEFT + CARD_SIZE.x * CARD_SCALE / 2.0 + index * step, PANEL_RECT.get_center().y)
+	var visual_size := CARD_SIZE * CARD_SCALE
+	var rows := ceili(cards.size() / float(MAX_ROW_CARDS))
+	var columns := ceili(cards.size() / float(maxi(rows, 1)))
+	var row := floori(float(index) / columns)
+	var column := index % columns
+	var row_offset := (row - (rows - 1) / 2.0) * (visual_size.y + CARD_GAP)
+	return Vector2(ROW_LEFT + visual_size.x / 2.0 + column * (visual_size.x + CARD_GAP), PANEL_RECT.get_center().y + row_offset)
 
 
 func _card_rect(index: int) -> Rect2:

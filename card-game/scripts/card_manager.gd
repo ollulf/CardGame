@@ -14,6 +14,7 @@ const COLLECT_GATHER_TIME := 0.25
 const COLLECT_FLIP_TIME := 0.15
 const COLLECT_FLY_TIME := 0.45
 const COLLECT_SCALE := 1.1
+const ZERO_BEATS_RANK := 9
 
 var table_root: Control
 
@@ -66,8 +67,9 @@ func apply_buffs(player_id: int) -> void:
 
 func load_player_decks():
 	var match_number := DialogueManager.upcoming_match()
+	var min_rank := Missions.lowest_rank(match_number)
 	if Missions.deck_cards(match_number, 0).is_empty() and PlayerDataManager.has_active_deck():
-		player_deck = Deck.new(PlayerDataManager.active_deck_copy())
+		player_deck = Deck.new(_lock_suits(_raise_low_ranks(PlayerDataManager.active_deck_copy(), min_rank), match_number))
 	else:
 		player_deck = Deck.new(_mission_cards(match_number, 0, Card.Owner.HUMAN))
 	AI_1_deck = Deck.new(_mission_cards(match_number, 1, Card.Owner.AI_1))
@@ -75,14 +77,37 @@ func load_player_decks():
 	print("Decks generated")
 
 func _mission_cards(match_number: int, seat: int, owner: Card.Owner) -> Array[Card]:
+	var min_rank := Missions.lowest_rank(match_number)
 	var listed: Array = Missions.deck_cards(match_number, seat)
-	var cards := generate_cards(Missions.DECK_SIZE - listed.size(), owner)
+	var cards := generate_cards(Missions.DECK_SIZE - listed.size(), owner, min_rank)
 	if listed.is_empty():
 		return cards
+	var given: Array[Card] = []
 	for entry in listed:
-		cards.append(Card.new(entry[0], entry[1], owner, false))
+		given.append(Card.new(entry[0], entry[1], owner, false))
+	cards.append_array(_lock_suits(_raise_low_ranks(given, min_rank), match_number))
 	cards.shuffle()
 	return cards
+
+func _raise_low_ranks(cards: Array[Card], min_rank: int) -> Array[Card]:
+	var result: Array[Card] = []
+	for card in cards:
+		if card.base_rank < min_rank:
+			result.append(Card.new(card.suit, randi_range(min_rank, 9), card.owner, false))
+		else:
+			result.append(card)
+	return result
+
+func _lock_suits(cards: Array[Card], match_number: int) -> Array[Card]:
+	if Missions.allows_alk(match_number):
+		return cards
+	var result: Array[Card] = []
+	for card in cards:
+		if card.suit == Card.Suit.ALK:
+			result.append(Card.new(randi_range(0, Card.Suit.CLUBS), card.base_rank, card.owner, false))
+		else:
+			result.append(card)
+	return result
 
 func pick_trump_suit() -> void:
 	trump_suit = TutorialScript.trump([Card.Suit.DIAMONDS, Card.Suit.HEARTS, Card.Suit.SPADES, Card.Suit.CLUBS].pick_random())
@@ -148,7 +173,7 @@ func is_legal_play(hand: Hand, card: Card) -> bool:
 		return card.is_trump or not hand.has_trump_card()
 	return card.suit == leading_card.suit or not hand.contains_card_of_suit(leading_card.suit)
 
-func generate_cards(amount: int, owner : Card.Owner) -> Array[Card]:
+func generate_cards(amount: int, owner : Card.Owner, min_rank: int = 0) -> Array[Card]:
 	var cards: Array[Card] = []
 
 	var rng := RandomNumberGenerator.new()
@@ -156,7 +181,7 @@ func generate_cards(amount: int, owner : Card.Owner) -> Array[Card]:
 
 	for i in range(amount):
 		var random_suit: Card.Suit = rng.randi_range(0, Card.Suit.CLUBS)
-		var random_rank: int = rng.randi_range(0, 9)
+		var random_rank: int = rng.randi_range(min_rank, 9)
 
 		var card := Card.new(
 			random_suit,
@@ -191,6 +216,8 @@ func submit_play(player_id: int, card: Card, from: Transform2D = Transform2D.IDE
 	played_cards_round.append(card)
 	render_played_card(card, from)
 	card_played.emit(player_id, card)
+	if card.suit == Card.Suit.SMOKE:
+		PlayerDataManager.unlock_smoke()
 
 	GameManager.play_callback(player_id)
 	print("played: ", card)
@@ -295,6 +322,12 @@ func clear_all_cards() -> void:
 			hand.empty()
 
 func get_turn_winning_card() -> Card:
+	var zero := get_zero_beating_nine()
+	if zero != null:
+		return zero
+	return get_normal_winning_card()
+
+func get_normal_winning_card() -> Card:
 	var highest_trump = played_cards_turn.get_highest_trump_card()
 	if highest_trump != null:
 		return highest_trump
@@ -309,12 +342,25 @@ func highlight_turn_winner() -> void:
 			child.set_winner(true)
 
 func get_turn_winner() -> Card.Owner:
-	var highest_trump = played_cards_turn.get_highest_trump_card()
-	if highest_trump != null:
-		return highest_trump.owner
-	
-	var highest_lead = played_cards_turn.get_highest_card_of_suit(leading_card.suit)
-	return highest_lead.owner
+	return get_turn_winning_card().owner
+
+func get_zero_beating_nine() -> Card:
+	var best := get_normal_winning_card()
+	if best == null or best.rank < ZERO_BEATS_RANK:
+		return null
+	for card in played_cards_turn.cards:
+		if card.rank == 0 and card.suit == best.suit:
+			return card
+	return null
+
+func turn_won_by_zero() -> bool:
+	return get_zero_beating_nine() != null
+
+static func has_rank_at_least(cards: Array[Card], rank: int) -> bool:
+	for card in cards:
+		if card.rank >= rank:
+			return true
+	return false
 
 # - - - HELPER - - -
 
