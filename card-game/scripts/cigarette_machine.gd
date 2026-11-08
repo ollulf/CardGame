@@ -13,14 +13,10 @@ const DENY_COLOR := Color(1.0, 0.45, 0.4)
 const DENY_DURATION := 1.2
 const OUT_OF_ORDER_TEXT := "Out of order"
 const CONFIRM_TEXT := "Really?"
-const SIGN_POSITION := Vector2(5.0, 19.0)
-const SIGN_ROTATION := -0.07
-const SIGN_PAPER := Color("efe6cc")
-const SIGN_INK := Color("b2392f")
-const SIGN_BORDER := Color("3a3330")
+const SIGN_TEXTURE := preload("res://sprites/out_of_order.png")
 
 var out_of_order := false
-var _sign: PanelContainer
+var _sign: TextureRect
 var _base_position: Vector2
 var _label_text: String
 var _hovered := false
@@ -65,31 +61,13 @@ func _shown_label() -> String:
 	return OUT_OF_ORDER_TEXT if out_of_order else _label_text
 
 
-func _build_sign() -> PanelContainer:
-	var sign_panel := PanelContainer.new()
-	sign_panel.name = "OutOfOrderSign"
-	sign_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var style := StyleBoxFlat.new()
-	style.bg_color = SIGN_PAPER
-	style.border_color = SIGN_BORDER
-	style.set_border_width_all(3)
-	style.content_margin_left = 14
-	style.content_margin_right = 14
-	style.content_margin_top = 8
-	style.content_margin_bottom = 8
-	sign_panel.add_theme_stylebox_override("panel", style)
-	var label := Label.new()
-	label.text = OUT_OF_ORDER_TEXT.to_upper()
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.add_theme_color_override("font_color", SIGN_INK)
-	label.add_theme_font_size_override("font_size", 28)
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	sign_panel.add_child(label)
-	sprite.add_child(sign_panel)
-	sign_panel.scale = Vector2.ONE / sprite.scale
-	sign_panel.position = SIGN_POSITION
-	sign_panel.rotation = SIGN_ROTATION
-	return sign_panel
+func _build_sign() -> TextureRect:
+	var sign_rect := TextureRect.new()
+	sign_rect.name = "OutOfOrderSign"
+	sign_rect.texture = SIGN_TEXTURE
+	sign_rect.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sprite.add_child(sign_rect)
+	return sign_rect
 
 
 func deny(message: String) -> void:
