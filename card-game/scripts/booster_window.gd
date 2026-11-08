@@ -9,7 +9,7 @@ const CARD_SCENE := preload("res://scenes/Card.tscn")
 const CARDS_PER_BOOSTER := 5
 const SPECIAL_SUIT_CHANCE := 0.15
 const NORMAL_SUITS: Array[Card.Suit] = [Card.Suit.DIAMONDS, Card.Suit.HEARTS, Card.Suit.SPADES, Card.Suit.CLUBS]
-const MIN_RANK := 0
+const MIN_RANK := 1
 const MAX_RANK := 9
 
 const PANEL_RECT := Rect2(176, 124, 800, 400)
