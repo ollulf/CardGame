@@ -36,6 +36,7 @@ var _auto_advance_time := 0.0
 var _match_running := false
 var _match := 0
 var _round := 0
+var _silent := false
 var _fired_this_match: Array[String] = []
 
 func _ready() -> void:
@@ -65,7 +66,24 @@ func say(player_id: int, text: String) -> void:
 		return
 	_enqueue(player_id, text, "")
 
+func skip_all(silent: bool) -> void:
+	_silent = silent
+	if not silent:
+		return
+	_waiting.clear()
+	_queue.clear()
+	if _speaking_seat != NO_SEAT:
+		_bubble.close_line()
+		_speaking_seat = NO_SEAT
+		if not _running_cue:
+			_close()
+
 func _enqueue(player_id: int, text: String, cue: String) -> void:
+	if _silent:
+		if cue != "":
+			for cue_name in cue.split(","):
+				GameManager.run_cue(cue_name)
+		return
 	var was_open := is_open()
 	_queue.append([player_id, text, cue])
 	if not was_open:

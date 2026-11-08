@@ -386,6 +386,19 @@ func skip_round(looser_id: int) -> void:
 	var loosers: Array[int] = [looser_id]
 	await _end_round(loosers)
 
+func can_skip_tutorial() -> bool:
+	return can_skip_round() and DialogueManager.upcoming_match() == 1
+
+func skip_tutorial(cues: Array) -> void:
+	if not can_skip_tutorial():
+		return
+	DialogueManager.skip_all(true)
+	for cue in cues:
+		run_cue(cue)
+	ai_player_1.lost_rounds = MAX_LIVES - 1
+	await skip_round(1)
+	DialogueManager.skip_all(false)
+
 func get_total_loosers() -> Array[int]:
 	var result: Array[int] = []
 
