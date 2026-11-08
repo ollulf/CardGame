@@ -7,6 +7,7 @@ const PANEL_WIDTH := 260.0
 const MARGIN := 16.0
 const TOP_OFFSET := 60.0
 const CIGARETTE_BONUS := 5
+const CASH_BONUS := 10
 
 @export var pointer: Control
 
@@ -55,6 +56,7 @@ func _build() -> void:
 	_tutorial_button = _add_button(box, "Skip tutorial", skip_tutorial)
 	_add_button(box, "Unlock all UI", unlock_all)
 	_add_button(box, "+%d cigarettes" % CIGARETTE_BONUS, add_cigarettes)
+	_add_button(box, "+%d$" % CASH_BONUS, add_cash)
 	_add_button(box, "Close", close)
 
 
@@ -133,6 +135,11 @@ func add_cigarettes() -> void:
 	var pack: CigPack = InteractionManager.cigPack
 	if pack:
 		pack.add_cigarettes(CIGARETTE_BONUS)
+
+
+func add_cash() -> void:
+	GameManager.run_cue("show_purse")
+	PlayerDataManager.add_money(CASH_BONUS)
 
 
 func _on_new_match_started() -> void:

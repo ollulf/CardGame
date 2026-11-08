@@ -8,14 +8,17 @@ signal clicked
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var tooltip: Control = $Tooltip
+@onready var bar_label: Control = $BarLabel
 
 var _base_position: Vector2
+var _label_base_position: Vector2
 var _hovered: bool = false
 var _hidden_by_cue: bool = false
 
 
 func _ready() -> void:
 	_base_position = sprite.position
+	_label_base_position = bar_label.position
 	tooltip.visible = false
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
@@ -66,6 +69,7 @@ func _on_mouse_exited() -> void:
 func _refresh() -> void:
 	var active := _hovered and not blocked
 	sprite.position = _base_position + hover_offset if active else _base_position
+	bar_label.position = _label_base_position + hover_offset if active else _label_base_position
 	tooltip.visible = active
 
 

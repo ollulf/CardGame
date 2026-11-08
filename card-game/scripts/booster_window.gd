@@ -7,11 +7,9 @@ enum State { HIDDEN, CLOSED, OPENING, REVEAL, COLLECTING }
 
 const CARD_SCENE := preload("res://scenes/Card.tscn")
 const MAX_ROW_CARDS := 5
-const SPECIAL_SUIT_CHANCE := 0.15
 const NORMAL_SUITS: Array[Card.Suit] = [Card.Suit.DIAMONDS, Card.Suit.HEARTS, Card.Suit.SPADES, Card.Suit.CLUBS]
 const MIN_RANK := 1
 const MAX_RANK := 9
-const SMOKE_COUNT_WEIGHTS: Array[float] = [0.4, 0.4, 0.2]
 
 const PANEL_RECT := Rect2(176, 124, 800, 400)
 const PACK_TEXTURE := preload("res://sprites/booster_pack.png")
@@ -144,28 +142,29 @@ func open(booster: Dictionary = PlayerDataManager.BOOSTERS[0]) -> void:
 
 
 func roll_cards() -> Array[Card]:
-	if _booster.get("every_suit", false):
-		return _every_suit_cards()
 	var count: int = _booster.get("cards", MAX_ROW_CARDS)
-	var min_rank: int = maxi(_booster.get("min_rank", MIN_RANK), MIN_RANK)
-	var max_rank: int = mini(_booster.get("max_rank", MAX_RANK), MAX_RANK)
+	var min_rank: int = clampi(_booster.get("min_rank", MIN_RANK), 0, MAX_RANK)
+	var max_rank: int = clampi(_booster.get("max_rank", MAX_RANK), min_rank, MAX_RANK)
 	var smoke_count := mini(_roll_smoke_count(), count)
 	var result: Array[Card] = []
 	for i in count:
-		var suit := Card.Suit.SMOKE if i < smoke_count else _roll_suit(smoke_count > 0)
+		var suit: Card.Suit
+		if i < smoke_count:
+			suit = Card.Suit.SMOKE
+		elif _booster.get("any_suit", false):
+			suit = _roll_any_suit()
+		else:
+			suit = NORMAL_SUITS.pick_random()
 		result.append(Card.new(suit, randi_range(min_rank, max_rank), Card.Owner.HUMAN, false))
 	result.shuffle()
 	return result
 
 
-func _every_suit_cards() -> Array[Card]:
-	var rank: int = clampi(_booster.get("min_rank", 0), 0, MAX_RANK)
-	var result: Array[Card] = []
-	for suit in Card.Suit.values():
-		if suit == Card.Suit.ALK and not Missions.allows_alk(DialogueManager.upcoming_match()):
-			continue
-		result.append(Card.new(suit, rank, Card.Owner.HUMAN, false))
-	return result
+func _roll_any_suit() -> Card.Suit:
+	var suits: Array = Card.Suit.values()
+	if not Missions.allows_alk(DialogueManager.upcoming_match()):
+		suits.erase(Card.Suit.ALK)
+	return suits.pick_random()
 
 
 func _roll_smoke_count() -> int:
@@ -173,25 +172,7 @@ func _roll_smoke_count() -> int:
 	var high: int = _booster.get("smoke_max", 0)
 	if high <= 0:
 		return 0
-	var roll := randf()
-	for i in high - low + 1:
-		roll -= SMOKE_COUNT_WEIGHTS[i] if i < SMOKE_COUNT_WEIGHTS.size() else 0.0
-		if roll < 0.0:
-			return low + i
-	return high
-
-
-func _roll_suit(no_smoke := false) -> Card.Suit:
-	if not Missions.allows_alk(DialogueManager.upcoming_match()):
-		return Card.Suit.SMOKE if not no_smoke and randf() < SPECIAL_SUIT_CHANCE else NORMAL_SUITS.pick_random()
-	if no_smoke:
-		return NORMAL_SUITS.pick_random() if randf() >= SPECIAL_SUIT_CHANCE else Card.Suit.ALK
-	var roll := randf()
-	if roll < SPECIAL_SUIT_CHANCE:
-		return Card.Suit.SMOKE
-	if roll < SPECIAL_SUIT_CHANCE * 2.0:
-		return Card.Suit.ALK
-	return NORMAL_SUITS.pick_random()
+	return randi_range(low, high)
 
 
 func _gui_input(event: InputEvent) -> void:
