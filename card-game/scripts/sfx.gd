@@ -7,6 +7,9 @@ const CARD_MOVE_INTERVAL_MSEC := 60
 const CARD_MOVE_PITCH_VARIATION := 0.08
 const CARD_MOVE_VOLUME_DB := -4.0
 const BUTTON_SOUND := preload("res://sounds/button_press.wav")
+const DIALOGUE_NEXT_SOUND := preload("res://sounds/dialogue_next.mp3")
+const DIALOGUE_NEXT_DB := -10.0
+const DIALOGUE_NEXT_PITCH_VARIATION := 0.04
 
 const AMBIENT_SOUND := preload("res://sounds/bar_ambient.mp3")
 const AMBIENT_VOLUME_DB := -24.0
@@ -161,6 +164,9 @@ func stop_music() -> void:
 func play_cig_machine() -> float:
 	play(CIG_MACHINE_SOUND)
 	return CIG_MACHINE_SOUND.get_length()
+
+func play_dialogue_next() -> void:
+	play(DIALOGUE_NEXT_SOUND, DIALOGUE_NEXT_PITCH_VARIATION, DIALOGUE_NEXT_DB)
 
 func play_button() -> void:
 	play(BUTTON_SOUND, 0.05)

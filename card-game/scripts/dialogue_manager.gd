@@ -148,6 +148,8 @@ func _input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		InteractionManager.skip_next_double_click()
+		if _bubble.is_typed and _speaking_seat != NO_SEAT and not _running_cue:
+			Sfx.play_dialogue_next()
 		_advance()
 
 func _process(delta: float) -> void:
