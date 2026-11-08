@@ -11,6 +11,7 @@ const NOT_ENOUGH_MONEY_TEXT := "Not enough money"
 @onready var back_button: Button = %BackButton
 @onready var machine: CigaretteMachine = %CigaretteMachine
 @onready var booster_stand: CigaretteMachine = %BoosterStand
+@onready var drinks_tap: CigaretteMachine = %DrinksTap
 @onready var cash_label: Label = %CashLabel
 
 var _pointer_parent: Node
@@ -26,6 +27,8 @@ func _ready() -> void:
 	machine.set_label_text("Buy Cigarettes (%d$)" % PlayerDataManager.CIGARETTE_PACK_PRICE)
 	booster_stand.set_label_text("Booster Shelf")
 	booster_stand.needs_confirm = false
+	drinks_tap.set_label_text("Round of Drinks (%d$)" % PlayerDataManager.DRINK_ROUND_PRICE)
+	drinks_tap.clicked.connect(_on_drinks_tap_clicked)
 	machine.clicked.connect(_on_machine_clicked)
 	booster_stand.clicked.connect(_on_booster_stand_clicked)
 	booster_shelf = BoosterShelf.new()
@@ -54,6 +57,7 @@ func open() -> void:
 	pointer.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_INHERITED
 	pointer.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_DISABLED
 	_refresh_cash()
+	_refresh_drinks_tap()
 	show()
 	opened.emit()
 
@@ -77,6 +81,16 @@ func _on_cig_machine_changed(unlocked: bool) -> void:
 func _on_machine_clicked() -> void:
 	if not PlayerDataManager.buy_cigarettes():
 		machine.deny(NOT_ENOUGH_MONEY_TEXT)
+		_flash_cash(Color(1.0, 0.35, 0.3))
+
+
+func _refresh_drinks_tap() -> void:
+	drinks_tap.visible = PlayerDataManager.is_round_of_drinks_available()
+
+
+func _on_drinks_tap_clicked() -> void:
+	if not PlayerDataManager.buy_round_of_drinks():
+		drinks_tap.deny(NOT_ENOUGH_MONEY_TEXT)
 		_flash_cash(Color(1.0, 0.35, 0.3))
 
 

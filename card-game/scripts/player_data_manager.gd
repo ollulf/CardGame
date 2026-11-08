@@ -30,6 +30,9 @@ const SMOKE_BONUS_PER_CIGARETTE := 1
 const STARTING_MONEY := 9
 const CIGARETTE_PACK_PRICE := 5
 const CIGARETTES_PER_PACK := 8
+const DRINK_PENALTY_PER_ROUND := 1
+const DRINK_ROUND_PRICE := 6
+const DRINK_ROUND_FROM_MATCH := 3
 const BOOSTERS: Array[Dictionary] = [
 	{"name": "Smoke Booster", "price": 8, "cards": 5, "min_rank": 1, "max_rank": 9, "smoke_min": 2, "smoke_max": 4, "contents": "2-4 Smoke + any"},
 	{"name": "Standard Booster", "price": 5, "cards": 8, "min_rank": 1, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "contents": "Any cards"},
@@ -43,7 +46,11 @@ var smoking_stacks := {
 	2: []
 }
 
-var drinking_level := 0
+var drinking_levels := {
+	0: 0,
+	1: 0,
+	2: 0
+}
 
 var money := 0
 var starting_money_granted := false
@@ -72,8 +79,9 @@ func unlock_smoke() -> void:
 	smoke_unlocked = true
 	smoke_unlocked_changed.emit()
 
-func drink() -> void:
-	drinking_level -= 1
+func drink(player_id: int) -> void:
+	drinking_levels[player_id] += 1
+	stats_changed.emit(player_id)
 
 func get_smoking(player_id: int) -> int:
 	var total := 0
@@ -85,7 +93,27 @@ func get_smoking_stack_count(player_id: int) -> int:
 	return smoking_stacks[player_id].size()
 
 func get_drinking(player_id: int) -> int:
-	return drinking_level
+	return int(drinking_levels[player_id])
+
+func get_drink_penalty(player_id: int) -> int:
+	return get_drinking(player_id) * DRINK_PENALTY_PER_ROUND
+
+func clear_drinking() -> void:
+	for pid in PLAYERS:
+		if drinking_levels[pid] == 0:
+			continue
+		drinking_levels[pid] = 0
+		stats_changed.emit(pid)
+
+func is_round_of_drinks_available() -> bool:
+	return DialogueManager.upcoming_match() >= DRINK_ROUND_FROM_MATCH
+
+func buy_round_of_drinks() -> bool:
+	if not is_round_of_drinks_available() or not spend(DRINK_ROUND_PRICE):
+		return false
+	for pid in PLAYERS:
+		drink(pid)
+	return true
 
 func clear_smoking() -> void:
 	for pid in PLAYERS:
@@ -96,6 +124,7 @@ func clear_smoking() -> void:
 
 func _on_round_finished(_loosers) -> void:
 	clear_smoking()
+	clear_drinking()
 
 func grant_starting_money() -> void:
 	if starting_money_granted:
@@ -209,6 +238,7 @@ func restore_state(state: Dictionary) -> void:
 	active_deck.assign(state.get("active_deck", []))
 	new_cards.assign(state.get("new_cards", []))
 	clear_smoking()
+	clear_drinking()
 	smoke_unlocked_changed.emit()
 	collection_changed.emit()
 	deck_changed.emit()
