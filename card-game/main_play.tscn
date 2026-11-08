@@ -1,4 +1,4 @@
-[gd_scene format=3 uid="uid://sho7nec3ufwc"]
+[gd_scene load_steps=31 format=3 uid="uid://sho7nec3ufwc"]
 
 [ext_resource type="Script" uid="uid://b1ufuvgq634xj" path="res://scripts/GameSetup.gd" id="1_yo8lh"]
 [ext_resource type="PackedScene" uid="uid://bjmm2q84dkq0v" path="res://scenes/hand_visualisation.tscn" id="2_r2isv"]
@@ -21,7 +21,7 @@
 [ext_resource type="PackedScene" path="res://scenes/deck_screen.tscn" id="deck_screen"]
 [ext_resource type="PackedScene" path="res://scenes/lose_screen.tscn" id="lose_screen"]
 [ext_resource type="Script" uid="uid://c80n6b1k87gya" path="res://scripts/player_buffs.gd" id="player_buffs_script"]
-[ext_resource type="Script" path="res://scripts/prize_pot.gd" id="prize_pot_script"]
+[ext_resource type="Script" uid="uid://dyuahxm0drxv4" path="res://scripts/prize_pot.gd" id="prize_pot_script"]
 [ext_resource type="Script" uid="uid://blqah5u23lspk" path="res://scripts/trump_display.gd" id="trump_display_script"]
 [ext_resource type="Script" uid="uid://lc3gscm8u4vo" path="res://scripts/wallet.gd" id="wallet_script"]
 [ext_resource type="Texture2D" uid="uid://5hwi7n46gelf" path="res://sprites/wallet.png" id="wallet_tex"]
@@ -50,50 +50,50 @@ border_color = Color(0.85, 0.8, 0.7, 1)
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_el7dg"]
 size = Vector2(26, 32)
 
-[node name="GameManager" type="Node2D" unique_id=112258198]
+[node name="GameManager" type="Node2D"]
 script = ExtResource("1_yo8lh")
 
-[node name="HandVisualisation" parent="." unique_id=339598119 instance=ExtResource("2_r2isv")]
+[node name="HandVisualisation" parent="." instance=ExtResource("2_r2isv")]
 offset_left = -386.0
 offset_right = -386.0
 
-[node name="Lighter" type="Area2D" parent="." unique_id=203386170]
+[node name="Lighter" type="Area2D" parent="."]
 position = Vector2(313, 67)
 script = ExtResource("5_yiaew")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Lighter" unique_id=1417310012]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Lighter"]
 position = Vector2(6, 13)
 shape = SubResource("RectangleShape2D_2ja4j")
 
-[node name="Sprite2D" type="Sprite2D" parent="Lighter" unique_id=422248059]
+[node name="Sprite2D" type="Sprite2D" parent="Lighter"]
 scale = Vector2(3, 3)
 texture = ExtResource("5_lcid1")
 
-[node name="AshTray" type="Area2D" parent="." unique_id=540914906]
+[node name="AshTray" type="Area2D" parent="."]
 position = Vector2(386, 50)
 script = ExtResource("6_2ja4j")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="AshTray" unique_id=1591273039]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="AshTray"]
 position = Vector2(0, -10)
 shape = SubResource("RectangleShape2D_yiaew")
 
-[node name="Sprite2D" type="Sprite2D" parent="AshTray" unique_id=1635463050]
+[node name="Sprite2D" type="Sprite2D" parent="AshTray"]
 scale = Vector2(3, 3)
 texture = ExtResource("6_r2isv")
 
-[node name="Wallet" type="Area2D" parent="." unique_id=754162874]
+[node name="Wallet" type="Area2D" parent="."]
 visible = false
 position = Vector2(1106, 606)
 script = ExtResource("wallet_script")
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="Wallet" unique_id=631431329]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Wallet"]
 shape = SubResource("RectangleShape2D_wallet")
 
-[node name="Sprite2D" type="Sprite2D" parent="Wallet" unique_id=616917908]
+[node name="Sprite2D" type="Sprite2D" parent="Wallet"]
 scale = Vector2(3, 3)
 texture = ExtResource("wallet_tex")
 
-[node name="Tooltip" type="Label" parent="Wallet" unique_id=870970223]
+[node name="Tooltip" type="Label" parent="Wallet"]
 z_index = 10
 offset_left = -142.0
 offset_top = 14.0
@@ -106,7 +106,7 @@ text = "Buy something"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="CigPack" type="Area2D" parent="." unique_id=1731490681]
+[node name="CigPack" type="Area2D" parent="."]
 visible = false
 position = Vector2(878, 608)
 scale = Vector2(3, 3)
@@ -115,15 +115,15 @@ normal_texture = ExtResource("4_555rj")
 hover_texture = ExtResource("5_555rj")
 hover_offset = Vector2(0, -5)
 
-[node name="CollisionShape2D" type="CollisionShape2D" parent="CigPack" unique_id=2013336915]
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CigPack"]
 position = Vector2(0, 2)
 shape = SubResource("RectangleShape2D_el7dg")
 
-[node name="Sprite2D" type="Sprite2D" parent="CigPack" unique_id=261232485]
+[node name="Sprite2D" type="Sprite2D" parent="CigPack"]
 z_index = 1
 texture = ExtResource("4_555rj")
 
-[node name="Amount" type="Label" parent="CigPack/Sprite2D" unique_id=654329200]
+[node name="Amount" type="Label" parent="CigPack/Sprite2D"]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -141,26 +141,26 @@ text = "99"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="DeckPiles" type="Node2D" parent="." unique_id=1443153696]
+[node name="DeckPiles" type="Node2D" parent="."]
 
-[node name="HumanDeckPile" parent="DeckPiles" unique_id=476875444 instance=ExtResource("deck_pile_scene")]
+[node name="HumanDeckPile" parent="DeckPiles" instance=ExtResource("deck_pile_scene")]
 position = Vector2(790, 545)
 
-[node name="AI1DeckPile" parent="DeckPiles" unique_id=872721785 instance=ExtResource("deck_pile_scene")]
+[node name="AI1DeckPile" parent="DeckPiles" instance=ExtResource("deck_pile_scene")]
 position = Vector2(190, 180)
 deck_owner = 1
 
-[node name="AI2DeckPile" parent="DeckPiles" unique_id=1909518212 instance=ExtResource("deck_pile_scene")]
+[node name="AI2DeckPile" parent="DeckPiles" instance=ExtResource("deck_pile_scene")]
 position = Vector2(962, 180)
 deck_owner = 2
 
-[node name="PlayerHand" type="Control" parent="." unique_id=1050822652]
+[node name="PlayerHand" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 0
 mouse_filter = 1
 script = ExtResource("10_r2isv")
 
-[node name="AI_Player_1" type="Control" parent="." unique_id=267875245]
+[node name="AI_Player_1" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 0
 offset_left = 84.0
@@ -170,7 +170,7 @@ offset_bottom = 324.0
 script = ExtResource("2_shfjk")
 player_id = 1
 
-[node name="AI_Player_2" type="Control" parent="." unique_id=116348948]
+[node name="AI_Player_2" type="Control" parent="."]
 layout_mode = 3
 anchors_preset = 0
 offset_left = 1072.0
@@ -180,7 +180,7 @@ offset_bottom = 324.0
 script = ExtResource("2_shfjk")
 player_id = 2
 
-[node name="TableRoot" type="Control" parent="." unique_id=1027789971]
+[node name="TableRoot" type="Control" parent="."]
 unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 0
@@ -189,30 +189,30 @@ anchors_preset = 0
 position = Vector2(576, 170)
 script = ExtResource("prize_pot_script")
 
-[node name="TrumpDisplay" type="CanvasLayer" parent="." unique_id=1283096204]
+[node name="TrumpDisplay" type="CanvasLayer" parent="."]
 visible = false
 script = ExtResource("trump_display_script")
 
-[node name="WonRoundsUI" parent="." unique_id=423164636 instance=ExtResource("5_q6cnf")]
+[node name="WonRoundsUI" parent="." instance=ExtResource("5_q6cnf")]
 visible = false
 
-[node name="PlayerBuffs" type="CanvasLayer" parent="." unique_id=1873402291]
+[node name="PlayerBuffs" type="CanvasLayer" parent="."]
 script = ExtResource("player_buffs_script")
 
-[node name="AiCigarettesUI" type="CanvasLayer" parent="." unique_id=1873402292]
+[node name="AiCigarettesUI" type="CanvasLayer" parent="."]
 script = ExtResource("ai_cigarettes_ui_script")
 
-[node name="DeckScreen" parent="." unique_id=434758144 instance=ExtResource("deck_screen")]
+[node name="DeckScreen" parent="." instance=ExtResource("deck_screen")]
 visible = false
 
-[node name="LoseScreen" parent="." unique_id=1592846301 instance=ExtResource("lose_screen")]
+[node name="LoseScreen" parent="." instance=ExtResource("lose_screen")]
 visible = false
 
-[node name="MessageUI" type="CanvasLayer" parent="." unique_id=2122070329]
+[node name="MessageUI" type="CanvasLayer" parent="."]
 visible = false
 script = ExtResource("6_bl2fu")
 
-[node name="MessageLabel" type="Label" parent="MessageUI" unique_id=913221804]
+[node name="MessageLabel" type="Label" parent="MessageUI"]
 unique_name_in_owner = true
 anchors_preset = 8
 anchor_left = 0.5
@@ -230,14 +230,14 @@ horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
 
-[node name="BarScreen" parent="." unique_id=547411711 node_paths=PackedStringArray("pointer") instance=ExtResource("bar_screen_scene")]
+[node name="BarScreen" parent="." node_paths=PackedStringArray("pointer") instance=ExtResource("bar_screen_scene")]
 visible = false
 pointer = NodePath("../HandVisualisation")
 
-[node name="DeckVisualizer" type="CanvasLayer" parent="." unique_id=357559141 node_paths=PackedStringArray("pointer")]
+[node name="DeckVisualizer" type="CanvasLayer" parent="." node_paths=PackedStringArray("pointer")]
 visible = false
 script = ExtResource("15_2ja4j")
 pointer = NodePath("../HandVisualisation")
 
-[node name="DebugMenu" parent="." unique_id=1067264748 node_paths=PackedStringArray("pointer") instance=ExtResource("debug_menu_scene")]
+[node name="DebugMenu" parent="." node_paths=PackedStringArray("pointer") instance=ExtResource("debug_menu_scene")]
 pointer = NodePath("../HandVisualisation")

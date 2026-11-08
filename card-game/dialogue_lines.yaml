@@ -30,6 +30,10 @@ match: 1
 			cue: show_won_turns
 			1: This was the first turn. Since I was the *winner* I will play the next *first card.*
 			1: After we played *5* turns, the players with the *least* won *turns* loses the round.
+			wait_for_cards_played: 1
+			1: Since, I played *hearts* now, and its *trump* everybody who has trump, has to *play trump* now too.
+			wait_for_cards_played: 1
+			2: I don't have *hearts*, so I have to play something different.
 
 		when: round_end
 		round: 1
@@ -68,7 +72,8 @@ match: 1
 			cue: show_cigs
 			2: Sure, I would also smoke one.
 			cue: ai_one_smokes
-			2: Can I use your lighter?
+			2: Can I use your *lighter*?
+			1: Sure, here you go.
 			cue: ai_two_smokes
 
 		when: round_start
@@ -110,7 +115,14 @@ match: 2
 			1: I hope you already added *smokeing cards* to your *deck*.
 			2: I hope not...
 			2: Thats going to make it harder for us, to win.
-
+			
+		when: round_start
+		round: 2
+		lines:
+			cue: unlock_cig_automat
+			Bar: Jo guys, the cigarette machine works again, in case somebody needs more.
+			1: Awesome, I ran out of cigarettes. Lets me quickly buy some.
+			cue: ai_1_buys_cigarettes
 
 match: any
 	dialogues:
