@@ -18,9 +18,11 @@ const SUIT_CODES := {
 	"AL": Card.Suit.ALK,
 }
 const UNLIMITED := -1
+const ZERO_RANK_MATCH := 3
 
 var matches: Dictionary = load_missions(MISSIONS_PATH)
 var _cigarettes_used := {}
+var _cigarettes_added := {}
 
 func _ready() -> void:
 	GameManager.new_match_started.connect(_on_new_match_started)
@@ -33,6 +35,9 @@ func cigarette_limit(match_number: int, seat: int) -> int:
 		return UNLIMITED
 	return _lookup(match_number, CIGARETTE_KEYS[seat], UNLIMITED)
 
+func lowest_rank(match_number: int) -> int:
+	return 0 if match_number >= ZERO_RANK_MATCH else 1
+
 func prize_money(match_number: int) -> int:
 	return _lookup(match_number, PRIZE_KEY, 0)
 
@@ -40,7 +45,7 @@ func cigarettes_left(seat: int) -> int:
 	var limit := cigarette_limit(DialogueManager.upcoming_match(), seat)
 	if limit == UNLIMITED:
 		return UNLIMITED
-	return maxi(0, limit - _cigarettes_used.get(seat, 0))
+	return maxi(0, limit + _cigarettes_added.get(seat, 0) - _cigarettes_used.get(seat, 0))
 
 func can_smoke(seat: int) -> bool:
 	return cigarettes_left(seat) != 0
@@ -49,8 +54,13 @@ func use_cigarette(seat: int) -> void:
 	_cigarettes_used[seat] = _cigarettes_used.get(seat, 0) + 1
 	cigarettes_changed.emit(seat)
 
+func add_cigarettes(seat: int, amount: int) -> void:
+	_cigarettes_added[seat] = _cigarettes_added.get(seat, 0) + amount
+	cigarettes_changed.emit(seat)
+
 func _on_new_match_started() -> void:
 	_cigarettes_used.clear()
+	_cigarettes_added.clear()
 
 func _lookup(match_number: int, key: String, fallback):
 	for wanted in [match_number, ANY]:

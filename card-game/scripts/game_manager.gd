@@ -122,6 +122,10 @@ func run_cue(cue: String) -> void:
 		"ai_two_smokes":
 			if ai_player_2:
 				await ai_player_2.smoke()
+		"unlock_cig_automat":
+			PlayerDataManager.unlock_cig_machine()
+		"ai_1_buys_cigarettes":
+			Missions.add_cigarettes(1, PlayerDataManager.CIGARETTES_PER_PACK)
 		"show_won_turns", "show_life_cards":
 			var ui = get_tree().get_first_node_in_group(WON_ROUNDS_UI_GROUP)
 			if ui:
@@ -324,6 +328,7 @@ func retry_match() -> void:
 
 func start_over() -> void:
 	_intro_done = false
+	PlayerDataManager.reset_buttons_unlock()
 	_restore_state(_game_start_state)
 	start_new_match()
 
