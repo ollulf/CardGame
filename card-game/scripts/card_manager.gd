@@ -354,6 +354,8 @@ func highlight_turn_winner() -> void:
 	for child in table_root.get_children():
 		if child is CardVisual and child.card == winning_card:
 			child.set_winner(true)
+			Sfx.play_win_card()
+			return
 
 func get_turn_winner() -> Card.Owner:
 	return get_turn_winning_card().owner
