@@ -80,7 +80,7 @@ func on_next_round_available():
 
 func on_new_match_started():
 	reset_UI(false)
-	reset_lifes()
+	reset_lifes(lifes_revealed and not GameManager.starting_over)
 	if fade_tween:
 		fade_tween.kill()
 	set_won_turns_alpha(0.0)
@@ -111,13 +111,13 @@ func reset_UI(animate: bool):
 	for pile in piles:
 		pile.clear(animate and won_turns_shown)
 	
-func reset_lifes():
-	lifes_revealed = false
+func reset_lifes(keep_visible := false):
+	lifes_revealed = keep_visible
 	for player_id in 3:
 		for life in [1, 2]:
 			var card := _life_card(player_id, life)
 			card.restore()
-			card.modulate.a = 0.0
+			card.modulate.a = 1.0 if keep_visible else 0.0
 			card.scale = Vector2.ONE
 
 func reveal_lifes():
