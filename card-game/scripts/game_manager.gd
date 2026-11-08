@@ -9,6 +9,7 @@ signal round_started()
 signal match_lost(looser_id: int)
 signal next_round_available()
 signal match_finished(looser_ids: Array[int])
+signal run_won()
 signal new_match_started()
 signal player_kicked()
 signal send_message(text: String)
@@ -325,7 +326,10 @@ func _end_round(loosers: Array[int]) -> void:
 	else:
 		last_match_loosers = total_loosers.duplicate()
 		await _pay_out_prize(total_loosers)
-		match_finished.emit(total_loosers)
+		if Missions.is_last_match(current_match()):
+			run_won.emit()
+		else:
+			match_finished.emit(total_loosers)
 
 func retry_match() -> void:
 	_restore_state(_match_start_state)

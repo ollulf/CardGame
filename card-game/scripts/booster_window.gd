@@ -170,6 +170,8 @@ func _roll_smoke_count() -> int:
 
 
 func _roll_suit(no_smoke := false) -> Card.Suit:
+	if not Missions.allows_alk(DialogueManager.upcoming_match()):
+		return Card.Suit.SMOKE if not no_smoke and randf() < SPECIAL_SUIT_CHANCE else NORMAL_SUITS.pick_random()
 	if no_smoke:
 		return NORMAL_SUITS.pick_random() if randf() >= SPECIAL_SUIT_CHANCE else Card.Suit.ALK
 	var roll := randf()

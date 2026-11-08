@@ -4,6 +4,7 @@ const FADE_TIME := 0.5
 
 @onready var dim: ColorRect = %Dim
 @onready var content: Control = %Content
+@onready var title_label: Label = %TitleLabel
 @onready var subtitle_label: Label = %SubtitleLabel
 @onready var retry_button: Button = %RetryButton
 @onready var start_over_button: Button = %StartOverButton
@@ -15,13 +16,25 @@ var _fade_tween: Tween
 func _ready() -> void:
 	hide()
 	GameManager.player_kicked.connect(open)
+	GameManager.run_won.connect(open_won)
 	retry_button.pressed.connect(_on_retry_pressed)
 	start_over_button.pressed.connect(_on_start_over_pressed)
 
 func open() -> void:
 	var match_number := GameManager.current_match()
+	title_label.text = "Kicked from the table"
 	subtitle_label.text = "You lost two rounds in match %d." % match_number
 	retry_button.text = "Retry last match"
+	retry_button.show()
+	_fade_in()
+
+func open_won() -> void:
+	title_label.text = "You won the run"
+	subtitle_label.text = "You beat all %d matches." % Missions.LAST_MATCH
+	retry_button.hide()
+	_fade_in()
+
+func _fade_in() -> void:
 	_set_buttons_disabled(false)
 	_lift_hand_pointer()
 	dim.modulate.a = 0.0

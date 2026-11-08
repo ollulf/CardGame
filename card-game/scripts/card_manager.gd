@@ -68,7 +68,7 @@ func load_player_decks():
 	var match_number := DialogueManager.upcoming_match()
 	var min_rank := Missions.lowest_rank(match_number)
 	if Missions.deck_cards(match_number, 0).is_empty() and PlayerDataManager.has_active_deck():
-		player_deck = Deck.new(_raise_low_ranks(PlayerDataManager.active_deck_copy(), min_rank))
+		player_deck = Deck.new(_lock_suits(_raise_low_ranks(PlayerDataManager.active_deck_copy(), min_rank), match_number))
 	else:
 		player_deck = Deck.new(_mission_cards(match_number, 0, Card.Owner.HUMAN))
 	AI_1_deck = Deck.new(_mission_cards(match_number, 1, Card.Owner.AI_1))
@@ -84,7 +84,7 @@ func _mission_cards(match_number: int, seat: int, owner: Card.Owner) -> Array[Ca
 	var given: Array[Card] = []
 	for entry in listed:
 		given.append(Card.new(entry[0], entry[1], owner, false))
-	cards.append_array(_raise_low_ranks(given, min_rank))
+	cards.append_array(_lock_suits(_raise_low_ranks(given, min_rank), match_number))
 	cards.shuffle()
 	return cards
 
@@ -93,6 +93,17 @@ func _raise_low_ranks(cards: Array[Card], min_rank: int) -> Array[Card]:
 	for card in cards:
 		if card.base_rank < min_rank:
 			result.append(Card.new(card.suit, randi_range(min_rank, 9), card.owner, false))
+		else:
+			result.append(card)
+	return result
+
+func _lock_suits(cards: Array[Card], match_number: int) -> Array[Card]:
+	if Missions.allows_alk(match_number):
+		return cards
+	var result: Array[Card] = []
+	for card in cards:
+		if card.suit == Card.Suit.ALK:
+			result.append(Card.new(randi_range(0, Card.Suit.CLUBS), card.base_rank, card.owner, false))
 		else:
 			result.append(card)
 	return result
