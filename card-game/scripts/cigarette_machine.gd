@@ -4,6 +4,7 @@ class_name CigaretteMachine
 signal clicked
 
 @export var hover_offset: Vector2 = Vector2(0, -6)
+@export var needs_confirm := true
 
 @onready var sprite: TextureRect = $Sprite
 @onready var tooltip: Control = $Tooltip
@@ -11,6 +12,7 @@ signal clicked
 const DENY_COLOR := Color(1.0, 0.45, 0.4)
 const DENY_DURATION := 1.2
 const OUT_OF_ORDER_TEXT := "Out of order"
+const CONFIRM_TEXT := "Really?"
 const SIGN_POSITION := Vector2(5.0, 19.0)
 const SIGN_ROTATION := -0.07
 const SIGN_PAPER := Color("efe6cc")
@@ -135,13 +137,13 @@ func on_clicked() -> void:
 	if out_of_order:
 		deny(OUT_OF_ORDER_TEXT)
 		return
-	if _confirming:
+	if _confirming or not needs_confirm:
 		cancel_confirm()
 		clicked.emit()
 		return
 	_confirming = true
 	tooltip.visible = false
-	_bubble.show_line(_label_text + "? Click again")
+	_bubble.show_line(CONFIRM_TEXT)
 	_bubble.complete_line()
 	_bubble.place_at(Vector2(size.x * 0.5, -16.0))
 	set_process_input(true)

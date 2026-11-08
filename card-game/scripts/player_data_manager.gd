@@ -3,7 +3,7 @@ extends Node
 signal stats_changed(player_id: int)
 signal smoke_unlocked_changed
 signal money_changed(money: int)
-signal booster_bought
+signal booster_bought(booster: Dictionary)
 signal collection_changed
 signal deck_changed
 signal buttons_unlock_changed
@@ -30,7 +30,11 @@ const SMOKE_BONUS_PER_CIGARETTE := 1
 const STARTING_MONEY := 9
 const CIGARETTE_PACK_PRICE := 5
 const CIGARETTES_PER_PACK := 8
-const BOOSTER_PRICE := 8
+const BOOSTERS: Array[Dictionary] = [
+	{"name": "Smoke Booster", "price": 8, "cards": 5, "min_rank": 1, "max_rank": 9, "smoke_min": 2, "smoke_max": 4, "contents": "2-4 Smoke + any"},
+	{"name": "Standard Booster", "price": 5, "cards": 8, "min_rank": 1, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "contents": "Any cards"},
+	{"name": "Premium Booster", "price": 12, "cards": 8, "min_rank": 5, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "contents": "Any cards"},
+]
 
 var smoking_stacks := {
 	0: [],
@@ -132,10 +136,10 @@ func buy_cigarettes() -> bool:
 	InteractionManager.cigPack.add_cigarettes(CIGARETTES_PER_PACK)
 	return true
 
-func buy_booster() -> bool:
-	if not spend(BOOSTER_PRICE):
+func buy_booster(booster: Dictionary) -> bool:
+	if not spend(booster["price"]):
 		return false
-	booster_bought.emit()
+	booster_bought.emit(booster)
 	return true
 
 func add_to_collection(cards: Array[Card]) -> void:

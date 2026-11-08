@@ -15,6 +15,7 @@ const NOT_ENOUGH_MONEY_TEXT := "Not enough money"
 
 var _pointer_parent: Node
 var _pointer_index: int
+var booster_shelf: BoosterShelf
 var booster_window: BoosterWindow
 var _cash_tween: Tween
 
@@ -23,13 +24,18 @@ func _ready() -> void:
 	hide()
 	back_button.pressed.connect(close)
 	machine.set_label_text("Buy Cigarettes (%d$)" % PlayerDataManager.CIGARETTE_PACK_PRICE)
-	booster_stand.set_label_text("Buy Booster (%d$)" % PlayerDataManager.BOOSTER_PRICE)
+	booster_stand.set_label_text("Booster Shelf")
+	booster_stand.needs_confirm = false
 	machine.clicked.connect(_on_machine_clicked)
 	booster_stand.clicked.connect(_on_booster_stand_clicked)
+	booster_shelf = BoosterShelf.new()
+	add_child(booster_shelf)
+	booster_shelf.denied.connect(_flash_cash.bind(Color(1.0, 0.35, 0.3)))
 	booster_window = BoosterWindow.new()
 	add_child(booster_window)
 	PlayerDataManager.booster_bought.connect(booster_window.open)
 	booster_window.finished.connect(PlayerDataManager.mark_booster_collected)
+	booster_window.finished.connect(_on_booster_window_finished)
 	PlayerDataManager.money_changed.connect(_on_money_changed)
 	PlayerDataManager.cig_machine_changed.connect(_on_cig_machine_changed)
 	_on_cig_machine_changed(PlayerDataManager.cig_machine_unlocked)
@@ -75,10 +81,12 @@ func _on_machine_clicked() -> void:
 
 
 func _on_booster_stand_clicked() -> void:
-	if not PlayerDataManager.buy_booster():
-		booster_stand.deny(NOT_ENOUGH_MONEY_TEXT)
-		_flash_cash(Color(1.0, 0.35, 0.3))
-		return
+	booster_shelf.open()
+
+
+func _on_booster_window_finished() -> void:
+	if visible:
+		booster_shelf.open()
 
 
 func _refresh_cash() -> void:
