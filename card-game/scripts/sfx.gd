@@ -19,7 +19,7 @@ const SMOKE_LOOP_DB := -18.0
 const LOOP_FADE_TIME := 0.4
 
 const MUSIC_SOUND := preload("res://sounds/jazz_track.mp3")
-const MUSIC_VOLUME_DB := -14.0
+const MUSIC_VOLUME_DB := -17.0
 const MUSIC_SILENT_DB := -60.0
 const MUSIC_FADE_TIME := 3.0
 
