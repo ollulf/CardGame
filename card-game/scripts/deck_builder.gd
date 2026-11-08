@@ -45,6 +45,9 @@ var _card_info: Label
 var _stats: Label
 var _close_button: Button
 var _pending_rebuild := false
+var _deck_cells := {}
+var _stack_cells := {}
+var _flights: Array[Dictionary] = []
 
 
 func _ready() -> void:
@@ -189,9 +192,74 @@ func _queue_rebuild() -> void:
 
 func _rebuild() -> void:
 	_pending_rebuild = false
+	_deck_cells.clear()
+	_stack_cells.clear()
 	_rebuild_deck()
 	_rebuild_collection()
 	_update_stats()
+	_hide_flight_targets()
+
+
+func _flight_target(flight: Dictionary) -> Control:
+	var card: Card = flight.card
+	var cell: Control = null
+	if flight.to_deck:
+		cell = _deck_cells.get(card)
+	else:
+		cell = _stack_cells.get(Vector2i(card.suit, card.base_rank))
+	if cell != null and is_instance_valid(cell) and not cell.is_queued_for_deletion():
+		return cell
+	return null
+
+
+func _hide_flight_targets() -> void:
+	for flight in _flights:
+		var target := _flight_target(flight)
+		if target != null:
+			target.modulate.a = 0.0
+			target.set_meta("flying", true)
+
+
+func _fly_card(cell: Control, card: Card, to_deck: bool) -> void:
+	var from_scale := COLLECTION_CARD_SCALE if to_deck else DECK_CARD_SCALE
+	var to_scale := DECK_CARD_SCALE if to_deck else COLLECTION_CARD_SCALE
+	var copy := _card_cell(card, from_scale, 1, false)
+	_ignore_mouse(copy)
+	copy.top_level = true
+	copy.z_index = 50
+	add_child(copy)
+	copy.global_position = cell.global_position
+	var flight := {"card": card, "to_deck": to_deck, "copy": copy, "start": cell.global_position}
+	_flights.append(flight)
+	await get_tree().process_frame
+	if not is_instance_valid(copy):
+		return
+	_hide_flight_targets()
+	var tween := create_tween()
+	tween.set_ease(Tween.EASE_OUT)
+	tween.set_trans(Tween.TRANS_CUBIC)
+	tween.tween_method(_step_flight.bind(flight, from_scale, to_scale), 0.0, 1.0, 0.3)
+	tween.finished.connect(_end_flight.bind(flight))
+
+
+func _step_flight(t: float, flight: Dictionary, from_scale: float, to_scale: float) -> void:
+	var copy: Control = flight.copy
+	if not is_instance_valid(copy):
+		return
+	var target := _flight_target(flight)
+	var end: Vector2 = flight.start if target == null else target.global_position
+	copy.global_position = flight.start.lerp(end, t)
+	copy.scale = Vector2.ONE * lerpf(1.0, to_scale / from_scale, t)
+
+
+func _end_flight(flight: Dictionary) -> void:
+	_flights.erase(flight)
+	var target := _flight_target(flight)
+	if target != null:
+		target.modulate.a = 1.0
+		target.remove_meta("flying")
+	if is_instance_valid(flight.copy):
+		flight.copy.queue_free()
 
 
 func _rebuild_deck() -> void:
@@ -201,7 +269,8 @@ func _rebuild_deck() -> void:
 	deck.sort_custom(_card_before)
 	for card in deck:
 		var cell := _card_cell(card, DECK_CARD_SCALE, 1, false)
-		cell.gui_input.connect(_on_deck_cell_input.bind(card))
+		cell.gui_input.connect(_on_deck_cell_input.bind(card, cell))
+		_deck_cells[card] = cell
 		_deck_row.add_child(cell)
 	for i in Missions.DECK_SIZE - deck.size():
 		var slot := Panel.new()
@@ -249,7 +318,8 @@ func _rebuild_collection() -> void:
 			var cards: Array = stacks[key]
 			var is_new := cards.any(func(c: Card) -> bool: return PlayerDataManager.new_cards.has(c))
 			var cell := _card_cell(cards[0], COLLECTION_CARD_SCALE, cards.size(), is_new)
-			cell.gui_input.connect(_on_collection_cell_input.bind(cards[0]))
+			cell.gui_input.connect(_on_collection_cell_input.bind(cards[0], cell))
+			_stack_cells[key] = cell
 			row.add_child(cell)
 		_rows.add_child(row)
 
@@ -308,24 +378,28 @@ func _ignore_mouse(node: Node) -> void:
 
 
 func _on_cell_hovered(cell: Control, card: Card) -> void:
-	cell.modulate = Color(1.15, 1.1, 0.95)
+	if not cell.has_meta("flying"):
+		cell.modulate = Color(1.15, 1.1, 0.95)
 	_show_card(card)
 
 
 func _on_cell_unhovered(cell: Control) -> void:
-	cell.modulate = Color.WHITE
+	if not cell.has_meta("flying"):
+		cell.modulate = Color.WHITE
 
 
-func _on_deck_cell_input(event: InputEvent, card: Card) -> void:
+func _on_deck_cell_input(event: InputEvent, card: Card, cell: Control) -> void:
 	if _is_left_click(event):
 		accept_event()
-		PlayerDataManager.move_to_collection(card)
+		if PlayerDataManager.move_to_collection(card):
+			_fly_card(cell, card, false)
 
 
-func _on_collection_cell_input(event: InputEvent, card: Card) -> void:
+func _on_collection_cell_input(event: InputEvent, card: Card, cell: Control) -> void:
 	if _is_left_click(event):
 		accept_event()
-		PlayerDataManager.move_to_deck(card)
+		if PlayerDataManager.move_to_deck(card):
+			_fly_card(cell, card, true)
 
 
 func _is_left_click(event: InputEvent) -> bool:
