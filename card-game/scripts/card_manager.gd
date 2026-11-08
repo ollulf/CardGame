@@ -3,7 +3,7 @@ extends  Node
 signal trump_chosen(suit: Card.Suit)
 signal card_played(player_id: int, card: Card)
 
-const PLAY_ZONE_OFFSET := Vector2(-330, -290)
+const PLAY_ZONE_OFFSET := Vector2(-330, -350)
 const PLAY_ZONE_SIZE := Vector2(660, 400)
 const HAND_SIZE := 5
 const DEAL_INTERVAL := 0.12
@@ -320,7 +320,7 @@ func get_turn_winner() -> Card.Owner:
 
 func _get_table_center_world() -> Vector2:
 	var vs := get_viewport().get_visible_rect().size
-	return Vector2(vs.x * 0.5, vs.y * 0.5)
+	return Vector2(vs.x * 0.5, vs.y * 0.5 + 60.0)
 
 func is_in_play_zone(point: Vector2) -> bool:
 	return Rect2(_get_table_center_world() + PLAY_ZONE_OFFSET, PLAY_ZONE_SIZE).has_point(point)
