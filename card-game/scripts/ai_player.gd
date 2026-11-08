@@ -113,6 +113,10 @@ func choose_card() -> Card:
 	if CardManager.leading_card == null:
 		return hand.cards[randi() % hand.size()]
 
+	var winning_zero := _zero_beating_table()
+	if winning_zero != null:
+		return winning_zero
+
 	# Highest rank already played in lead suit
 	var lead_card := CardManager.leading_card
 
@@ -154,6 +158,18 @@ func choose_card() -> Card:
 
 #If we cant play over it we play our lowest card
 	return hand.get_lowest_card()
+
+
+func _zero_beating_table() -> Card:
+	if CardManager.turn_won_by_zero():
+		return null
+	var best := CardManager.get_normal_winning_card()
+	if best == null or best.rank < CardManager.ZERO_BEATS_RANK:
+		return null
+	for card in hand.cards:
+		if card.rank == 0 and card.suit == best.suit and CardManager.is_legal_play(hand, card):
+			return card
+	return null
 
 
 func render_hand() -> void:

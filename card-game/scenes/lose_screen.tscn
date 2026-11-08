@@ -83,6 +83,7 @@ layout_mode = 2
 theme_override_constants/separation = 14
 
 [node name="TitleLabel" type="Label" parent="Center/Content/Box"]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.811765, 0.431373, 1)
 theme_override_font_sizes/font_size = 40
@@ -117,7 +118,7 @@ theme_override_styles/hover = SubResource("button_hover")
 theme_override_styles/pressed = SubResource("button_pressed")
 theme_override_styles/disabled = SubResource("button_normal")
 theme_override_styles/focus = SubResource("button_focus")
-text = "Try again"
+text = "Retry last match"
 
 [node name="StartOverButton" type="Button" parent="Center/Content/Box"]
 unique_name_in_owner = true
@@ -134,4 +135,4 @@ theme_override_styles/hover = SubResource("button_hover")
 theme_override_styles/pressed = SubResource("button_pressed")
 theme_override_styles/disabled = SubResource("button_normal")
 theme_override_styles/focus = SubResource("button_focus")
-text = "Start over from match 1"
+text = "Start new run"

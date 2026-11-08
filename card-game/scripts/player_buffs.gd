@@ -1,6 +1,6 @@
 extends CanvasLayer
 
-const CIGARETTE_ICON := preload("res://sprites/cigarettes/Cigarettes_1.png")
+const CIGARETTE_ICON := preload("res://sprites/suit_Smoke.png")
 const BUFF_COLOR := Color("5fbf6a")
 const MUTED_COLOR := Color("a59d94")
 const CHIP_BG := Color("2d2b38")
@@ -17,6 +17,7 @@ func _ready() -> void:
 		chip.visible = false
 		_place_chip(player_id, chip)
 	PlayerDataManager.stats_changed.connect(_on_stats_changed)
+	PlayerDataManager.smoke_unlocked_changed.connect(_refresh_all)
 
 func _place_chip(player_id: int, chip: PanelContainer) -> void:
 	add_child(chip)
@@ -65,13 +66,13 @@ func _build_chip(player_id: int) -> PanelContainer:
 	chip.add_child(row)
 
 	var icon := Control.new()
-	icon.custom_minimum_size = Vector2(34, 10)
+	icon.custom_minimum_size = Vector2(16, 16)
 	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var sprite := Sprite2D.new()
 	sprite.texture = CIGARETTE_ICON
-	sprite.rotation = -PI / 2.0
-	sprite.position = Vector2(17, 5)
+	sprite.position = Vector2(8, 8)
+	sprite.scale = Vector2.ONE * (16.0 / maxf(CIGARETTE_ICON.get_width(), CIGARETTE_ICON.get_height()))
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	icon.add_child(sprite)
 	row.add_child(icon)
@@ -90,12 +91,16 @@ func _make_label(label_name: String, text: String, color: Color) -> Label:
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return label
 
+func _refresh_all() -> void:
+	for player_id in chips:
+		_on_stats_changed(player_id)
+
 func _on_stats_changed(player_id: int) -> void:
 	var chip: PanelContainer = chips.get(player_id)
 	if chip == null:
 		return
 	var cigarettes := PlayerDataManager.get_smoking(player_id) / PlayerDataManager.SMOKE_BONUS_PER_CIGARETTE
-	if cigarettes <= 0:
+	if cigarettes <= 0 or not PlayerDataManager.smoke_unlocked:
 		_hide_chip(chip)
 		return
 	var row := chip.get_child(0)
