@@ -5,6 +5,7 @@ signal money_changed(money: int)
 signal booster_bought
 signal collection_changed
 signal deck_changed
+signal cig_machine_changed(unlocked: bool)
 
 const PLAYERS: Array[int] = [0, 1, 2]
 const SMOKE_BONUS_PER_CIGARETTE := 1
@@ -23,6 +24,7 @@ var drinking_level := 0
 
 var money := 0
 var starting_money_granted := false
+var cig_machine_unlocked := false
 
 var collection: Array[Card] = []
 var active_deck: Array[Card] = []
@@ -90,8 +92,17 @@ func spend(price: int) -> bool:
 	set_money(money - price)
 	return true
 
+func unlock_cig_machine() -> void:
+	set_cig_machine_unlocked(true)
+
+func set_cig_machine_unlocked(value: bool) -> void:
+	if cig_machine_unlocked == value:
+		return
+	cig_machine_unlocked = value
+	cig_machine_changed.emit(value)
+
 func buy_cigarettes() -> bool:
-	if InteractionManager.cigPack == null or not spend(CIGARETTE_PACK_PRICE):
+	if not cig_machine_unlocked or InteractionManager.cigPack == null or not spend(CIGARETTE_PACK_PRICE):
 		return false
 	InteractionManager.cigPack.add_cigarettes(CIGARETTES_PER_PACK)
 	return true
@@ -149,6 +160,7 @@ func capture_state() -> Dictionary:
 	return {
 		"money": money,
 		"starting_money_granted": starting_money_granted,
+		"cig_machine_unlocked": cig_machine_unlocked,
 		"collection": collection.duplicate(),
 		"active_deck": active_deck.duplicate(),
 		"new_cards": new_cards.duplicate(),
@@ -157,6 +169,7 @@ func capture_state() -> Dictionary:
 func restore_state(state: Dictionary) -> void:
 	starting_money_granted = state.get("starting_money_granted", false)
 	set_money(state.get("money", 0))
+	set_cig_machine_unlocked(state.get("cig_machine_unlocked", false))
 	collection.assign(state.get("collection", []))
 	active_deck.assign(state.get("active_deck", []))
 	new_cards.assign(state.get("new_cards", []))

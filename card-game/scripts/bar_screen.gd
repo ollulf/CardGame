@@ -30,6 +30,8 @@ func _ready() -> void:
 	add_child(booster_window)
 	PlayerDataManager.booster_bought.connect(booster_window.open)
 	PlayerDataManager.money_changed.connect(_on_money_changed)
+	PlayerDataManager.cig_machine_changed.connect(_on_cig_machine_changed)
+	_on_cig_machine_changed(PlayerDataManager.cig_machine_unlocked)
 	_refresh_cash()
 
 
@@ -59,6 +61,10 @@ func close() -> void:
 	InteractionManager.skip_next_double_click()
 	get_tree().paused = false
 	closed.emit()
+
+
+func _on_cig_machine_changed(unlocked: bool) -> void:
+	machine.set_out_of_order(not unlocked)
 
 
 func _on_machine_clicked() -> void:
