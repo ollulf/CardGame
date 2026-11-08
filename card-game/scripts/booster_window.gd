@@ -144,6 +144,8 @@ func open(booster: Dictionary = PlayerDataManager.BOOSTERS[0]) -> void:
 
 
 func roll_cards() -> Array[Card]:
+	if _booster.get("every_suit", false):
+		return _every_suit_cards()
 	var count: int = _booster.get("cards", MAX_ROW_CARDS)
 	var min_rank: int = maxi(_booster.get("min_rank", MIN_RANK), MIN_RANK)
 	var max_rank: int = mini(_booster.get("max_rank", MAX_RANK), MAX_RANK)
@@ -153,6 +155,16 @@ func roll_cards() -> Array[Card]:
 		var suit := Card.Suit.SMOKE if i < smoke_count else _roll_suit(smoke_count > 0)
 		result.append(Card.new(suit, randi_range(min_rank, max_rank), Card.Owner.HUMAN, false))
 	result.shuffle()
+	return result
+
+
+func _every_suit_cards() -> Array[Card]:
+	var rank: int = clampi(_booster.get("min_rank", 0), 0, MAX_RANK)
+	var result: Array[Card] = []
+	for suit in Card.Suit.values():
+		if suit == Card.Suit.ALK and not Missions.allows_alk(DialogueManager.upcoming_match()):
+			continue
+		result.append(Card.new(suit, rank, Card.Owner.HUMAN, false))
 	return result
 
 

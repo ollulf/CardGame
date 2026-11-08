@@ -125,6 +125,13 @@ match: 2
 			1: Awesome, I ran out of cigarettes. Lets me quickly buy some.
 			cue: ai_1_buys_cigarettes
 
+		when: zero_beats_nine
+		lines:
+			1: Wait what? A *0* just took the turn from a *9*?
+			2: Hehe, yes! A *0* beats every card with *9 or higher*, no matter the suit or trump.
+			2: But if nobody plays a *9 or higher*, the *0* is just the lowest card.
+			1: So the tiny ones are dangerous... I should keep mine for the big ones.
+
 match: any
 	dialogues:
 		when: match_end

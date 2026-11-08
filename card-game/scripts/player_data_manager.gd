@@ -34,6 +34,7 @@ const BOOSTERS: Array[Dictionary] = [
 	{"name": "Smoke Booster", "price": 8, "cards": 5, "min_rank": 1, "max_rank": 9, "smoke_min": 2, "smoke_max": 4, "contents": "2-4 Smoke + any"},
 	{"name": "Standard Booster", "price": 5, "cards": 8, "min_rank": 1, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "contents": "Any cards"},
 	{"name": "Premium Booster", "price": 12, "cards": 8, "min_rank": 5, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "contents": "Any cards"},
+	{"name": "Zero Booster", "price": 7, "cards": 6, "min_rank": 0, "max_rank": 0, "smoke_min": 0, "smoke_max": 0, "contents": "A 0 of every suit", "every_suit": true, "from_match": 3},
 ]
 
 var smoking_stacks := {
@@ -135,6 +136,9 @@ func buy_cigarettes() -> bool:
 		return false
 	InteractionManager.cigPack.add_cigarettes(CIGARETTES_PER_PACK)
 	return true
+
+func is_booster_available(booster: Dictionary) -> bool:
+	return DialogueManager.upcoming_match() >= int(booster.get("from_match", 0))
 
 func buy_booster(booster: Dictionary) -> bool:
 	if not spend(booster["price"]):

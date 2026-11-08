@@ -6,7 +6,8 @@ signal closed
 const SPEECH_BUBBLE := preload("res://scenes/speech_bubble.tscn")
 const SEAT_COUNT := 3
 const SEAT_OFFSETS := [Vector2(-276, -18), Vector2(66, 0), Vector2(-66, 0)]
-const TRIGGERS := ["match_start", "round_start", "turn_start", "turn_end", "round_end", "match_end"]
+const TRIGGERS := ["match_start", "round_start", "turn_start", "turn_end", "round_end", "match_end", "zero_beats_nine"]
+const ONCE_PER_MATCH_TRIGGERS := ["zero_beats_nine"]
 const ROUND_TRIGGERS := ["round_start", "turn_start", "turn_end", "round_end"]
 const TURN_TRIGGERS := ["turn_start", "turn_end"]
 const TRIGGER_ALIASES := {"start": "match_start", "end": "match_end"}
@@ -35,6 +36,7 @@ var _auto_advance_time := 0.0
 var _match_running := false
 var _match := 0
 var _round := 0
+var _fired_this_match: Array[String] = []
 
 func _ready() -> void:
 	var layer := CanvasLayer.new()
@@ -229,6 +231,7 @@ func _on_round_started() -> void:
 		_match_running = true
 		_match += 1
 		_round = 0
+		_fired_this_match.clear()
 	_round += 1
 	if _round == 1:
 		_fire("match_start")
@@ -239,6 +242,8 @@ func _on_turn_started(turn_index: int, _starting_player_id: int) -> void:
 
 func _on_turn_completed(turn_index: int, _winner_id: int) -> void:
 	_fire("turn_end", _round, turn_index)
+	if CardManager.turn_won_by_zero():
+		_fire("zero_beats_nine")
 
 func _on_round_finished(_loosers) -> void:
 	if not GameManager.get_total_loosers().is_empty():
@@ -253,6 +258,10 @@ func _on_match_lost(_looser_id: int) -> void:
 	_fire("match_end")
 
 func _fire(trigger: String, round_number := ANY, turn_number := ANY) -> void:
+	if trigger in ONCE_PER_MATCH_TRIGGERS:
+		if trigger in _fired_this_match:
+			return
+		_fired_this_match.append(trigger)
 	for entry in lines:
 		if entry.when != trigger or not _matches(entry.match_number, _match):
 			continue

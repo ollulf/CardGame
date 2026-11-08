@@ -14,6 +14,7 @@ const COLLECT_GATHER_TIME := 0.25
 const COLLECT_FLIP_TIME := 0.15
 const COLLECT_FLY_TIME := 0.45
 const COLLECT_SCALE := 1.1
+const ZERO_BEATS_RANK := 9
 
 var table_root: Control
 
@@ -321,6 +322,9 @@ func clear_all_cards() -> void:
 			hand.empty()
 
 func get_turn_winning_card() -> Card:
+	var zero := get_zero_beating_nine()
+	if zero != null:
+		return zero
 	var highest_trump = played_cards_turn.get_highest_trump_card()
 	if highest_trump != null:
 		return highest_trump
@@ -335,12 +339,24 @@ func highlight_turn_winner() -> void:
 			child.set_winner(true)
 
 func get_turn_winner() -> Card.Owner:
-	var highest_trump = played_cards_turn.get_highest_trump_card()
-	if highest_trump != null:
-		return highest_trump.owner
-	
-	var highest_lead = played_cards_turn.get_highest_card_of_suit(leading_card.suit)
-	return highest_lead.owner
+	return get_turn_winning_card().owner
+
+func get_zero_beating_nine() -> Card:
+	if not has_rank_at_least(played_cards_turn.cards, ZERO_BEATS_RANK):
+		return null
+	for card in played_cards_turn.cards:
+		if card.rank == 0:
+			return card
+	return null
+
+func turn_won_by_zero() -> bool:
+	return get_zero_beating_nine() != null
+
+static func has_rank_at_least(cards: Array[Card], rank: int) -> bool:
+	for card in cards:
+		if card.rank >= rank:
+			return true
+	return false
 
 # - - - HELPER - - -
 

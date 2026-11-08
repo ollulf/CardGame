@@ -17,7 +17,7 @@ const SELECTED_COLOR := Color(0.98, 0.84, 0.55, 1)
 const DENY_COLOR := Color(1.0, 0.45, 0.4)
 const CONFIRM_TEXT := "Really?"
 const NOT_ENOUGH_MONEY_TEXT := "Not enough money"
-const PACK_COLORS: Array[Color] = [Color(0.8, 0.8, 0.84, 1), Color(0.78, 0.88, 1.0, 1), Color(1.0, 0.86, 0.6, 1)]
+const PACK_COLORS: Array[Color] = [Color(0.8, 0.8, 0.84, 1), Color(0.78, 0.88, 1.0, 1), Color(1.0, 0.86, 0.6, 1), Color(0.72, 1.0, 0.78, 1)]
 const PACK_TEXTURE := preload("res://sprites/booster_pack.png")
 const SHINE_SHADER := preload("res://shaders/booster_shine.gdshader")
 const SHADING_MAP := preload("res://sprites/booster_pack_map.png")
@@ -67,13 +67,11 @@ func _build() -> void:
 	PlayerDataManager.money_changed.connect(_on_money_changed)
 	_on_money_changed(PlayerDataManager.money)
 
-	var row_width := PlayerDataManager.BOOSTERS.size() * ENTRY_SIZE.x + (PlayerDataManager.BOOSTERS.size() - 1) * ENTRY_GAP
-	var left := PANEL_RECT.get_center().x - row_width / 2.0
 	for i in PlayerDataManager.BOOSTERS.size():
 		var entry := _build_entry(PlayerDataManager.BOOSTERS[i], pack_tint(i))
-		entry.position = Vector2(left + i * (ENTRY_SIZE.x + ENTRY_GAP), PANEL_RECT.position.y + 70)
 		add_child(entry)
 		entries.append(entry)
+	_layout_entries()
 
 	var close_button := Button.new()
 	close_button.text = "Close"
@@ -82,6 +80,25 @@ func _build() -> void:
 	close_button.position = Vector2(PANEL_RECT.get_center().x - 55, PANEL_RECT.end.y - 50)
 	close_button.pressed.connect(close)
 	add_child(close_button)
+
+
+func _layout_entries() -> void:
+	var shown: Array[PanelContainer] = []
+	for i in entries.size():
+		entries[i].visible = PlayerDataManager.is_booster_available(PlayerDataManager.BOOSTERS[i])
+		if entries[i].visible:
+			shown.append(entries[i])
+	if shown.is_empty():
+		return
+	var fit_width := (PANEL_RECT.size.x - (shown.size() + 1) * ENTRY_GAP) / shown.size()
+	var entry_size := Vector2(minf(ENTRY_SIZE.x, fit_width), ENTRY_SIZE.y)
+	var row_width := shown.size() * entry_size.x + (shown.size() - 1) * ENTRY_GAP
+	var left := PANEL_RECT.get_center().x - row_width / 2.0
+	for i in shown.size():
+		shown[i].custom_minimum_size = entry_size
+		shown[i].size = entry_size
+		shown[i].pivot_offset = entry_size / 2.0
+		shown[i].position = Vector2(left + i * (entry_size.x + ENTRY_GAP), PANEL_RECT.position.y + 70)
 
 
 func _build_entry(booster: Dictionary, pack_color: Color) -> PanelContainer:
@@ -123,7 +140,8 @@ func _build_entry(booster: Dictionary, pack_color: Color) -> PanelContainer:
 	box.add_child(_centered(_label("%d$" % booster["price"], 22, PRICE_COLOR)))
 	box.add_child(_centered(_label("%d cards" % booster["cards"], 15, MUTED_COLOR)))
 	box.add_child(_centered(_label(booster["contents"], 15, MUTED_COLOR)))
-	box.add_child(_centered(_label("Ranks %d-%d" % [booster["min_rank"], booster["max_rank"]], 15, MUTED_COLOR)))
+	var ranks := "Rank %d" % booster["min_rank"] if booster["min_rank"] == booster["max_rank"] else "Ranks %d-%d" % [booster["min_rank"], booster["max_rank"]]
+	box.add_child(_centered(_label(ranks, 15, MUTED_COLOR)))
 	var footer := _centered(_label("", 18, SELECTED_COLOR))
 	footer.custom_minimum_size = Vector2(0, 26)
 	box.add_child(footer)
@@ -164,6 +182,7 @@ func _centered(label: Label) -> Label:
 
 func open() -> void:
 	_cancel_confirm()
+	_layout_entries()
 	show()
 
 
@@ -183,7 +202,7 @@ func _gui_input(event: InputEvent) -> void:
 
 func click_at(point: Vector2) -> void:
 	for i in entries.size():
-		if entries[i].get_rect().has_point(point):
+		if entries[i].visible and entries[i].get_rect().has_point(point):
 			select(i)
 			return
 	_cancel_confirm()
