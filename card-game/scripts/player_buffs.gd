@@ -17,6 +17,7 @@ func _ready() -> void:
 		chip.visible = false
 		_place_chip(player_id, chip)
 	PlayerDataManager.stats_changed.connect(_on_stats_changed)
+	PlayerDataManager.smoke_unlocked_changed.connect(_refresh_all)
 
 func _place_chip(player_id: int, chip: PanelContainer) -> void:
 	add_child(chip)
@@ -90,12 +91,16 @@ func _make_label(label_name: String, text: String, color: Color) -> Label:
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return label
 
+func _refresh_all() -> void:
+	for player_id in chips:
+		_on_stats_changed(player_id)
+
 func _on_stats_changed(player_id: int) -> void:
 	var chip: PanelContainer = chips.get(player_id)
 	if chip == null:
 		return
 	var cigarettes := PlayerDataManager.get_smoking(player_id) / PlayerDataManager.SMOKE_BONUS_PER_CIGARETTE
-	if cigarettes <= 0:
+	if cigarettes <= 0 or not PlayerDataManager.smoke_unlocked:
 		_hide_chip(chip)
 		return
 	var row := chip.get_child(0)
