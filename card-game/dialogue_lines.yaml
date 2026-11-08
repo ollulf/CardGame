@@ -111,6 +111,7 @@ match: 2
 			1: Let's hope its not me again...
 			wait_for_cards_played: 1
 			1: Ahh *YOU* ...
+			cue: give_player_cigs 3
 			1: Have some of my *cigarettes*. You can smoke them whenever you want.
 			1: I hope you already added *smokeing cards* to your *deck*.
 			2: I hope not...
@@ -123,6 +124,13 @@ match: 2
 			Bar: Jo guys, the cigarette machine works again, in case somebody needs more.
 			1: Awesome, I ran out of cigarettes. Lets me quickly buy some.
 			cue: ai_1_buys_cigarettes
+
+		when: zero_beats_nine
+		lines:
+			1: Wait what? A *0* just took the turn from a *9*?
+			2: Hehe, yes! A *0* beats a *9 or higher*, but only of the *same suit*.
+			2: So only a *trump 0* beats a *trump 9*, and a *hearts 0* cannot beat a *smoking 9*.
+			1: So the tiny ones are dangerous... I should keep mine for the big ones.
 
 match: any
 	dialogues:

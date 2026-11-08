@@ -7,9 +7,6 @@ var _hand_parent: Node
 var _hand_index := 0
 var deck_builder: DeckBuilder
 
-const GIFT_CIGARETTES := 8
-const GIFT_MATCH := 1
-
 func _ready() -> void:
 	hide()
 	GameManager.match_finished.connect(open)
@@ -18,14 +15,13 @@ func _ready() -> void:
 	deck_builder = DeckBuilder.new()
 	add_child(deck_builder)
 	deck_builder.closed.connect(_on_deck_builder_closed)
+	PlayerDataManager.buttons_unlock_changed.connect(_refresh_buttons)
+	_refresh_buttons(false)
 
 func open(looser_ids: Array[int]) -> void:
-	if DialogueManager.upcoming_match() == GIFT_MATCH + 1:
-		var pack: CigPack = InteractionManager.cigPack
-		if pack != null:
-			pack.add_cigarettes(GIFT_CIGARETTES)
 	CardManager.load_player_decks()
 	_lift_hand_pointer()
+	_refresh_buttons(false)
 	show()
 
 func _on_confirm_pressed() -> void:
@@ -47,7 +43,25 @@ func _lower_hand_pointer() -> void:
 	hand.reparent(_hand_parent)
 	_hand_parent.move_child(hand, _hand_index)
 
+func _refresh_buttons(animate := true) -> void:
+	_set_button(edit_deck_button, PlayerDataManager.booster_collected, animate)
+	_set_button(confirm_button, PlayerDataManager.booster_collected and PlayerDataManager.deck_edited, animate)
+
+func _set_button(button: Button, should_show: bool, animate: bool) -> void:
+	if not should_show:
+		button.hide()
+		return
+	if button.visible:
+		return
+	button.show()
+	if animate:
+		button.modulate.a = 0.0
+		create_tween().tween_property(button, "modulate:a", 1.0, 0.4)
+	else:
+		button.modulate.a = 1.0
+
 func _on_edit_deck_pressed() -> void:
+	PlayerDataManager.mark_deck_edited()
 	deck_builder.open()
 
 func _on_deck_builder_closed() -> void:
