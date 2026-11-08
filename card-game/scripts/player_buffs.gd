@@ -1,6 +1,6 @@
 extends CanvasLayer
 
-const CIGARETTE_ICON := preload("res://sprites/cigarettes/Cigarettes_1.png")
+const CIGARETTE_ICON := preload("res://sprites/suit_Smoke.png")
 const BUFF_COLOR := Color("5fbf6a")
 const MUTED_COLOR := Color("a59d94")
 const CHIP_BG := Color("2d2b38")
@@ -65,13 +65,13 @@ func _build_chip(player_id: int) -> PanelContainer:
 	chip.add_child(row)
 
 	var icon := Control.new()
-	icon.custom_minimum_size = Vector2(34, 10)
+	icon.custom_minimum_size = Vector2(16, 16)
 	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var sprite := Sprite2D.new()
 	sprite.texture = CIGARETTE_ICON
-	sprite.rotation = -PI / 2.0
-	sprite.position = Vector2(17, 5)
+	sprite.position = Vector2(8, 8)
+	sprite.scale = Vector2.ONE * (16.0 / maxf(CIGARETTE_ICON.get_width(), CIGARETTE_ICON.get_height()))
 	sprite.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	icon.add_child(sprite)
 	row.add_child(icon)
