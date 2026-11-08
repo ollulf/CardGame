@@ -298,6 +298,8 @@ static func _clean_row(raw, line: int, match_number: int, yaml: YamlLite):
 	if not raw.when in TRIGGERS:
 		push_error("DialogueLines line %d: unknown 'when' '%s' (allowed: %s)" % [line, raw.when, ", ".join(TRIGGERS)])
 		return null
+	if raw.has("lines") and (raw.lines == null or (raw.lines is String and raw.lines.strip_edges().is_empty()) or ((raw.lines is Array or raw.lines is Dictionary) and raw.lines.is_empty())):
+		return null
 	if not (raw.get("lines") is Array or raw.get("lines") is Dictionary) or raw.lines.is_empty():
 		push_error("DialogueLines line %d: dialogue needs a list of 'lines'" % line)
 		return null
