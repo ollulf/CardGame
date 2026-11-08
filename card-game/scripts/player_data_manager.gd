@@ -168,8 +168,11 @@ func set_cig_machine_unlocked(value: bool) -> void:
 func buy_cigarettes() -> bool:
 	if not cig_machine_unlocked or InteractionManager.cigPack == null or not spend(CIGARETTE_PACK_PRICE):
 		return false
-	InteractionManager.cigPack.add_cigarettes(CIGARETTES_PER_PACK)
 	return true
+
+func deliver_cigarettes() -> void:
+	if InteractionManager.cigPack != null:
+		InteractionManager.cigPack.add_cigarettes(CIGARETTES_PER_PACK)
 
 func is_booster_available(booster: Dictionary) -> bool:
 	return DialogueManager.upcoming_match() >= int(booster.get("from_match", 0))

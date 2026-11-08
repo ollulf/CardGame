@@ -1,6 +1,7 @@
 extends Node
 
 const POOL_SIZE := 8
+const CIG_MACHINE_SOUND := preload("res://sounds/cig_machine.wav")
 const BUTTON_SOUND := preload("res://sounds/button_press.wav")
 
 const AMBIENT_SOUND := preload("res://sounds/bar_ambient.mp3")
@@ -28,6 +29,7 @@ var _ambient: AudioStreamPlayer
 var _ambient_tween: Tween
 
 func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 	for i in POOL_SIZE:
 		var player := AudioStreamPlayer.new()
 		add_child(player)
@@ -138,6 +140,10 @@ func stop_music() -> void:
 		_music_tween.kill()
 	_music.stop()
 
+
+func play_cig_machine() -> float:
+	play(CIG_MACHINE_SOUND)
+	return CIG_MACHINE_SOUND.get_length()
 
 func play_button() -> void:
 	play(BUTTON_SOUND, 0.05)

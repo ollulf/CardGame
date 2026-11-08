@@ -5,6 +5,7 @@ signal opened
 signal closed
 
 const NOT_ENOUGH_MONEY_TEXT := "Not enough money"
+const WAIT_TEXT := "Wait..."
 
 @export var pointer: Control
 
@@ -19,6 +20,7 @@ var _pointer_index: int
 var booster_shelf: BoosterShelf
 var booster_window: BoosterWindow
 var _cash_tween: Tween
+var _machine_busy := false
 
 
 func _ready() -> void:
@@ -79,9 +81,18 @@ func _on_cig_machine_changed(unlocked: bool) -> void:
 
 
 func _on_machine_clicked() -> void:
+	if _machine_busy:
+		machine.deny(WAIT_TEXT)
+		return
 	if not PlayerDataManager.buy_cigarettes():
 		machine.deny(NOT_ENOUGH_MONEY_TEXT)
 		_flash_cash(Color(1.0, 0.35, 0.3))
+		return
+	_machine_busy = true
+	var length := Sfx.play_cig_machine()
+	await get_tree().create_timer(length, true).timeout
+	PlayerDataManager.deliver_cigarettes()
+	_machine_busy = false
 
 
 func _refresh_drinks_tap() -> void:
