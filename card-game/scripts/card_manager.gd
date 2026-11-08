@@ -137,7 +137,7 @@ func _place_scripted_cards(deck: Deck, seat: int, owner: Card.Owner) -> void:
 	var planned: Array = TutorialScript.hand_cards(seat)
 	for i in min(planned.size(), deck.cards.size()):
 		var index: int = deck.cards.size() - 1 - i
-		deck.cards[index] = Card.new(planned[i][0], planned[i][1], owner, false)
+		deck.replace_card(index, Card.new(planned[i][0], planned[i][1], owner, false))
 
 func is_legal_play(hand: Hand, card: Card) -> bool:
 	if not hand.contains(card):

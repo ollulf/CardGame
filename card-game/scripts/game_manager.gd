@@ -26,6 +26,7 @@ const MOVIE_WINDOW_POSITION := Vector2i(-10000, -10000)
 const DECK_PILE_GROUP := "deck_piles"
 const WON_PILE_GROUP := "won_piles"
 const WON_ROUNDS_UI_GROUP := "won_rounds_ui"
+const PRIZE_POT_GROUP := "prize_pot"
 
 # --- State ---
 var current_turn := 0
@@ -38,6 +39,7 @@ var ai_player_1 = Player
 var ai_player_2 = Player
 
 var last_round_loosers : Array[int]
+var last_match_loosers : Array[int] = []
 
 var _intro_done := false
 var _deal_pending := false
@@ -124,6 +126,37 @@ func run_cue(cue: String) -> void:
 			var ui = get_tree().get_first_node_in_group(WON_ROUNDS_UI_GROUP)
 			if ui:
 				await ui.run_cue(cue)
+		_:
+			var words := cue.split(" ", false)
+			if not words.is_empty() and DialogueManager.PAY_CUES.has(words[0]):
+				var amount := words[1].to_int() if words.size() > 1 else Missions.prize_money(DialogueManager.upcoming_match())
+				await _pay_prize(DialogueManager.PAY_CUES[words[0]], amount)
+
+func _pay_prize(seat: int, amount: int) -> void:
+	var pot = get_tree().get_first_node_in_group(PRIZE_POT_GROUP)
+	if pot:
+		await pot.pay(seat, amount)
+
+func _auto_pay_prize() -> void:
+	var match_number := DialogueManager.upcoming_match()
+	if match_number <= 1 or last_match_loosers.is_empty() or DialogueManager.match_pays_prize(match_number):
+		return
+	var amount := Missions.prize_money(match_number)
+	if amount <= 0:
+		return
+	var share := amount / last_match_loosers.size()
+	for id in last_match_loosers:
+		await _pay_prize(id, share)
+
+func _pay_out_prize(loosers: Array[int]) -> void:
+	var pot = get_tree().get_first_node_in_group(PRIZE_POT_GROUP)
+	if pot == null:
+		return
+	var winners: Array[int] = []
+	for id in range(3):
+		if not id in loosers:
+			winners.append(id)
+	await pot.pay_out(winners)
 
 func _show_deck_piles() -> void:
 	var hidden_piles: Array = get_tree().get_nodes_in_group(DECK_PILE_GROUP).filter(func(pile): return not pile.visible)
@@ -173,6 +206,8 @@ func start_new_match() -> void:
 	CardManager.clear_all_cards()
 
 	new_match_started.emit()
+
+	await _auto_pay_prize()
 
 	start_round(starting_player_id)
 
@@ -279,6 +314,8 @@ func _end_round(loosers: Array[int]) -> void:
 	elif total_loosers.has(HUMAN_ID):
 		player_kicked.emit()
 	else:
+		last_match_loosers = total_loosers.duplicate()
+		await _pay_out_prize(total_loosers)
 		match_finished.emit(total_loosers)
 
 func retry_match() -> void:

@@ -34,7 +34,9 @@ func reveal() -> void:
 	await tween.finished
 
 func _on_new_match_started() -> void:
-	_hidden_by_cue = DialogueManager.upcoming_match_uses_cue("show_cigs")
+	var pack: CigPack = InteractionManager.cigPack
+	var pack_shown := pack != null and pack.cig_amount > 0
+	_hidden_by_cue = DialogueManager.upcoming_match_uses_cue("show_cigs") and not pack_shown
 	visible = not _hidden_by_cue
 	_refresh_all()
 

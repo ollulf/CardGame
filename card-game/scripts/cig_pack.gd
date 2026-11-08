@@ -78,5 +78,6 @@ func _refresh_visibility(had: bool) -> void:
 		visible = true
 		var tween := create_tween()
 		tween.tween_property(self, "modulate:a", 1.0, 0.25)
+		get_tree().call_group("ai_cigarettes_ui", "reveal")
 	else:
 		visible = false

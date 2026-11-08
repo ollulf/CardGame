@@ -7,7 +7,7 @@ var human_player: HumanPlayer
 @export var cigarette_scene:= preload("res://scenes/cigarette.tscn") 
 
 const MAX_IN_HAND := 3
-const BURN_SECONDS := 20.0
+const BURN_SECONDS := AiSmoke.LIGHT_TIME + AiSmoke.BURN_TIME
 const DRAG_THRESHOLD := 6.0
 
 var _burn_token: int = 0
