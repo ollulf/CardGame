@@ -206,6 +206,7 @@ func start_new_match() -> void:
 	CardManager.clear_all_cards()
 
 	new_match_started.emit()
+	starting_over = false
 
 	await _auto_pay_prize()
 
@@ -322,9 +323,12 @@ func retry_match() -> void:
 	_restore_state(_match_start_state)
 	start_new_match()
 
+var starting_over := false
+
 func start_over() -> void:
 	_intro_done = false
 	_restore_state(_game_start_state)
+	starting_over = true
 	start_new_match()
 
 func current_match() -> int:
