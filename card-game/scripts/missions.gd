@@ -7,7 +7,8 @@ const ANY := 0
 const DECK_SIZE := 20
 const DECK_KEYS := ["you_deck", "ai_one_deck", "ai_two_deck"]
 const CIGARETTE_KEYS := {1: "ai_one_cigarettes", 2: "ai_two_cigarettes"}
-const ALLOWED_KEYS := ["match", "you_deck", "ai_one_deck", "ai_two_deck", "ai_one_cigarettes", "ai_two_cigarettes"]
+const PRIZE_KEY := "prize_money"
+const ALLOWED_KEYS := ["match", "you_deck", "ai_one_deck", "ai_two_deck", "ai_one_cigarettes", "ai_two_cigarettes", "prize_money"]
 const SUIT_CODES := {
 	"H": Card.Suit.HEARTS,
 	"D": Card.Suit.DIAMONDS,
@@ -31,6 +32,9 @@ func cigarette_limit(match_number: int, seat: int) -> int:
 	if not CIGARETTE_KEYS.has(seat):
 		return UNLIMITED
 	return _lookup(match_number, CIGARETTE_KEYS[seat], UNLIMITED)
+
+func prize_money(match_number: int) -> int:
+	return _lookup(match_number, PRIZE_KEY, 0)
 
 func cigarettes_left(seat: int) -> int:
 	var limit := cigarette_limit(DialogueManager.upcoming_match(), seat)
@@ -106,7 +110,7 @@ static func _clean_match(raw, line: int):
 			push_error("Missions line %d: %s lists %d cards, a deck holds at most %d" % [line, key, cards.size(), DECK_SIZE])
 			return null
 		settings[key] = cards
-	for key in CIGARETTE_KEYS.values():
+	for key in CIGARETTE_KEYS.values() + [PRIZE_KEY]:
 		if not raw.has(key):
 			continue
 		if not raw[key] is int or raw[key] < 0:

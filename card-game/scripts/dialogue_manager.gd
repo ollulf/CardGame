@@ -15,7 +15,8 @@ const NO_SEAT := -1
 const AUTO_ADVANCE_HOLD := 1.5
 const DIALOGUE_LAYER := 100
 const LINES_PATH := "res://dialogue_lines.yaml"
-const CUES := ["show_deck", "deal_cards", "show_trump", "show_won_turns", "show_one_turns", "show_life_cards", "show_purse", "show_cigs", "ai_one_smokes", "ai_two_smokes"]
+const CUES := ["show_deck", "deal_cards", "show_trump", "show_won_turns", "show_one_turns", "show_life_cards", "show_purse", "show_cigs", "ai_one_smokes", "ai_two_smokes", "ai_1_pays", "ai_2_pays", "you_pay"]
+const PAY_CUES := {"you_pay": 0, "ai_1_pays": 1, "ai_2_pays": 2}
 
 var lines: Array = load_lines(LINES_PATH)
 var auto_advance := Engine.get_write_movie_path() != "" or DisplayServer.get_name() == "headless"
@@ -75,6 +76,16 @@ func has_cue(match_number: int, trigger: String, cue: String) -> bool:
 		for line in entry.lines:
 			if cue in str(line[3]).split(","):
 				return true
+	return false
+
+func match_pays_prize(match_number: int) -> bool:
+	for entry in lines:
+		if not _matches(entry.match_number, match_number):
+			continue
+		for line in entry.lines:
+			for cue in str(line[3]).split(",", false):
+				if PAY_CUES.has(cue.split(" ")[0]):
+					return true
 	return false
 
 func match_uses_cue(cue: String) -> bool:
@@ -418,6 +429,12 @@ static func _check_wait(value, line: int) -> int:
 	return value
 
 static func _check_cue(value, line: int) -> String:
+	var words := str(value).split(" ", false)
+	if words.size() == 2 and PAY_CUES.has(words[0]):
+		if not words[1].is_valid_int() or words[1].to_int() < 1:
+			push_error("DialogueLines line %d: '%s' needs an amount of 1 or more, like '%s 30'" % [line, words[0], words[0]])
+			return ""
+		return "%s %d" % [words[0], words[1].to_int()]
 	if not value in CUES:
 		push_error("DialogueLines line %d: unknown cue '%s' (allowed: %s)" % [line, str(value), ", ".join(CUES)])
 		return ""
