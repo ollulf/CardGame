@@ -8,7 +8,7 @@ var dragging: bool = false
 
 const RANK_INCREASED_COLOR := Color(0.4, 1.0, 0.45)
 const RANK_DECREASED_COLOR := Color(1.0, 0.4, 0.4)
-const CARD_BACK := preload("res://sprites/card_Background.png")
+const CARD_BACK := preload("res://sprites/card_backside.png")
 
 # --- Hover FX (driven externally) ---
 @export var hover_scale: float = 1.4

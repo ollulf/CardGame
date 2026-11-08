@@ -3,7 +3,7 @@ class_name DeckPile
 
 signal clicked(deck_owner: Card.Owner)
 
-const CARD_BACK := preload("res://sprites/card_Background.png")
+const CARD_BACK := preload("res://sprites/card_backside.png")
 const CARD_SCALE := 3.0
 const LAYER_STEP := Vector2(0, -3)
 const CARDS_PER_LAYER := 4
