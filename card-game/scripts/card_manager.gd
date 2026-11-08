@@ -325,6 +325,9 @@ func get_turn_winning_card() -> Card:
 	var zero := get_zero_beating_nine()
 	if zero != null:
 		return zero
+	return get_normal_winning_card()
+
+func get_normal_winning_card() -> Card:
 	var highest_trump = played_cards_turn.get_highest_trump_card()
 	if highest_trump != null:
 		return highest_trump
@@ -342,10 +345,11 @@ func get_turn_winner() -> Card.Owner:
 	return get_turn_winning_card().owner
 
 func get_zero_beating_nine() -> Card:
-	if not has_rank_at_least(played_cards_turn.cards, ZERO_BEATS_RANK):
+	var best := get_normal_winning_card()
+	if best == null or best.rank < ZERO_BEATS_RANK:
 		return null
 	for card in played_cards_turn.cards:
-		if card.rank == 0:
+		if card.rank == 0 and card.suit == best.suit:
 			return card
 	return null
 
