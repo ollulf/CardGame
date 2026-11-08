@@ -21,7 +21,7 @@ func _ready() -> void:
 func open() -> void:
 	var match_number := GameManager.current_match()
 	subtitle_label.text = "You lost two rounds in match %d." % match_number
-	retry_button.text = "Try match %d again" % match_number
+	retry_button.text = "Retry last match"
 	_set_buttons_disabled(false)
 	_lift_hand_pointer()
 	dim.modulate.a = 0.0
