@@ -10,6 +10,9 @@ const HOVER_CARD_SOUND := preload("res://sounds/hover_card.wav")
 const HOVER_CARD_DB := -12.0
 const HOVER_CARD_PITCH_VARIATION := 0.05
 const HOVER_CARD_INTERVAL_MSEC := 50
+const TYPE_SOUND := preload("res://sounds/type_sound.wav")
+const TYPE_SOUND_DB := -14.0
+const TYPE_PITCH_VARIATION := 0.06
 const BUTTON_SOUND := preload("res://sounds/button_press.wav")
 const DIALOGUE_NEXT_SOUND := preload("res://sounds/dialogue_next.mp3")
 const DIALOGUE_NEXT_DB := -10.0
@@ -30,6 +33,7 @@ const MUSIC_VOLUME_DB := -17.0
 const MUSIC_SILENT_DB := -60.0
 const MUSIC_FADE_TIME := 3.0
 
+var _last_played: AudioStreamPlayer
 var card_move_count := 0
 var _last_card_move_msec := -1000
 var _last_hover_msec := -1000
@@ -89,6 +93,7 @@ func play(stream: AudioStream, pitch_variation: float = 0.0, volume_db: float = 
 	player.volume_db = volume_db
 	player.pitch_scale = 1.0 + randf_range(-pitch_variation, pitch_variation)
 	player.play()
+	_last_played = player
 
 
 func play_ambient(stream: AudioStream, volume_db: float = AMBIENT_VOLUME_DB) -> void:
@@ -179,6 +184,11 @@ func play_cig_machine() -> float:
 
 func play_dialogue_next() -> void:
 	play(DIALOGUE_NEXT_SOUND, DIALOGUE_NEXT_PITCH_VARIATION, DIALOGUE_NEXT_DB)
+
+func play_type(base_pitch: float) -> void:
+	play(TYPE_SOUND, 0.0, TYPE_SOUND_DB)
+	if _last_played != null:
+		_last_played.pitch_scale = base_pitch * (1.0 + randf_range(-TYPE_PITCH_VARIATION, TYPE_PITCH_VARIATION))
 
 func play_button() -> void:
 	play(BUTTON_SOUND, 0.05)

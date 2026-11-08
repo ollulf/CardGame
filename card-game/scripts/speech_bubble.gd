@@ -10,19 +10,27 @@ const INDICATOR_BOB_TIME := 0.35
 const MAX_WIDTH := 230.0
 const CHARS_PER_SECOND := 32.0
 const FADE_TIME := 0.15
+const TYPE_EVERY := 3
 
 @onready var label: RichTextLabel = %Text
 
+var pitch := 1.0
 var tail_side := TailSide.LEFT
 var is_typed := false
 
 var _tween: Tween
 var _indicator_time := 0.0
+var _typing := false
+var _last_chars := 0
+var _letters_seen := 0
+var type_plays := 0
 
 func _ready() -> void:
 	visible = false
 
 func _process(delta: float) -> void:
+	if _typing:
+		_type_sounds()
 	if visible and is_typed:
 		_indicator_time += delta
 		queue_redraw()
@@ -37,7 +45,23 @@ static func format_text(text: String) -> String:
 		last = m.get_end()
 	return result + text.substr(last)
 
+func _type_sounds() -> void:
+	var shown := label.visible_characters
+	var parsed := label.get_parsed_text()
+	for i in range(_last_chars, mini(shown, parsed.length())):
+		var c := parsed[i]
+		if c.to_upper() == c.to_lower() and not c.is_valid_int():
+			continue
+		_letters_seen += 1
+		if _letters_seen % TYPE_EVERY == 1:
+			type_plays += 1
+			Sfx.play_type(pitch)
+	_last_chars = maxi(_last_chars, shown)
+
 func show_line(text: String) -> void:
+	_typing = true
+	_last_chars = 0
+	_letters_seen = 0
 	is_typed = false
 	label.text = format_text(text)
 	label.visible_characters = 0
@@ -54,12 +78,14 @@ func show_line(text: String) -> void:
 	_tween.tween_callback(_on_typed)
 
 func complete_line() -> void:
+	_typing = false
 	_kill_tween()
 	modulate.a = 1.0
 	label.visible_characters = -1
 	_on_typed()
 
 func close_line() -> void:
+	_typing = false
 	_kill_tween()
 	is_typed = false
 	visible = false
@@ -85,6 +111,7 @@ func _fit_to_text() -> void:
 	reset_size()
 
 func _on_typed() -> void:
+	_typing = false
 	is_typed = true
 	_indicator_time = 0.0
 	queue_redraw()

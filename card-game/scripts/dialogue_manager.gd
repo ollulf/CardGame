@@ -16,6 +16,7 @@ const NO_SEAT := -1
 const BAR_SPEAKER := 3
 const BAR_KEY := "bar"
 const BAR_TOP_MARGIN := 24.0
+const SPEAKER_PITCH := {0: 1.0, 1: 0.85, 2: 1.2, 3: 0.7}
 const AUTO_ADVANCE_HOLD := 1.5
 const DIALOGUE_LAYER := 100
 const LINES_PATH := "res://dialogue_lines.yaml"
@@ -195,6 +196,7 @@ func _show_next() -> void:
 		_speaking_seat = line[0]
 		_auto_advance_time = 0.0
 		_bubble.tail_side = _tail_side(_speaking_seat)
+		_bubble.pitch = SPEAKER_PITCH.get(_speaking_seat, 1.0)
 		_bubble.show_line(line[1])
 		_bubble.place_at(anchor)
 		line_started.emit(_speaking_seat, line[1])
