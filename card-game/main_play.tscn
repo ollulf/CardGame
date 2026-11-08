@@ -20,6 +20,7 @@
 [ext_resource type="PackedScene" path="res://scenes/debug_menu.tscn" id="debug_menu_scene"]
 [ext_resource type="PackedScene" path="res://scenes/deck_pile.tscn" id="deck_pile_scene"]
 [ext_resource type="PackedScene" path="res://scenes/deck_screen.tscn" id="deck_screen"]
+[ext_resource type="PackedScene" path="res://scenes/lose_screen.tscn" id="lose_screen"]
 [ext_resource type="Script" uid="uid://c80n6b1k87gya" path="res://scripts/player_buffs.gd" id="player_buffs_script"]
 [ext_resource type="Script" uid="uid://blqah5u23lspk" path="res://scripts/trump_display.gd" id="trump_display_script"]
 [ext_resource type="Script" uid="uid://lc3gscm8u4vo" path="res://scripts/wallet.gd" id="wallet_script"]
@@ -198,6 +199,9 @@ script = ExtResource("player_buffs_script")
 script = ExtResource("ai_cigarettes_ui_script")
 
 [node name="DeckScreen" parent="." unique_id=434758144 instance=ExtResource("deck_screen")]
+visible = false
+
+[node name="LoseScreen" parent="." unique_id=1592846301 instance=ExtResource("lose_screen")]
 visible = false
 
 [node name="MessageUI" type="CanvasLayer" parent="." unique_id=2122070329]

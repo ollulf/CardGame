@@ -77,6 +77,14 @@ func _on_match_finished(_loosers) -> void:
 	active = false
 	_current = {}
 
+func capture_state() -> Dictionary:
+	return {"active": active, "round_index": _round_index}
+
+func restore_state(state: Dictionary) -> void:
+	active = state.get("active", true)
+	_round_index = state.get("round_index", 0)
+	_current = {}
+
 static func load_rounds(path: String) -> Dictionary:
 	if not FileAccess.file_exists(path):
 		return {}

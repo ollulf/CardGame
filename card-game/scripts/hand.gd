@@ -50,6 +50,18 @@ func get_total_count() -> int:
 	return _cigs.size()
 
 
+func unlit_count() -> int:
+	return _cigs.filter(func(c: Cigarette): return c.get_state() == Cigarette.State.UNLIT).size()
+
+
+func clear_cigarettes() -> void:
+	for c in _cigs:
+		if is_instance_valid(c):
+			c.queue_free()
+	_cigs.clear()
+	_layout()
+
+
 func add_cigarette(cig: Cigarette, state: int) -> bool:
 	# Hard limit: no more than three
 	if _cigs.size() >= MAX_CIGARETTES:

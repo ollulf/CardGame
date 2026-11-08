@@ -100,6 +100,11 @@ func wait_until_idle() -> void:
 func clear_waiting() -> void:
 	_drop_waiting()
 
+func rewind_to_match(match_number: int) -> void:
+	_match = maxi(0, match_number - 1)
+	_match_running = false
+	_round = 0
+
 func _input(event: InputEvent) -> void:
 	if not is_open() or not event is InputEventMouse or InteractionManager.is_table_blocked():
 		return

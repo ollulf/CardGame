@@ -144,3 +144,22 @@ func active_deck_copy() -> Array[Card]:
 		cards.append(Card.new(card.suit, card.base_rank, Card.Owner.HUMAN, false))
 	cards.shuffle()
 	return cards
+
+func capture_state() -> Dictionary:
+	return {
+		"money": money,
+		"starting_money_granted": starting_money_granted,
+		"collection": collection.duplicate(),
+		"active_deck": active_deck.duplicate(),
+		"new_cards": new_cards.duplicate(),
+	}
+
+func restore_state(state: Dictionary) -> void:
+	starting_money_granted = state.get("starting_money_granted", false)
+	set_money(state.get("money", 0))
+	collection.assign(state.get("collection", []))
+	active_deck.assign(state.get("active_deck", []))
+	new_cards.assign(state.get("new_cards", []))
+	clear_smoking()
+	collection_changed.emit()
+	deck_changed.emit()

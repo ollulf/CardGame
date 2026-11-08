@@ -5,10 +5,10 @@ extends CanvasLayer
 
 var _hand_parent: Node
 var _hand_index := 0
-var _matches_finished := 0
 var deck_builder: DeckBuilder
 
 const GIFT_CIGARETTES := 8
+const GIFT_MATCH := 1
 
 func _ready() -> void:
 	hide()
@@ -20,8 +20,7 @@ func _ready() -> void:
 	deck_builder.closed.connect(_on_deck_builder_closed)
 
 func open(looser_ids: Array[int]) -> void:
-	_matches_finished += 1
-	if _matches_finished == 1:
+	if DialogueManager.upcoming_match() == GIFT_MATCH + 1:
 		var pack: CigPack = InteractionManager.cigPack
 		if pack != null:
 			pack.add_cigarettes(GIFT_CIGARETTES)

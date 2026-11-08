@@ -10,6 +10,7 @@ signal match_lost(looser_id: int)
 signal next_round_available()
 signal match_finished(looser_ids: Array[int])
 signal new_match_started()
+signal player_kicked()
 signal send_message(text: String)
 
 # --- Config ---
@@ -18,6 +19,7 @@ const MAX_LIVES := 2
 const TRUMP_REVEAL_TIME := 1.2
 const TURN_WINNER_SHOW_TIME := 2.5
 
+const HUMAN_ID := 0
 const PLAYER_NAMES := ["YOU","AI player 1", "AI player 2"]
 
 const MOVIE_WINDOW_POSITION := Vector2i(-10000, -10000)
@@ -42,6 +44,8 @@ var _deal_pending := false
 var _trump_pending := false
 var round_over := false
 var round_token := 0
+var _match_start_state := {}
+var _game_start_state := {}
 
 func _init() -> void:
 	if Engine.get_write_movie_path() != "":
@@ -70,6 +74,9 @@ func start_round(starting_player_id: int) -> void:
 	await CardManager.load_player_decks()
 	var first_round := not _intro_done
 	_intro_done = true
+	if _game_start_state.is_empty():
+		_game_start_state = _capture_state()
+		_match_start_state = _game_start_state
 	_trump_pending = first_round and DialogueManager.has_cue(1, "match_start", "show_trump")
 	if first_round and DialogueManager.has_cue(1, "match_start", "show_deck"):
 		for pile in get_tree().get_nodes_in_group(DECK_PILE_GROUP):
@@ -157,6 +164,7 @@ func reveal_trump() -> void:
 
 func start_new_match() -> void:
 	var starting_player_id: int = get_total_loosers().pick_random()
+	_match_start_state = _capture_state()
 
 	for id in range(3):
 		id_to_player(id).lost_rounds = 0
@@ -268,8 +276,37 @@ func _end_round(loosers: Array[int]) -> void:
 
 	if total_loosers.is_empty():
 		next_round_available.emit()
+	elif total_loosers.has(HUMAN_ID):
+		player_kicked.emit()
 	else:
 		match_finished.emit(total_loosers)
+
+func retry_match() -> void:
+	_restore_state(_match_start_state)
+	start_new_match()
+
+func start_over() -> void:
+	_intro_done = false
+	_restore_state(_game_start_state)
+	start_new_match()
+
+func current_match() -> int:
+	return _match_start_state.get("match", 1)
+
+func _capture_state() -> Dictionary:
+	var state := PlayerDataManager.capture_state()
+	state["match"] = DialogueManager.upcoming_match()
+	state["tutorial"] = TutorialScript.capture_state()
+	state["cigarettes"] = InteractionManager.held_cigarette_count()
+	return state
+
+func _restore_state(state: Dictionary) -> void:
+	round_token += 1
+	DialogueManager.clear_waiting()
+	DialogueManager.rewind_to_match(state.get("match", 1))
+	TutorialScript.restore_state(state.get("tutorial", {}))
+	PlayerDataManager.restore_state(state)
+	InteractionManager.reset_cigarettes(state.get("cigarettes", 0))
 
 func can_skip_round() -> bool:
 	return current_turn > 0 and not round_over

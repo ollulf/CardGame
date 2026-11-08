@@ -191,6 +191,21 @@ func addCigToHand() -> void:
 	var cig := cigarette_scene.instantiate() as Cigarette
 	hand.add_cigarette(cig, Cigarette.State.UNLIT)
 
+func held_cigarette_count() -> int:
+	var count := 0
+	if cigPack != null:
+		count += cigPack.cig_amount
+	if hand != null:
+		count += hand.unlit_count()
+	return count
+
+func reset_cigarettes(amount: int) -> void:
+	_burn_token += 1
+	if hand != null:
+		hand.clear_cigarettes()
+	if cigPack != null:
+		cigPack.cig_amount = amount
+
 func _return_one_unlit_to_pack() -> void:
 	var did_remove := hand.remove_one_unlit()
 	

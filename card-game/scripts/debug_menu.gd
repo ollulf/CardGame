@@ -25,6 +25,7 @@ func _ready() -> void:
 	hide()
 	GameManager.new_match_started.connect(_on_new_match_started)
 	GameManager.match_finished.connect(_on_match_finished)
+	GameManager.player_kicked.connect(_on_player_kicked)
 
 
 func _build() -> void:
@@ -46,6 +47,7 @@ func _build() -> void:
 	box.add_theme_constant_override("separation", 6)
 	margin.add_child(box)
 
+	_skip_buttons.append(_add_button(box, "You lose round", skip_round.bind(GameManager.HUMAN_ID)))
 	for looser_id in [1, 2]:
 		var button := _add_button(box, "Skip round: %s loses" % GameManager.PLAYER_NAMES[looser_id], skip_round.bind(looser_id))
 		_skip_buttons.append(button)
@@ -128,6 +130,10 @@ func _on_new_match_started() -> void:
 
 
 func _on_match_finished(_loosers: Array[int]) -> void:
+	_on_player_kicked()
+
+
+func _on_player_kicked() -> void:
 	if visible:
 		_was_blocked = true
 
