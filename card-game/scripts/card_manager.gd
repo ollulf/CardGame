@@ -191,6 +191,8 @@ func submit_play(player_id: int, card: Card, from: Transform2D = Transform2D.IDE
 	played_cards_round.append(card)
 	render_played_card(card, from)
 	card_played.emit(player_id, card)
+	if card.suit == Card.Suit.SMOKE:
+		PlayerDataManager.unlock_smoke()
 
 	GameManager.play_callback(player_id)
 	print("played: ", card)
