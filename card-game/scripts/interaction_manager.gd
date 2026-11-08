@@ -78,6 +78,8 @@ func check_for_hovered_card() -> void:
 	hovered_card = new_hovered
 	if is_instance_valid(hovered_card):
 		hovered_card.hover_enter()
+		if _is_draggable(hovered_card) and hovered_card.hover_enabled and not hovered_card.face_down:
+			Sfx.play_hover_card()
 
 
 
