@@ -8,7 +8,15 @@ const AMBIENT_VOLUME_DB := -24.0
 const AMBIENT_SILENT_DB := -60.0
 const AMBIENT_FADE_TIME := 2.0
 
+const LIGHTER_SOUND := preload("res://sounds/lighter.wav")
+const SMOKE_LOOP_SOUND := preload("res://sounds/smoking_loop.wav")
+const SMOKE_LOOP_DB := -18.0
+const LOOP_FADE_TIME := 0.4
+
 var _players: Array[AudioStreamPlayer] = []
+var _loops := {}
+var _loop_counts := {}
+var _loop_tweens := {}
 var _ambient: AudioStreamPlayer
 var _ambient_tween: Tween
 
@@ -56,6 +64,50 @@ func stop_ambient() -> void:
 	if _ambient_tween:
 		_ambient_tween.kill()
 	_ambient.stop()
+
+
+func start_loop(key: String, stream: AudioStream, volume_db: float = SMOKE_LOOP_DB) -> void:
+	_loop_counts[key] = int(_loop_counts.get(key, 0)) + 1
+	if _loop_counts[key] > 1:
+		return
+	var player: AudioStreamPlayer = _loops.get(key)
+	if player == null:
+		player = AudioStreamPlayer.new()
+		add_child(player)
+		_loops[key] = player
+	if _loop_tweens.has(key):
+		_loop_tweens[key].kill()
+	player.stream = stream
+	if not player.playing:
+		player.volume_db = AMBIENT_SILENT_DB
+		player.play()
+	var tween := create_tween()
+	tween.tween_property(player, "volume_db", volume_db, LOOP_FADE_TIME)
+	_loop_tweens[key] = tween
+
+
+func stop_loop(key: String) -> void:
+	if int(_loop_counts.get(key, 0)) <= 0:
+		return
+	_loop_counts[key] -= 1
+	if _loop_counts[key] > 0:
+		return
+	var player: AudioStreamPlayer = _loops[key]
+	if _loop_tweens.has(key):
+		_loop_tweens[key].kill()
+	var tween := create_tween()
+	tween.tween_property(player, "volume_db", AMBIENT_SILENT_DB, LOOP_FADE_TIME)
+	tween.tween_callback(_finish_loop.bind(key))
+	_loop_tweens[key] = tween
+
+
+func is_loop_playing(key: String) -> bool:
+	return int(_loop_counts.get(key, 0)) > 0
+
+
+func _finish_loop(key: String) -> void:
+	if int(_loop_counts.get(key, 0)) == 0:
+		_loops[key].stop()
 
 
 func play_button() -> void:

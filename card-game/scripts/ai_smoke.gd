@@ -37,6 +37,7 @@ var _ember := 0.0
 var _tip_rows: Array[int] = []
 var _burning := false
 var _run := 0
+var _loop_held := false
 var _light_tween: Tween
 
 
@@ -108,6 +109,7 @@ func ignite() -> void:
 	var run := _run
 	_holder.modulate.a = 1.0
 	_set_texture(0)
+	Sfx.play(Sfx.LIGHTER_SOUND)
 
 	_light_tween = create_tween()
 	_light_tween.tween_method(_set_flame, 0.0, 1.0, LIGHT_TIME * 0.4)
@@ -119,6 +121,7 @@ func ignite() -> void:
 	lit.emit()
 
 	_burning = true
+	_hold_loop()
 	_smoke.emitting = true
 	_puff_loop(run)
 	var step_time := BURN_TIME / float(BURN_TEXTURES.size() - 1)
@@ -143,7 +146,24 @@ func show_stub() -> void:
 		_set_ember(0.0)
 
 
+func _hold_loop() -> void:
+	if not _loop_held:
+		_loop_held = true
+		Sfx.start_loop("smoke", Sfx.SMOKE_LOOP_SOUND)
+
+
+func _release_loop() -> void:
+	if _loop_held:
+		_loop_held = false
+		Sfx.stop_loop("smoke")
+
+
+func _exit_tree() -> void:
+	_release_loop()
+
+
 func _stop() -> void:
+	_release_loop()
 	_run += 1
 	_burning = false
 	_smoke.emitting = false
@@ -153,6 +173,7 @@ func _stop() -> void:
 
 
 func _burn_out() -> void:
+	_release_loop()
 	_burning = false
 	_smoke.emitting = false
 	create_tween().tween_method(_set_ember, _ember, 0.0, STUB_TIME * 0.5)
