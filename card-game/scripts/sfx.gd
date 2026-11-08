@@ -14,6 +14,9 @@ const TYPE_SOUND := preload("res://sounds/type_sound.wav")
 const TYPE_SOUND_DB := -14.0
 const TYPE_PITCH_VARIATION := 0.06
 const BUTTON_SOUND := preload("res://sounds/button_press.wav")
+const WIN_CARD_SOUND := preload("res://sounds/win_card.wav")
+const WIN_CARD_DB := -8.0
+const WIN_CARD_PITCH_VARIATION := 0.04
 const DIALOGUE_NEXT_SOUND := preload("res://sounds/dialogue_next.mp3")
 const DIALOGUE_NEXT_DB := -10.0
 const DIALOGUE_NEXT_PITCH_VARIATION := 0.04
@@ -189,6 +192,9 @@ func play_type(base_pitch: float) -> void:
 	play(TYPE_SOUND, 0.0, TYPE_SOUND_DB)
 	if _last_played != null:
 		_last_played.pitch_scale = base_pitch * (1.0 + randf_range(-TYPE_PITCH_VARIATION, TYPE_PITCH_VARIATION))
+
+func play_win_card() -> void:
+	play(WIN_CARD_SOUND, WIN_CARD_PITCH_VARIATION, WIN_CARD_DB)
 
 func play_button() -> void:
 	play(BUTTON_SOUND, 0.05)
