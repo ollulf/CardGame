@@ -34,10 +34,6 @@ func _build() -> void:
 	_panel = PanelContainer.new()
 	_panel.position = Vector2(MARGIN, TOP_OFFSET)
 	_panel.custom_minimum_size = Vector2(PANEL_WIDTH, 0.0)
-	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.08, 0.08, 0.1, 0.95)
-	style.set_corner_radius_all(4)
-	_panel.add_theme_stylebox_override("panel", style)
 	add_child(_panel)
 
 	var margin := MarginContainer.new()

@@ -31,6 +31,10 @@ window/size/no_focus.movie=true
 window/stretch/mode="canvas_items"
 window/stretch/aspect="keep"
 
+[gui]
+
+theme/custom="res://ui/theme_c4a.tres"
+
 [input]
 
 togge_deck_visualizer={

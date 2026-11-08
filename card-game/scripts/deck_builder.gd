@@ -25,13 +25,13 @@ const SUIT_TEXTURES := {
 	Card.Suit.SMOKE: preload("res://sprites/suit_Smoke.png"),
 }
 
-const BG_COLOR := Color("1c1916")
-const PANEL_COLOR := Color("2a2521")
-const PANEL_COLOR_2 := Color("342d27")
-const LINE_COLOR := Color("4a4038")
-const FG_COLOR := Color("eee6da")
-const MUTED_COLOR := Color("a59889")
-const ACCENT_COLOR := Color("e3a44c")
+const BG_COLOR := Color("121117")
+const PANEL_COLOR := Color("17161c")
+const PANEL_COLOR_2 := Color("24222d")
+const LINE_COLOR := Color("6b6390")
+const FG_COLOR := Color("ffffff")
+const MUTED_COLOR := Color("d6d1e6")
+const ACCENT_COLOR := Color("ffcf6e")
 const NEW_COLOR := Color("7ed2a0")
 const WARN_COLOR := Color("e5735e")
 
@@ -91,8 +91,10 @@ func _build() -> void:
 	add_child(backdrop)
 
 	var title_box := _panel(Rect2(LEFT_RECT.position, Vector2(LEFT_RECT.size.x, 56)))
-	var title := _label("Deck", 34, FG_COLOR)
-	title.position = Vector2(14, 6)
+	var title := HeadlineLabel.new()
+	title.text = "Deck"
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	title.position = Vector2(14, 8)
 	title_box.add_child(title)
 
 	var info_box := _panel(Rect2(LEFT_RECT.position + Vector2(0, 66), Vector2(LEFT_RECT.size.x, LEFT_RECT.size.y - 132)))
@@ -114,13 +116,6 @@ func _build() -> void:
 	_close_button.focus_mode = Control.FOCUS_NONE
 	_close_button.position = Vector2(LEFT_RECT.position.x, LEFT_RECT.end.y - 56)
 	_close_button.size = Vector2(LEFT_RECT.size.x, 56)
-	_close_button.add_theme_font_size_override("font_size", 18)
-	_close_button.add_theme_stylebox_override("normal", _box(PANEL_COLOR_2, LINE_COLOR))
-	_close_button.add_theme_stylebox_override("hover", _box(PANEL_COLOR_2, ACCENT_COLOR))
-	_close_button.add_theme_stylebox_override("pressed", _box(PANEL_COLOR, ACCENT_COLOR))
-	_close_button.add_theme_stylebox_override("disabled", _box(PANEL_COLOR, LINE_COLOR))
-	_close_button.add_theme_color_override("font_color", FG_COLOR)
-	_close_button.add_theme_color_override("font_hover_color", ACCENT_COLOR)
 	_close_button.add_theme_color_override("font_disabled_color", WARN_COLOR)
 	_close_button.pressed.connect(try_close)
 	add_child(_close_button)
@@ -170,7 +165,6 @@ func _box(fill: Color, border: Color) -> StyleBoxFlat:
 	style.bg_color = fill
 	style.set_border_width_all(2)
 	style.border_color = border
-	style.set_corner_radius_all(4)
 	return style
 
 

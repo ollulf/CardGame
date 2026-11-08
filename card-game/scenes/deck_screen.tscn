@@ -1,30 +1,6 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=2 format=3]
 
 [ext_resource type="Script" path="res://scripts/deck_screen.gd" id="1_deck"]
-
-[sub_resource type="StyleBoxFlat" id="button_normal"]
-bg_color = Color(0.85, 0.72, 0.42, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.95, 0.92, 0.85, 1)
-
-[sub_resource type="StyleBoxFlat" id="button_hover"]
-bg_color = Color(0.96, 0.84, 0.55, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(1, 1, 1, 1)
-
-[sub_resource type="StyleBoxFlat" id="button_pressed"]
-bg_color = Color(0.66, 0.55, 0.3, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.95, 0.92, 0.85, 1)
 
 [node name="DeckScreen" type="CanvasLayer"]
 layer = 50
@@ -44,26 +20,14 @@ theme_override_constants/separation = 14
 
 [node name="ConfirmDeckButton" type="Button" parent="Center/Buttons"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(260, 60)
+custom_minimum_size = Vector2(260, 48)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.1, 0.09, 0.07, 1)
-theme_override_colors/font_hover_color = Color(0.1, 0.09, 0.07, 1)
-theme_override_colors/font_pressed_color = Color(0.1, 0.09, 0.07, 1)
-theme_override_font_sizes/font_size = 22
-theme_override_styles/normal = SubResource("button_normal")
-theme_override_styles/hover = SubResource("button_hover")
-theme_override_styles/pressed = SubResource("button_pressed")
+theme_type_variation = &"ButtonPrimary"
+theme_override_font_sizes/font_size = 20
 text = "Start next match"
 
 [node name="EditDeckButton" type="Button" parent="Center/Buttons"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(260, 48)
+custom_minimum_size = Vector2(260, 40)
 layout_mode = 2
-theme_override_colors/font_color = Color(0.1, 0.09, 0.07, 1)
-theme_override_colors/font_hover_color = Color(0.1, 0.09, 0.07, 1)
-theme_override_colors/font_pressed_color = Color(0.1, 0.09, 0.07, 1)
-theme_override_font_sizes/font_size = 18
-theme_override_styles/normal = SubResource("button_normal")
-theme_override_styles/hover = SubResource("button_hover")
-theme_override_styles/pressed = SubResource("button_pressed")
 text = "Edit deck"

@@ -8,12 +8,12 @@ const PANEL_RECT := Rect2(206, 104, 740, 440)
 const ENTRY_SIZE := Vector2(222, 300)
 const ENTRY_GAP := 18.0
 const ENTRY_PADDING := Vector2(18, 16)
-const BG_COLOR := Color(0.121569, 0.117647, 0.14902, 1)
-const BORDER_COLOR := Color(0.239216, 0.219608, 0.329412, 1)
-const TEXT_COLOR := Color(0.956863, 0.952941, 0.968627, 1)
-const MUTED_COLOR := Color(0.7, 0.68, 0.78, 1)
-const PRICE_COLOR := Color(0.98, 0.84, 0.55, 1)
-const SELECTED_COLOR := Color(0.98, 0.84, 0.55, 1)
+const BG_COLOR := Color("17161c")
+const BORDER_COLOR := Color("6b6390")
+const TEXT_COLOR := Color("ffffff")
+const MUTED_COLOR := Color("d6d1e6")
+const PRICE_COLOR := Color("ffcf6e")
+const SELECTED_COLOR := Color("ffcf6e")
 const DENY_COLOR := Color(1.0, 0.45, 0.4)
 const CONFIRM_TEXT := "Really?"
 const NOT_ENOUGH_MONEY_TEXT := "Not enough money"
@@ -53,9 +53,11 @@ func _build() -> void:
 	panel.add_theme_stylebox_override("panel", _box_style(BORDER_COLOR))
 	add_child(panel)
 
-	var title := _label("Booster Shelf", 26, TEXT_COLOR)
+	var title := HeadlineLabel.new()
+	title.text = "Booster Shelf"
+	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	title.position = PANEL_RECT.position + Vector2(0, 18)
-	title.size = Vector2(PANEL_RECT.size.x, 36)
+	title.size = Vector2(PANEL_RECT.size.x, 44)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(title)
 
@@ -157,7 +159,7 @@ func _box_style(border: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
 	style.bg_color = BG_COLOR
 	style.border_color = border
-	style.set_border_width_all(3)
+	style.set_border_width_all(2)
 	style.content_margin_left = 10
 	style.content_margin_right = 10
 	style.content_margin_top = 10
@@ -184,6 +186,7 @@ func open() -> void:
 	_cancel_confirm()
 	_layout_entries()
 	show()
+	_layout_entries.call_deferred()
 
 
 func close() -> void:
