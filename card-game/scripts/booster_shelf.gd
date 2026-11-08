@@ -203,6 +203,7 @@ func _gui_input(event: InputEvent) -> void:
 func click_at(point: Vector2) -> void:
 	for i in entries.size():
 		if entries[i].visible and entries[i].get_rect().has_point(point):
+			Sfx.play_button()
 			select(i)
 			return
 	_cancel_confirm()

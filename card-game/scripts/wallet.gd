@@ -83,4 +83,5 @@ func _input_event(_viewport: Viewport, event: InputEvent, _shape_idx: int) -> vo
 
 
 func on_clicked() -> void:
+	Sfx.play_button()
 	clicked.emit()
