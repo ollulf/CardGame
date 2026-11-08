@@ -2,7 +2,7 @@ extends CanvasLayer
 class_name DebugMenu
 
 const TOGGLE_ACTION := "toggle_debug_menu"
-const UNLOCK_CUES := ["show_deck", "show_won_turns", "show_life_cards", "show_purse", "show_cigs", "show_trump"]
+const UNLOCK_CUES := ["show_deck", "show_won_turns", "show_life_cards", "show_purse", "show_cigs", "show_trump", "unlock_cig_automat"]
 const PANEL_WIDTH := 260.0
 const MARGIN := 16.0
 const TOP_OFFSET := 60.0
@@ -14,6 +14,7 @@ var unlocked := false
 
 var _panel: PanelContainer
 var _skip_buttons: Array[Button] = []
+var _tutorial_button: Button
 var _pointer_parent: Node
 var _pointer_index := 0
 var _was_blocked := false
@@ -51,6 +52,7 @@ func _build() -> void:
 	for looser_id in [1, 2]:
 		var button := _add_button(box, "Skip round: %s loses" % GameManager.PLAYER_NAMES[looser_id], skip_round.bind(looser_id))
 		_skip_buttons.append(button)
+	_tutorial_button = _add_button(box, "Skip tutorial", skip_tutorial)
 	_add_button(box, "Unlock all UI", unlock_all)
 	_add_button(box, "+%d cigarettes" % CIGARETTE_BONUS, add_cigarettes)
 	_add_button(box, "Close", close)
@@ -112,8 +114,17 @@ func skip_round(looser_id: int) -> void:
 	_refresh()
 
 
+func skip_tutorial() -> void:
+	if not GameManager.can_skip_tutorial():
+		return
+	GameManager.skip_tutorial(UNLOCK_CUES)
+	_refresh()
+
+
 func unlock_all() -> void:
 	unlocked = true
+	PlayerDataManager.mark_booster_collected()
+	PlayerDataManager.mark_deck_edited()
 	for cue in UNLOCK_CUES:
 		GameManager.run_cue(cue)
 
@@ -142,6 +153,8 @@ func _refresh() -> void:
 	var can_skip := GameManager.can_skip_round()
 	for button in _skip_buttons:
 		button.disabled = not can_skip
+	_tutorial_button.visible = DialogueManager.upcoming_match() == 1
+	_tutorial_button.disabled = not GameManager.can_skip_tutorial()
 
 
 func _lift_pointer() -> void:

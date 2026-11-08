@@ -215,6 +215,8 @@ func visualize_deck(deck: Deck, owner : Card.Owner):
 	var trump := CardManager.trump_suit
 	for suit in DeckBuilder.SUIT_ORDER:
 		var cards := all_cards.filter(func(c: Card) -> bool: return c.suit == suit)
+		if cards.is_empty():
+			continue
 		cards.sort_custom(func(a: Card, b: Card) -> bool: return a.base_rank > b.base_rank)
 		_rows.add_child(_suit_row(suit, cards, deck, _trump_known and suit == trump))
 
@@ -253,8 +255,9 @@ func _suit_row(suit: Card.Suit, cards: Array, deck: Deck, is_trump: bool) -> Con
 		var none := _label("none", 12, DeckBuilder.MUTED_COLOR)
 		none.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		row.add_child(none)
+	var hand := CardManager.hand_of(0)
 	for card in cards:
-		var in_hand: bool = CardManager.player_hand != null and CardManager.player_hand.cards.has(card)
+		var in_hand: bool = hand != null and hand.cards.has(card)
 		row.add_child(_card_cell(card, not deck.cards.has(card) and not in_hand, is_trump, in_hand))
 	return frame
 

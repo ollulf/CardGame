@@ -28,6 +28,8 @@ Missions="*res://scripts/missions.gd"
 [display]
 
 window/size/no_focus.movie=true
+window/stretch/mode="canvas_items"
+window/stretch/aspect="keep"
 
 [input]
 
