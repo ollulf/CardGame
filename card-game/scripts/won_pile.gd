@@ -1,7 +1,7 @@
 extends Node2D
 class_name WonPile
 
-const CARD_BACK := preload("res://sprites/card_Background.png")
+const CARD_BACK := preload("res://sprites/card_backside.png")
 const CARD_SCALE := 3.0
 const LAYER_STEP := Vector2(0, -3)
 const MAX_LAYERS := 5
