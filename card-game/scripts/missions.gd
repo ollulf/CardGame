@@ -18,6 +18,7 @@ const SUIT_CODES := {
 	"AL": Card.Suit.ALK,
 }
 const UNLIMITED := -1
+const ZERO_RANK_MATCH := 3
 
 var matches: Dictionary = load_missions(MISSIONS_PATH)
 var _cigarettes_used := {}
@@ -33,6 +34,9 @@ func cigarette_limit(match_number: int, seat: int) -> int:
 	if not CIGARETTE_KEYS.has(seat):
 		return UNLIMITED
 	return _lookup(match_number, CIGARETTE_KEYS[seat], UNLIMITED)
+
+func lowest_rank(match_number: int) -> int:
+	return 0 if match_number >= ZERO_RANK_MATCH else 1
 
 func prize_money(match_number: int) -> int:
 	return _lookup(match_number, PRIZE_KEY, 0)
