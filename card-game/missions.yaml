@@ -1,12 +1,26 @@
 match: 2
 	prize_money: 30
-	ai_one_deck: 
+	ai_one_deck:
+		H: 1,2,3,4,5
+		S: 1,2,3,4
+		C: 1,2,3,5
+		D: 1,2,3,4,5
+		SM: 2,3
+	ai_two_deck:
+		D 1,2,3,4
+		H 2,3,4,5
+		S 1,2,3,4,5
+		C 1,2,3,4,5
+		SM 1,4
+match: 3
+	prize_money: 30
+	ai_one_deck:
 		H: 7,4,2,3,5,8
-		S: 9,6,1 
-		C: 9,5,6 
+		S: 9,6,1
+		C: 9,5,6
 		D: 6,7,2,8,3
 		SM: 6,3,7
-	ai_two_deck: 
+	ai_two_deck:
 		D 1,4,6,8
 		H 7,5,1
 		S 5,5,2,4,7
