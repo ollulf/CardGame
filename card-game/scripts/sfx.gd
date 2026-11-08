@@ -2,6 +2,10 @@ extends Node
 
 const POOL_SIZE := 8
 const CIG_MACHINE_SOUND := preload("res://sounds/cig_machine.wav")
+const CARD_DRAW_SOUND := preload("res://sounds/card_draw.wav")
+const CARD_MOVE_INTERVAL_MSEC := 60
+const CARD_MOVE_PITCH_VARIATION := 0.08
+const CARD_MOVE_VOLUME_DB := -4.0
 const BUTTON_SOUND := preload("res://sounds/button_press.wav")
 
 const AMBIENT_SOUND := preload("res://sounds/bar_ambient.mp3")
@@ -19,6 +23,8 @@ const MUSIC_VOLUME_DB := -14.0
 const MUSIC_SILENT_DB := -60.0
 const MUSIC_FADE_TIME := 3.0
 
+var card_move_count := 0
+var _last_card_move_msec := -1000
 var _music: AudioStreamPlayer
 var _music_tween: Tween
 var _players: Array[AudioStreamPlayer] = []
@@ -42,6 +48,17 @@ func _ready() -> void:
 	play_music(MUSIC_SOUND, MUSIC_VOLUME_DB)
 	get_tree().node_added.connect(_hook_node)
 	_hook_tree(get_tree().root)
+
+func play_card_move(delay: float = 0.0) -> void:
+	if delay > 0.0:
+		await get_tree().create_timer(delay, false).timeout
+	var now := Time.get_ticks_msec()
+	if now - _last_card_move_msec < CARD_MOVE_INTERVAL_MSEC:
+		return
+	_last_card_move_msec = now
+	card_move_count += 1
+	play(CARD_DRAW_SOUND, CARD_MOVE_PITCH_VARIATION, CARD_MOVE_VOLUME_DB)
+
 
 func play(stream: AudioStream, pitch_variation: float = 0.0, volume_db: float = 0.0) -> void:
 	if stream == null:

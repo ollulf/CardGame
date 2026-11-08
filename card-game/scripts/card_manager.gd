@@ -285,6 +285,7 @@ func clear_table() -> void:
 	for i in visuals.size():
 		var delay := i * CLEAR_STAGGER
 		visuals[i].fly_off_top(top, delay, CLEAR_TIME)
+		Sfx.play_card_move(delay)
 		duration = maxf(duration, delay + CLEAR_TIME)
 	await get_tree().create_timer(duration, false).timeout
 
@@ -308,6 +309,7 @@ func collect_table(winner: Card.Owner) -> void:
 	var gather_center := winner_visual.global_position + winner_visual.pivot_offset
 	var pile_center := pile.top_position()
 	winner_visual.z_index = top_z_of(visuals)
+	Sfx.play_card_move(COLLECT_GATHER_TIME + COLLECT_FLIP_TIME)
 	for visual in visuals:
 		visual.collect_to(gather_center, pile_center, Vector2.ONE * COLLECT_SCALE, COLLECT_GATHER_TIME, COLLECT_FLIP_TIME, COLLECT_FLY_TIME)
 	await get_tree().create_timer(COLLECT_GATHER_TIME + COLLECT_FLIP_TIME + COLLECT_FLY_TIME, false).timeout
@@ -422,6 +424,7 @@ func show_tie_break(draws: Dictionary, losers: Array[int]) -> void:
 			tween.tween_property(visual, "global_position", target - visual.size * 0.5, TIE_FLY_TIME)
 			tween.tween_property(visual, "scale", Vector2.ONE * TIE_CARD_SCALE, TIE_FLY_TIME)
 			visuals[id] = visual
+			Sfx.play_card_move()
 	if visuals.is_empty():
 		for id in ids:
 			return_tie_card(id, draws[id])
@@ -441,6 +444,7 @@ func show_tie_break(draws: Dictionary, losers: Array[int]) -> void:
 		var visual: CardVisual = visuals[id]
 		if not is_instance_valid(visual):
 			continue
+		Sfx.play_card_move()
 		var tween := visual.create_tween().set_parallel().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 		tween.tween_property(visual, "global_position", homes[id] - visual.size * 0.5, TIE_FLY_TIME)
 		tween.tween_property(visual, "scale", Vector2.ONE, TIE_FLY_TIME)

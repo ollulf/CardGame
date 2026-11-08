@@ -238,6 +238,7 @@ func deal_card(card: Card, from_center: Vector2, slot: int, slot_count: int) -> 
 	c.z_index = slot
 	c.update_layout()
 	_orient(c)
+	Sfx.play_card_move()
 	c.deal_from(Transform2D(0.0, Vector2.ONE, 0.0, from_center - c.pivot_offset), show_hand)
 
 

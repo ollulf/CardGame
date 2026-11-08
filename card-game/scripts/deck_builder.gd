@@ -225,6 +225,7 @@ func _fly_card(cell: Control, card: Card, to_deck: bool) -> void:
 	copy.global_position = cell.global_position
 	var flight := {"card": card, "to_deck": to_deck, "copy": copy, "start": cell.global_position}
 	_flights.append(flight)
+	Sfx.play_card_move()
 	await get_tree().process_frame
 	if not is_instance_valid(copy):
 		return

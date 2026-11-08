@@ -279,6 +279,7 @@ func _collect() -> void:
 	for i in card_visuals.size():
 		var visual := card_visuals[i]
 		var delay := i * 0.07
+		Sfx.play_card_move(delay)
 		fly.tween_property(visual, "position", target, 0.4).set_delay(delay).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 		fly.tween_property(visual, "scale", Vector2.ONE * 0.3, 0.4).set_delay(delay)
 		fly.tween_property(visual, "modulate:a", 0.0, 0.1).set_delay(delay + 0.3)
