@@ -68,6 +68,8 @@ match: 1
 			1: I will *smoke* a *cigarette* if that is fine for everybody.
 			2: Sure, I would also smoke one.
 			2: Can I use your lighter?
+			cue: ai_one_smokes
+			cue: ai_two_smokes
 
 		when: round_start
 		round: 3

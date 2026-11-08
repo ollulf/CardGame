@@ -73,7 +73,7 @@ func has_cue(match_number: int, trigger: String, cue: String) -> bool:
 		if entry.when != trigger or not _matches(entry.match_number, match_number):
 			continue
 		for line in entry.lines:
-			if line[3] == cue:
+			if cue in str(line[3]).split(","):
 				return true
 	return false
 
@@ -141,8 +141,11 @@ func _show_next() -> void:
 		var line: Array = _queue.pop_front()
 		if line[2] != "":
 			_running_cue = true
-			await GameManager.run_cue(line[2])
+			for cue_name in line[2].split(","):
+				await GameManager.run_cue(cue_name)
 			_running_cue = false
+		if line[0] == NO_SEAT:
+			continue
 		var seat_node := _seat_node(line[0])
 		if seat_node == null:
 			push_error("DialogueManager: seat %d is not at the table" % line[0])
@@ -354,12 +357,10 @@ static func _rows_to_lines(rows: Array):
 			wait = 0
 			last_line = row_line
 		elif key == "cue":
-			if cue != "":
-				push_error("DialogueLines line %d: only one cue per spoken line" % row_line)
+			var checked := _check_cue(value, row_line)
+			if checked == "":
 				return null
-			cue = _check_cue(value, row_line)
-			if cue == "":
-				return null
+			cue = checked if cue == "" else cue + "," + checked
 		elif key == "wait_for_cards_played":
 			if wait > 0:
 				push_error("DialogueLines line %d: only one 'wait_for_cards_played' per spoken line" % row_line)
@@ -370,9 +371,11 @@ static func _rows_to_lines(rows: Array):
 		else:
 			push_error("DialogueLines line %d: expected '<seat>: <text>', 'cue: <name>' or 'wait_for_cards_played: <number>'" % row_line)
 			return null
-	if cue != "" or wait > 0:
-		push_error("DialogueLines line %d: 'cue' and 'wait_for_cards_played' need a spoken line below them" % rows[-1].line)
+	if wait > 0:
+		push_error("DialogueLines line %d: 'wait_for_cards_played' needs a spoken line below it" % rows[-1].line)
 		return null
+	if cue != "" and not spoken_lines.is_empty():
+		spoken_lines.append([NO_SEAT, "", 0, cue])
 	if spoken_lines.is_empty():
 		push_error("DialogueLines line %d: a dialogue needs at least one spoken line" % rows[0].line)
 		return null

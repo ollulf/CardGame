@@ -66,7 +66,10 @@ func apply_buffs(player_id: int) -> void:
 
 func load_player_decks():
 	var match_number := DialogueManager.upcoming_match()
-	player_deck = Deck.new(_mission_cards(match_number, 0, Card.Owner.HUMAN))
+	if Missions.deck_cards(match_number, 0).is_empty() and PlayerDataManager.has_active_deck():
+		player_deck = Deck.new(PlayerDataManager.active_deck_copy())
+	else:
+		player_deck = Deck.new(_mission_cards(match_number, 0, Card.Owner.HUMAN))
 	AI_1_deck = Deck.new(_mission_cards(match_number, 1, Card.Owner.AI_1))
 	AI_2_deck = Deck.new(_mission_cards(match_number, 2, Card.Owner.AI_2))
 	print("Decks generated")
