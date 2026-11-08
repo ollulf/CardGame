@@ -6,6 +6,7 @@ signal finished
 enum State { HIDDEN, CLOSED, OPENING, REVEAL, COLLECTING }
 
 const CARD_SCENE := preload("res://scenes/Card.tscn")
+const RIP_SOUND := preload("res://sounds/booster_rip.wav")
 const MAX_ROW_CARDS := 5
 const NORMAL_SUITS: Array[Card.Suit] = [Card.Suit.DIAMONDS, Card.Suit.HEARTS, Card.Suit.SPADES, Card.Suit.CLUBS]
 const MIN_RANK := 1
@@ -58,9 +59,9 @@ func _build() -> void:
 	_panel.position = PANEL_RECT.position
 	_panel.size = PANEL_RECT.size
 	var panel_style := StyleBoxFlat.new()
-	panel_style.bg_color = Color(0.35, 0.35, 0.35, 1)
+	panel_style.bg_color = Color("17161c")
 	panel_style.set_border_width_all(2)
-	panel_style.border_color = Color(0.85, 0.8, 0.7, 1)
+	panel_style.border_color = Color("6b6390")
 	_panel.add_theme_stylebox_override("panel", panel_style)
 	add_child(_panel)
 
@@ -185,7 +186,7 @@ func click_at(point: Vector2) -> void:
 	match state:
 		State.CLOSED:
 			if Rect2(_pack.position, PACK_SIZE).has_point(point):
-				Sfx.play_button()
+				Sfx.play(RIP_SOUND, 0.05)
 				_rip_open()
 		State.REVEAL:
 			for i in card_visuals.size():

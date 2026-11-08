@@ -13,6 +13,13 @@ const SMOKE_LOOP_SOUND := preload("res://sounds/smoking_loop.wav")
 const SMOKE_LOOP_DB := -18.0
 const LOOP_FADE_TIME := 0.4
 
+const MUSIC_SOUND := preload("res://sounds/jazz_track.mp3")
+const MUSIC_VOLUME_DB := -14.0
+const MUSIC_SILENT_DB := -60.0
+const MUSIC_FADE_TIME := 3.0
+
+var _music: AudioStreamPlayer
+var _music_tween: Tween
 var _players: Array[AudioStreamPlayer] = []
 var _loops := {}
 var _loop_counts := {}
@@ -28,6 +35,9 @@ func _ready() -> void:
 	_ambient = AudioStreamPlayer.new()
 	add_child(_ambient)
 	play_ambient(AMBIENT_SOUND, AMBIENT_VOLUME_DB)
+	_music = AudioStreamPlayer.new()
+	add_child(_music)
+	play_music(MUSIC_SOUND, MUSIC_VOLUME_DB)
 	get_tree().node_added.connect(_hook_node)
 	_hook_tree(get_tree().root)
 
@@ -108,6 +118,25 @@ func is_loop_playing(key: String) -> bool:
 func _finish_loop(key: String) -> void:
 	if int(_loop_counts.get(key, 0)) == 0:
 		_loops[key].stop()
+
+
+func play_music(stream: AudioStream, volume_db: float = MUSIC_VOLUME_DB) -> void:
+	if stream == null:
+		return
+	if _music_tween:
+		_music_tween.kill()
+	if _music.stream != stream or not _music.playing:
+		_music.stream = stream
+		_music.volume_db = MUSIC_SILENT_DB
+		_music.play()
+	_music_tween = create_tween()
+	_music_tween.tween_property(_music, "volume_db", volume_db, MUSIC_FADE_TIME)
+
+
+func stop_music() -> void:
+	if _music_tween:
+		_music_tween.kill()
+	_music.stop()
 
 
 func play_button() -> void:
