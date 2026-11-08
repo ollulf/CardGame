@@ -20,6 +20,7 @@ const DIALOGUE_LAYER := 100
 const LINES_PATH := "res://dialogue_lines.yaml"
 const CUES := ["show_deck", "deal_cards", "show_trump", "show_won_turns", "show_one_turns", "show_life_cards", "show_purse", "show_cigs", "ai_one_smokes", "ai_two_smokes", "ai_1_pays", "ai_2_pays", "you_pay", "unlock_cig_automat", "ai_1_buys_cigarettes"]
 const PAY_CUES := {"you_pay": 0, "ai_1_pays": 1, "ai_2_pays": 2}
+const GIVE_CIGS_CUE := "give_player_cigs"
 
 var lines: Array = load_lines(LINES_PATH)
 var auto_advance := Engine.get_write_movie_path() != "" or DisplayServer.get_name() == "headless"
@@ -463,6 +464,11 @@ static func _check_cue(value, line: int) -> String:
 			push_error("DialogueLines line %d: '%s' needs an amount of 1 or more, like '%s 30'" % [line, words[0], words[0]])
 			return ""
 		return "%s %d" % [words[0], words[1].to_int()]
+	if words.size() == 2 and words[0] == GIVE_CIGS_CUE:
+		if not words[1].is_valid_int() or words[1].to_int() < 1:
+			push_error("DialogueLines line %d: '%s' needs an amount of 1 or more, like '%s 3'" % [line, GIVE_CIGS_CUE, GIVE_CIGS_CUE])
+			return ""
+		return "%s %d" % [GIVE_CIGS_CUE, words[1].to_int()]
 	if not value in CUES:
 		push_error("DialogueLines line %d: unknown cue '%s' (allowed: %s)" % [line, str(value), ", ".join(CUES)])
 		return ""
