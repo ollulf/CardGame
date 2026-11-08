@@ -1,11 +1,17 @@
-[gd_resource type="Theme" load_steps=14 format=3]
+[gd_resource type="Theme" load_steps=15 format=3]
 
-[ext_resource type="FontFile" path="res://fonts/PixelifySans.ttf" id="1_font"]
+[ext_resource type="FontFile" path="res://fonts/Nunito.ttf" id="1_font"]
 
 [sub_resource type="FontVariation" id="FontVariation_c4a"]
 base_font = ExtResource("1_font")
 variation_opentype = {
-2003265652: 600
+2003265652: 800
+}
+
+[sub_resource type="FontVariation" id="FontVariation_head"]
+base_font = ExtResource("1_font")
+variation_opentype = {
+2003265652: 900
 }
 
 [sub_resource type="StyleBoxFlat" id="Button_normal"]
@@ -165,6 +171,7 @@ ChipPanel/styles/panel = SubResource("Chip_c4a")
 HeadlineLabel/base_type = &"Label"
 HeadlineLabel/colors/font_color = Color(1, 1, 1, 1)
 HeadlineLabel/font_sizes/font_size = 28
+HeadlineLabel/fonts/font = SubResource("FontVariation_head")
 HeadlineLabel/styles/normal = SubResource("Headline_normal")
 Label/colors/font_color = Color(1, 1, 1, 1)
 Panel/styles/panel = SubResource("Panel_c4a")
