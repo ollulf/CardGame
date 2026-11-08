@@ -1,4 +1,5 @@
 match: 2
+	prize_money: 30
 	ai_one_deck: 
 		H: 7,4,2
 		S: 9,6,1 

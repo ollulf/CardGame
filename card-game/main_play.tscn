@@ -14,13 +14,13 @@
 [ext_resource type="Texture2D" uid="uid://beanmjab43tki" path="res://sprites/AshTray.png" id="6_r2isv"]
 [ext_resource type="Script" uid="uid://bnvbuen33moub" path="res://scripts/humanPlayer.gd" id="10_r2isv"]
 [ext_resource type="Script" uid="uid://bhy3xlf41kv5r" path="res://deck_visualizer.gd" id="15_2ja4j"]
-[ext_resource type="Script" uid="uid://cvxwpok4ke1o" path="res://cards_panel.gd" id="16_yiaew"]
 [ext_resource type="Script" uid="uid://dyne2qyt1yfov" path="res://scripts/ai_cigarettes_ui.gd" id="ai_cigarettes_ui_script"]
 [ext_resource type="PackedScene" path="res://scenes/bar_screen.tscn" id="bar_screen_scene"]
 [ext_resource type="PackedScene" path="res://scenes/debug_menu.tscn" id="debug_menu_scene"]
 [ext_resource type="PackedScene" path="res://scenes/deck_pile.tscn" id="deck_pile_scene"]
 [ext_resource type="PackedScene" path="res://scenes/deck_screen.tscn" id="deck_screen"]
 [ext_resource type="Script" uid="uid://c80n6b1k87gya" path="res://scripts/player_buffs.gd" id="player_buffs_script"]
+[ext_resource type="Script" path="res://scripts/prize_pot.gd" id="prize_pot_script"]
 [ext_resource type="Script" uid="uid://blqah5u23lspk" path="res://scripts/trump_display.gd" id="trump_display_script"]
 [ext_resource type="Script" uid="uid://lc3gscm8u4vo" path="res://scripts/wallet.gd" id="wallet_script"]
 [ext_resource type="Texture2D" uid="uid://5hwi7n46gelf" path="res://sprites/wallet.png" id="wallet_tex"]
@@ -184,6 +184,10 @@ unique_name_in_owner = true
 layout_mode = 3
 anchors_preset = 0
 
+[node name="PrizePot" type="Node2D" parent="."]
+position = Vector2(576, 170)
+script = ExtResource("prize_pot_script")
+
 [node name="TrumpDisplay" type="CanvasLayer" parent="." unique_id=1283096204]
 visible = false
 script = ExtResource("trump_display_script")
@@ -230,109 +234,6 @@ pointer = NodePath("../HandVisualisation")
 visible = false
 script = ExtResource("15_2ja4j")
 pointer = NodePath("../HandVisualisation")
-
-[node name="Panel" type="Control" parent="DeckVisualizer" unique_id=1764373731]
-layout_mode = 3
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="HBoxContainer" type="HBoxContainer" parent="DeckVisualizer/Panel" unique_id=2069879212]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -500.0
-offset_top = -300.0
-offset_right = 500.0
-offset_bottom = 300.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="LeftPanel" type="Panel" parent="DeckVisualizer/Panel/HBoxContainer" unique_id=1681063745]
-custom_minimum_size = Vector2(250, 500)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-
-[node name="DeckInnerPanel" type="Control" parent="DeckVisualizer/Panel/HBoxContainer/LeftPanel" unique_id=1474335878]
-layout_mode = 1
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -190.0
-offset_top = -240.0
-offset_right = 190.0
-offset_bottom = 240.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="CardsPanel" type="Panel" parent="DeckVisualizer/Panel/HBoxContainer" unique_id=697198366]
-custom_minimum_size = Vector2(760, 500)
-layout_mode = 2
-size_flags_horizontal = 4
-size_flags_vertical = 4
-script = ExtResource("16_yiaew")
-
-[node name="UpperPanel" type="Panel" parent="DeckVisualizer/Panel/HBoxContainer/CardsPanel" unique_id=356866997]
-self_modulate = Color(1, 0, 0, 1)
-clip_contents = true
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_bottom = 250.0
-grow_horizontal = 2
-
-[node name="MarginContainer" type="MarginContainer" parent="DeckVisualizer/Panel/HBoxContainer/CardsPanel/UpperPanel" unique_id=994910806]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
-
-[node name="CardContainer" type="GridContainer" parent="DeckVisualizer/Panel/HBoxContainer/CardsPanel/UpperPanel/MarginContainer" unique_id=896096917]
-layout_mode = 2
-columns = 12
-
-[node name="LowerPanel" type="Panel" parent="DeckVisualizer/Panel/HBoxContainer/CardsPanel" unique_id=336957262]
-clip_contents = true
-layout_mode = 1
-anchors_preset = 12
-anchor_top = 1.0
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = -250.0
-grow_horizontal = 2
-grow_vertical = 0
-
-[node name="MarginContainer" type="MarginContainer" parent="DeckVisualizer/Panel/HBoxContainer/CardsPanel/LowerPanel" unique_id=1200297805]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/margin_left = 8
-theme_override_constants/margin_top = 8
-theme_override_constants/margin_right = 8
-theme_override_constants/margin_bottom = 8
-
-[node name="CardContainer" type="GridContainer" parent="DeckVisualizer/Panel/HBoxContainer/CardsPanel/LowerPanel/MarginContainer" unique_id=1823882559]
-layout_mode = 2
-columns = 12
 
 [node name="DebugMenu" parent="." unique_id=1067264748 node_paths=PackedStringArray("pointer") instance=ExtResource("debug_menu_scene")]
 pointer = NodePath("../HandVisualisation")
