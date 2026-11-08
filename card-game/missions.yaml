@@ -1,5 +1,7 @@
 match: 2
 	prize_money: 30
+	ai_one_cigarettes: 0
+	ai_two_cigarettes: 4
 	ai_one_deck:
 		H: 1,2,3,4,5
 		S: 1,2,3,4
