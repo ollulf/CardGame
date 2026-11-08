@@ -2,6 +2,7 @@ extends Node2D
 class_name AiSmoke
 
 signal lit
+signal burned_out
 signal finished
 
 const BURN_TEXTURES: Array[Texture2D] = [
@@ -18,7 +19,7 @@ const BURN_TEXTURES: Array[Texture2D] = [
 const PIXEL_SCALE := 3.0
 const APPEAR_TIME := 0.4
 const LIGHT_TIME := 0.7
-const BURN_TIME := 30.0
+const BURN_TIME := 60.0
 const PUFF_TIME := 1.6
 const PUFF_PAUSE_MIN := 2.0
 const PUFF_PAUSE_MAX := 4.5
@@ -34,20 +35,22 @@ var _smoke: CPUParticles2D
 var _flame := 0.0
 var _ember := 0.0
 var _tip_rows: Array[int] = []
-var _burning := true
+var _burning := false
+var _run := 0
+var _light_tween: Tween
 
 
 static func spawn(parent: Node, at: Vector2, tilt_radians: float) -> AiSmoke:
 	var smoke := AiSmoke.new()
 	smoke.tilt = tilt_radians
 	smoke.position = at
+	smoke.z_index = 50
 	parent.add_child(smoke)
 	smoke.play()
 	return smoke
 
 
 func _ready() -> void:
-	z_index = 50
 	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 
 	for texture in BURN_TEXTURES:
@@ -80,26 +83,10 @@ func play() -> void:
 	appear.tween_property(_holder, "position", Vector2.ZERO, APPEAR_TIME).from(Vector2(0.0, 18.0)).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 	await appear.finished
 
-	var light := create_tween()
-	light.tween_method(_set_flame, 0.0, 1.0, LIGHT_TIME * 0.4)
-	light.tween_method(_set_flame, 1.0, 0.0, LIGHT_TIME * 0.6)
-	light.parallel().tween_method(_set_ember, 0.0, 1.0, LIGHT_TIME * 0.6)
-	await light.finished
-	lit.emit()
+	ignite()
+	await burned_out
 
-	_smoke.emitting = true
-	_puff_loop()
-	var step_time := BURN_TIME / float(BURN_TEXTURES.size() - 1)
-	for index in range(1, BURN_TEXTURES.size()):
-		await get_tree().create_timer(step_time, false).timeout
-		_sprite.texture = BURN_TEXTURES[index]
-		_glow.queue_redraw()
-		_place_smoke()
-
-	_burning = false
-	_smoke.emitting = false
 	var stub := create_tween().set_parallel()
-	stub.tween_method(_set_ember, 1.0, 0.0, STUB_TIME * 0.5)
 	stub.tween_property(_holder, "scale", Vector2(PIXEL_SCALE * 1.25, PIXEL_SCALE * 0.6), STUB_TIME)
 	stub.tween_property(_holder, "modulate:a", 0.0, STUB_TIME).set_delay(STUB_TIME * 0.5)
 	await stub.finished
@@ -109,12 +96,80 @@ func play() -> void:
 	queue_free()
 
 
-func _puff_loop() -> void:
+func show_unlit() -> void:
+	_stop()
+	_holder.modulate.a = 1.0
+	_set_texture(0)
+	_set_ember(0.0)
+
+
+func ignite() -> void:
+	_stop()
+	var run := _run
+	_holder.modulate.a = 1.0
+	_set_texture(0)
+
+	_light_tween = create_tween()
+	_light_tween.tween_method(_set_flame, 0.0, 1.0, LIGHT_TIME * 0.4)
+	_light_tween.tween_method(_set_flame, 1.0, 0.0, LIGHT_TIME * 0.6)
+	_light_tween.parallel().tween_method(_set_ember, 0.0, 1.0, LIGHT_TIME * 0.6)
+	await _light_tween.finished
+	if run != _run:
+		return
+	lit.emit()
+
+	_burning = true
+	_smoke.emitting = true
+	_puff_loop(run)
+	var step_time := BURN_TIME / float(BURN_TEXTURES.size() - 1)
+	for index in range(1, BURN_TEXTURES.size()):
+		await get_tree().create_timer(step_time, false).timeout
+		if run != _run:
+			return
+		_set_texture(index)
+
+	_burn_out()
+	burned_out.emit()
+
+
+func show_stub() -> void:
+	var was_burning := _burning
+	_stop()
+	_holder.modulate.a = 1.0
+	_set_texture(BURN_TEXTURES.size() - 1)
+	if was_burning:
+		_burn_out()
+	else:
+		_set_ember(0.0)
+
+
+func _stop() -> void:
+	_run += 1
+	_burning = false
+	_smoke.emitting = false
+	if _light_tween != null and _light_tween.is_valid():
+		_light_tween.kill()
+	_set_flame(0.0)
+
+
+func _burn_out() -> void:
+	_burning = false
+	_smoke.emitting = false
+	create_tween().tween_method(_set_ember, _ember, 0.0, STUB_TIME * 0.5)
+
+
+func _set_texture(index: int) -> void:
+	_sprite.texture = BURN_TEXTURES[index]
+	_glow.queue_redraw()
+	_place_smoke()
+
+
+func _puff_loop(run: int) -> void:
 	await get_tree().create_timer(PUFF_TIME, false).timeout
-	while _burning:
+	while _burning and run == _run:
 		_smoke.emitting = false
 		await get_tree().create_timer(randf_range(PUFF_PAUSE_MIN, PUFF_PAUSE_MAX), false).timeout
-		if not _burning:
+		if not _burning or run != _run:
 			return
 		_smoke.emitting = true
 		await get_tree().create_timer(PUFF_TIME, false).timeout

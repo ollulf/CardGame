@@ -64,11 +64,11 @@ match: 1
 		round: 2
 		turn: 4
 		lines: 
-			cue: show_cigs
 			1: I will *smoke* a *cigarette* if that is fine for everybody.
+			cue: show_cigs
 			2: Sure, I would also smoke one.
-			2: Can I use your lighter?
 			cue: ai_one_smokes
+			2: Can I use your lighter?
 			cue: ai_two_smokes
 
 		when: round_start
@@ -85,7 +85,7 @@ match: 1
 		lines:
 			1: Well, beat *this*!
 			wait_for_cards_played: 1
-			2: I will, by *smoking a cigarette*, which makes my cigarette *cards stronger* for every cigarette smoked this round.
+			2: I will, by *smoking a cigarette*, which makes *only* my *cigarette cards stronger* for every cigarette smoked this round.
 
 		when: match_end
 		lines:
@@ -98,6 +98,13 @@ match: 2
 	dialogues:
 		when: match_start
 		lines:
+			2: Alright, lets spice it up and play with some *money*!
+			1: Sounds good! Since I lost last round I have to put in the *price money*.
+			cue: ai_2_pays 30
+			1: The *price money* is *split* between the two *winners*.
+			2: And the *new looser* has to *pay* for the next round.
+			1: Let's hope its not me again...
+			wait_for_cards_played: 1
 			1: Ahh *YOU* ...
 			1: Have some of my *cigarettes*. You can smoke them whenever you want.
 			1: I hope you already added *smokeing cards* to your *deck*.
