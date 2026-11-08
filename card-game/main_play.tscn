@@ -186,7 +186,7 @@ layout_mode = 3
 anchors_preset = 0
 
 [node name="PrizePot" type="Node2D" parent="."]
-position = Vector2(576, 170)
+position = Vector2(766, 110)
 script = ExtResource("prize_pot_script")
 
 [node name="TrumpDisplay" type="CanvasLayer" parent="."]

@@ -1,7 +1,7 @@
 extends PanelContainer
 class_name SpeechBubble
 
-enum TailSide { LEFT, RIGHT, DOWN }
+enum TailSide { LEFT, RIGHT, DOWN, UP }
 
 const HIGHLIGHT_COLOR := "#ffcf6e"
 const TAIL_COLOR := Color("3d3854")
@@ -73,6 +73,8 @@ func place_at(anchor: Vector2) -> void:
 			position = anchor + Vector2(-size.x, -size.y * 0.5)
 		TailSide.DOWN:
 			position = anchor + Vector2(-size.x * 0.5, -size.y)
+		TailSide.UP:
+			position = anchor + Vector2(-size.x * 0.5, 15.0)
 	queue_redraw()
 
 func _fit_to_text() -> void:
@@ -104,6 +106,9 @@ func _draw() -> void:
 		TailSide.DOWN:
 			draw_rect(Rect2(middle.x - 6, size.y, 12, 9), TAIL_COLOR)
 			draw_rect(Rect2(middle.x - 3, size.y + 9, 6, 6), TAIL_COLOR)
+		TailSide.UP:
+			draw_rect(Rect2(middle.x - 6, -9, 12, 9), TAIL_COLOR)
+			draw_rect(Rect2(middle.x - 3, -15, 6, 6), TAIL_COLOR)
 	if is_typed:
 		_draw_indicator()
 

@@ -4,13 +4,23 @@ class_name CigaretteMachine
 signal clicked
 
 @export var hover_offset: Vector2 = Vector2(0, -6)
+@export var needs_confirm := true
 
 @onready var sprite: TextureRect = $Sprite
 @onready var tooltip: Control = $Tooltip
 
 const DENY_COLOR := Color(1.0, 0.45, 0.4)
 const DENY_DURATION := 1.2
+const OUT_OF_ORDER_TEXT := "Out of order"
+const CONFIRM_TEXT := "Really?"
+const SIGN_POSITION := Vector2(5.0, 19.0)
+const SIGN_ROTATION := -0.07
+const SIGN_PAPER := Color("efe6cc")
+const SIGN_INK := Color("b2392f")
+const SIGN_BORDER := Color("3a3330")
 
+var out_of_order := false
+var _sign: PanelContainer
 var _base_position: Vector2
 var _label_text: String
 var _hovered := false
@@ -36,7 +46,50 @@ func _ready() -> void:
 func set_label_text(value: String) -> void:
 	_label_text = value
 	if _deny_tween == null or not _deny_tween.is_running():
-		tooltip.text = value
+		tooltip.text = _shown_label()
+
+
+func set_out_of_order(value: bool) -> void:
+	out_of_order = value
+	if value:
+		cancel_confirm()
+		if _sign == null:
+			_sign = _build_sign()
+	if _sign != null:
+		_sign.visible = value
+	if _deny_tween == null or not _deny_tween.is_running():
+		tooltip.text = _shown_label()
+
+
+func _shown_label() -> String:
+	return OUT_OF_ORDER_TEXT if out_of_order else _label_text
+
+
+func _build_sign() -> PanelContainer:
+	var sign_panel := PanelContainer.new()
+	sign_panel.name = "OutOfOrderSign"
+	sign_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var style := StyleBoxFlat.new()
+	style.bg_color = SIGN_PAPER
+	style.border_color = SIGN_BORDER
+	style.set_border_width_all(3)
+	style.content_margin_left = 14
+	style.content_margin_right = 14
+	style.content_margin_top = 8
+	style.content_margin_bottom = 8
+	sign_panel.add_theme_stylebox_override("panel", style)
+	var label := Label.new()
+	label.text = OUT_OF_ORDER_TEXT.to_upper()
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_color_override("font_color", SIGN_INK)
+	label.add_theme_font_size_override("font_size", 28)
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sign_panel.add_child(label)
+	sprite.add_child(sign_panel)
+	sign_panel.scale = Vector2.ONE / sprite.scale
+	sign_panel.position = SIGN_POSITION
+	sign_panel.rotation = SIGN_ROTATION
+	return sign_panel
 
 
 func deny(message: String) -> void:
@@ -54,7 +107,7 @@ func deny(message: String) -> void:
 
 
 func _end_deny() -> void:
-	tooltip.text = _label_text
+	tooltip.text = _shown_label()
 	tooltip.modulate = Color.WHITE
 	tooltip.visible = _hovered
 
@@ -81,13 +134,16 @@ func _gui_input(event: InputEvent) -> void:
 
 
 func on_clicked() -> void:
-	if _confirming:
+	if out_of_order:
+		deny(OUT_OF_ORDER_TEXT)
+		return
+	if _confirming or not needs_confirm:
 		cancel_confirm()
 		clicked.emit()
 		return
 	_confirming = true
 	tooltip.visible = false
-	_bubble.show_line(_label_text + "? Click again")
+	_bubble.show_line(CONFIRM_TEXT)
 	_bubble.complete_line()
 	_bubble.place_at(Vector2(size.x * 0.5, -16.0))
 	set_process_input(true)
