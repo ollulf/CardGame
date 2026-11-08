@@ -335,6 +335,7 @@ func _capture_state() -> Dictionary:
 	state["match"] = DialogueManager.upcoming_match()
 	state["tutorial"] = TutorialScript.capture_state()
 	state["cigarettes"] = InteractionManager.held_cigarette_count()
+	state["last_match_loosers"] = last_match_loosers.duplicate()
 	return state
 
 func _restore_state(state: Dictionary) -> void:
@@ -344,6 +345,10 @@ func _restore_state(state: Dictionary) -> void:
 	TutorialScript.restore_state(state.get("tutorial", {}))
 	PlayerDataManager.restore_state(state)
 	InteractionManager.reset_cigarettes(state.get("cigarettes", 0))
+	last_match_loosers.assign(state.get("last_match_loosers", []))
+	var pot = get_tree().get_first_node_in_group(PRIZE_POT_GROUP)
+	if pot:
+		pot.clear()
 
 func can_skip_round() -> bool:
 	return current_turn > 0 and not round_over

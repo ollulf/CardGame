@@ -1,30 +1,56 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/lose_screen.gd" id="1_lose"]
 
+[sub_resource type="StyleBoxFlat" id="panel_bubble"]
+content_margin_left = 40.0
+content_margin_top = 28.0
+content_margin_right = 40.0
+content_margin_bottom = 32.0
+bg_color = Color(0.121569, 0.117647, 0.14902, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.239216, 0.219608, 0.329412, 1)
+
 [sub_resource type="StyleBoxFlat" id="button_normal"]
-bg_color = Color(0.85, 0.72, 0.42, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.95, 0.92, 0.85, 1)
+content_margin_left = 14.0
+content_margin_top = 9.0
+content_margin_right = 14.0
+content_margin_bottom = 9.0
+bg_color = Color(0.164706, 0.156863, 0.203922, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.239216, 0.219608, 0.329412, 1)
 
 [sub_resource type="StyleBoxFlat" id="button_hover"]
-bg_color = Color(0.96, 0.84, 0.55, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(1, 1, 1, 1)
+content_margin_left = 14.0
+content_margin_top = 9.0
+content_margin_right = 14.0
+content_margin_bottom = 9.0
+bg_color = Color(0.207843, 0.196078, 0.262745, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.811765, 0.431373, 1)
 
 [sub_resource type="StyleBoxFlat" id="button_pressed"]
-bg_color = Color(0.66, 0.55, 0.3, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.95, 0.92, 0.85, 1)
+content_margin_left = 14.0
+content_margin_top = 9.0
+content_margin_right = 14.0
+content_margin_bottom = 9.0
+bg_color = Color(0.121569, 0.117647, 0.14902, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.811765, 0.431373, 1)
+
+[sub_resource type="StyleBoxEmpty" id="button_focus"]
 
 [node name="LoseScreen" type="CanvasLayer"]
 layer = 55
@@ -37,7 +63,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.05, 0.03, 0.03, 0.82)
+color = Color(0.03, 0.03, 0.05, 0.78)
 
 [node name="Center" type="CenterContainer" parent="."]
 anchors_preset = 15
@@ -47,57 +73,65 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="Content" type="VBoxContainer" parent="Center"]
+[node name="Content" type="PanelContainer" parent="Center"]
 unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/panel = SubResource("panel_bubble")
+
+[node name="Box" type="VBoxContainer" parent="Center/Content"]
 layout_mode = 2
 theme_override_constants/separation = 14
 
-[node name="TitleLabel" type="Label" parent="Center/Content"]
+[node name="TitleLabel" type="Label" parent="Center/Content/Box"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.92, 0.33, 0.27, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 8
-theme_override_font_sizes/font_size = 44
+theme_override_colors/font_color = Color(1, 0.811765, 0.431373, 1)
+theme_override_font_sizes/font_size = 40
 text = "Kicked from the table"
 horizontal_alignment = 1
 
-[node name="SubtitleLabel" type="Label" parent="Center/Content"]
+[node name="SubtitleLabel" type="Label" parent="Center/Content/Box"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_colors/font_color = Color(0.95, 0.92, 0.85, 1)
+theme_override_colors/font_color = Color(0.956863, 0.952941, 0.968627, 1)
 theme_override_font_sizes/font_size = 20
 text = "You lost two rounds."
 horizontal_alignment = 1
 
-[node name="Spacer" type="Control" parent="Center/Content"]
-custom_minimum_size = Vector2(0, 16)
+[node name="Spacer" type="Control" parent="Center/Content/Box"]
+custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 mouse_filter = 2
 
-[node name="RetryButton" type="Button" parent="Center/Content"]
+[node name="RetryButton" type="Button" parent="Center/Content/Box"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(300, 60)
+custom_minimum_size = Vector2(300, 56)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_colors/font_color = Color(0.1, 0.09, 0.07, 1)
-theme_override_colors/font_hover_color = Color(0.1, 0.09, 0.07, 1)
-theme_override_colors/font_pressed_color = Color(0.1, 0.09, 0.07, 1)
+theme_override_colors/font_color = Color(0.956863, 0.952941, 0.968627, 1)
+theme_override_colors/font_hover_color = Color(1, 0.811765, 0.431373, 1)
+theme_override_colors/font_pressed_color = Color(1, 0.811765, 0.431373, 1)
+theme_override_colors/font_focus_color = Color(0.956863, 0.952941, 0.968627, 1)
 theme_override_font_sizes/font_size = 22
 theme_override_styles/normal = SubResource("button_normal")
 theme_override_styles/hover = SubResource("button_hover")
 theme_override_styles/pressed = SubResource("button_pressed")
+theme_override_styles/disabled = SubResource("button_normal")
+theme_override_styles/focus = SubResource("button_focus")
 text = "Try again"
 
-[node name="StartOverButton" type="Button" parent="Center/Content"]
+[node name="StartOverButton" type="Button" parent="Center/Content/Box"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(300, 48)
+custom_minimum_size = Vector2(300, 46)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_colors/font_color = Color(0.1, 0.09, 0.07, 1)
-theme_override_colors/font_hover_color = Color(0.1, 0.09, 0.07, 1)
-theme_override_colors/font_pressed_color = Color(0.1, 0.09, 0.07, 1)
+theme_override_colors/font_color = Color(0.956863, 0.952941, 0.968627, 1)
+theme_override_colors/font_hover_color = Color(1, 0.811765, 0.431373, 1)
+theme_override_colors/font_pressed_color = Color(1, 0.811765, 0.431373, 1)
+theme_override_colors/font_focus_color = Color(0.956863, 0.952941, 0.968627, 1)
 theme_override_font_sizes/font_size = 18
 theme_override_styles/normal = SubResource("button_normal")
 theme_override_styles/hover = SubResource("button_hover")
 theme_override_styles/pressed = SubResource("button_pressed")
+theme_override_styles/disabled = SubResource("button_normal")
+theme_override_styles/focus = SubResource("button_focus")
 text = "Start over from match 1"

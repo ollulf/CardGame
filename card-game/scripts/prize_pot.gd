@@ -51,7 +51,7 @@ func pay(seat: int, value: int) -> void:
 
 func pay_out(winner_ids: Array[int]) -> void:
 	if amount <= 0 or winner_ids.is_empty():
-		_clear()
+		clear()
 		return
 	var share := amount / winner_ids.size()
 	var rest := amount - share * winner_ids.size()
@@ -122,7 +122,7 @@ func _refresh_label() -> void:
 	_label.text = str(amount)
 	_label.visible = amount > 0
 
-func _clear() -> void:
+func clear() -> void:
 	for coin in _coins:
 		coin.queue_free()
 	_coins.clear()
