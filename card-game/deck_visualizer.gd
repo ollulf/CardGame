@@ -254,10 +254,11 @@ func _suit_row(suit: Card.Suit, cards: Array, deck: Deck, is_trump: bool) -> Con
 		none.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		row.add_child(none)
 	for card in cards:
-		row.add_child(_card_cell(card, not deck.cards.has(card), is_trump))
+		var in_hand: bool = CardManager.player_hand != null and CardManager.player_hand.cards.has(card)
+		row.add_child(_card_cell(card, not deck.cards.has(card) and not in_hand, is_trump, in_hand))
 	return frame
 
-func _card_cell(card: Card, used: bool, is_trump: bool) -> Control:
+func _card_cell(card: Card, used: bool, is_trump: bool, in_hand: bool = false) -> Control:
 	var cell := Control.new()
 	cell.custom_minimum_size = DeckBuilder.CARD_SIZE * CARD_SCALE
 	cell.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -278,6 +279,20 @@ func _card_cell(card: Card, used: bool, is_trump: bool) -> Control:
 	visual.setup(card, false)
 	visual.scale = Vector2.ONE * CARD_SCALE
 	visual.position = Vector2.ZERO
+	if in_hand:
+		var glow := _box(Color(0, 0, 0, 0), Color("#ffcf6e"))
+		glow.set_border_width_all(3)
+		glow.shadow_color = Color(1, 0.81, 0.43, 0.6)
+		glow.shadow_size = 6
+		var ring := Panel.new()
+		ring.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		ring.size = cell.custom_minimum_size
+		ring.add_theme_stylebox_override("panel", glow)
+		cell.add_child(ring)
+		var tag := _label("IN HAND", 10, Color("#1b1b1b"))
+		tag.position = Vector2(4, cell.custom_minimum_size.y - 18)
+		tag.add_theme_stylebox_override("normal", _box(Color("#ffcf6e"), Color("#ffcf6e")))
+		cell.add_child(tag)
 	if used:
 		cell.modulate = Color(1, 1, 1, USED_ALPHA)
 	return cell
