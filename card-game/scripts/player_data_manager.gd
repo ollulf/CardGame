@@ -31,7 +31,7 @@ const STARTING_MONEY := 9
 const CIGARETTE_PACK_PRICE := 5
 const CIGARETTES_PER_PACK := 8
 const DRINK_PENALTY_PER_ROUND := 1
-const DRINK_ROUND_PRICE := 6
+const DRINK_ROUND_PRICE := 3
 const DRINK_ROUND_FROM_MATCH := 3
 const BOOSTERS: Array[Dictionary] = [
 	{"name": "Smoke Booster", "price": 8, "cards": 5, "min_rank": 1, "max_rank": 9, "smoke_min": 2, "smoke_max": 4, "contents": "2-4 Smoke + any"},
@@ -64,6 +64,9 @@ var new_cards: Array[Card] = []
 func _ready() -> void:
 	GameManager.round_finished.connect(_on_round_finished)
 	GameManager.new_match_started.connect(clear_smoking)
+	GameManager.match_lost.connect(_on_match_over)
+	GameManager.match_finished.connect(_on_match_over)
+	GameManager.run_won.connect(_on_match_over)
 
 func smoke(player_id: int, amount: int) -> void:
 	if amount <= 0:
@@ -124,6 +127,8 @@ func clear_smoking() -> void:
 
 func _on_round_finished(_loosers) -> void:
 	clear_smoking()
+
+func _on_match_over(_arg = null) -> void:
 	clear_drinking()
 
 func grant_starting_money() -> void:
