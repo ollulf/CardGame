@@ -1,17 +1,41 @@
 extends Node
 
 signal stats_changed(player_id: int)
+signal smoke_unlocked_changed
 signal money_changed(money: int)
-signal booster_bought
+signal booster_bought(booster: Dictionary)
 signal collection_changed
 signal deck_changed
+signal buttons_unlock_changed
+signal cig_machine_changed(unlocked: bool)
+
+var booster_collected := false
+var deck_edited := false
+
+func mark_booster_collected() -> void:
+	booster_collected = true
+	buttons_unlock_changed.emit()
+
+func mark_deck_edited() -> void:
+	deck_edited = true
+	buttons_unlock_changed.emit()
+
+func reset_buttons_unlock() -> void:
+	booster_collected = false
+	deck_edited = false
+	buttons_unlock_changed.emit()
 
 const PLAYERS: Array[int] = [0, 1, 2]
 const SMOKE_BONUS_PER_CIGARETTE := 1
 const STARTING_MONEY := 9
 const CIGARETTE_PACK_PRICE := 5
 const CIGARETTES_PER_PACK := 8
-const BOOSTER_PRICE := 8
+const BOOSTERS: Array[Dictionary] = [
+	{"name": "Smoke Booster", "price": 8, "cards": 5, "min_rank": 1, "max_rank": 9, "smoke_min": 2, "smoke_max": 4, "contents": "2-4 Smoke + any"},
+	{"name": "Standard Booster", "price": 5, "cards": 8, "min_rank": 1, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "contents": "Any cards"},
+	{"name": "Premium Booster", "price": 12, "cards": 8, "min_rank": 5, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "contents": "Any cards"},
+	{"name": "Zero Booster", "price": 7, "cards": 6, "min_rank": 0, "max_rank": 0, "smoke_min": 0, "smoke_max": 0, "contents": "A 0 of every suit", "every_suit": true, "from_match": 3},
+]
 
 var smoking_stacks := {
 	0: [],
@@ -23,6 +47,8 @@ var drinking_level := 0
 
 var money := 0
 var starting_money_granted := false
+var cig_machine_unlocked := false
+var smoke_unlocked := false
 
 var collection: Array[Card] = []
 var active_deck: Array[Card] = []
@@ -39,6 +65,12 @@ func smoke(player_id: int, amount: int) -> void:
 		"amount": amount
 	})
 	stats_changed.emit(player_id)
+
+func unlock_smoke() -> void:
+	if smoke_unlocked:
+		return
+	smoke_unlocked = true
+	smoke_unlocked_changed.emit()
 
 func drink() -> void:
 	drinking_level -= 1
@@ -90,16 +122,28 @@ func spend(price: int) -> bool:
 	set_money(money - price)
 	return true
 
+func unlock_cig_machine() -> void:
+	set_cig_machine_unlocked(true)
+
+func set_cig_machine_unlocked(value: bool) -> void:
+	if cig_machine_unlocked == value:
+		return
+	cig_machine_unlocked = value
+	cig_machine_changed.emit(value)
+
 func buy_cigarettes() -> bool:
-	if InteractionManager.cigPack == null or not spend(CIGARETTE_PACK_PRICE):
+	if not cig_machine_unlocked or InteractionManager.cigPack == null or not spend(CIGARETTE_PACK_PRICE):
 		return false
 	InteractionManager.cigPack.add_cigarettes(CIGARETTES_PER_PACK)
 	return true
 
-func buy_booster() -> bool:
-	if not spend(BOOSTER_PRICE):
+func is_booster_available(booster: Dictionary) -> bool:
+	return DialogueManager.upcoming_match() >= int(booster.get("from_match", 0))
+
+func buy_booster(booster: Dictionary) -> bool:
+	if not spend(booster["price"]):
 		return false
-	booster_bought.emit()
+	booster_bought.emit(booster)
 	return true
 
 func add_to_collection(cards: Array[Card]) -> void:
@@ -149,6 +193,8 @@ func capture_state() -> Dictionary:
 	return {
 		"money": money,
 		"starting_money_granted": starting_money_granted,
+		"cig_machine_unlocked": cig_machine_unlocked,
+		"smoke_unlocked": smoke_unlocked,
 		"collection": collection.duplicate(),
 		"active_deck": active_deck.duplicate(),
 		"new_cards": new_cards.duplicate(),
@@ -156,10 +202,13 @@ func capture_state() -> Dictionary:
 
 func restore_state(state: Dictionary) -> void:
 	starting_money_granted = state.get("starting_money_granted", false)
+	smoke_unlocked = state.get("smoke_unlocked", false)
 	set_money(state.get("money", 0))
+	set_cig_machine_unlocked(state.get("cig_machine_unlocked", false))
 	collection.assign(state.get("collection", []))
 	active_deck.assign(state.get("active_deck", []))
 	new_cards.assign(state.get("new_cards", []))
 	clear_smoking()
+	smoke_unlocked_changed.emit()
 	collection_changed.emit()
 	deck_changed.emit()

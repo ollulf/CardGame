@@ -6,17 +6,22 @@ signal closed
 const SPEECH_BUBBLE := preload("res://scenes/speech_bubble.tscn")
 const SEAT_COUNT := 3
 const SEAT_OFFSETS := [Vector2(-276, -18), Vector2(66, 0), Vector2(-66, 0)]
-const TRIGGERS := ["match_start", "round_start", "turn_start", "turn_end", "round_end", "match_end"]
+const TRIGGERS := ["match_start", "round_start", "turn_start", "turn_end", "round_end", "match_end", "zero_beats_nine"]
+const ONCE_PER_MATCH_TRIGGERS := ["zero_beats_nine"]
 const ROUND_TRIGGERS := ["round_start", "turn_start", "turn_end", "round_end"]
 const TURN_TRIGGERS := ["turn_start", "turn_end"]
 const TRIGGER_ALIASES := {"start": "match_start", "end": "match_end"}
 const ANY := 0
 const NO_SEAT := -1
+const BAR_SPEAKER := 3
+const BAR_KEY := "bar"
+const BAR_TOP_MARGIN := 24.0
 const AUTO_ADVANCE_HOLD := 1.5
 const DIALOGUE_LAYER := 100
 const LINES_PATH := "res://dialogue_lines.yaml"
-const CUES := ["show_deck", "deal_cards", "show_trump", "show_won_turns", "show_one_turns", "show_life_cards", "show_purse", "show_cigs", "ai_one_smokes", "ai_two_smokes", "ai_1_pays", "ai_2_pays", "you_pay"]
+const CUES := ["show_deck", "deal_cards", "show_trump", "show_won_turns", "show_one_turns", "show_life_cards", "show_purse", "show_cigs", "ai_one_smokes", "ai_two_smokes", "ai_1_pays", "ai_2_pays", "you_pay", "unlock_cig_automat", "ai_1_buys_cigarettes"]
 const PAY_CUES := {"you_pay": 0, "ai_1_pays": 1, "ai_2_pays": 2}
+const GIVE_CIGS_CUE := "give_player_cigs"
 
 var lines: Array = load_lines(LINES_PATH)
 var auto_advance := Engine.get_write_movie_path() != "" or DisplayServer.get_name() == "headless"
@@ -32,6 +37,7 @@ var _match_running := false
 var _match := 0
 var _round := 0
 var _silent := false
+var _fired_this_match: Array[String] = []
 
 func _ready() -> void:
 	var layer := CanvasLayer.new()
@@ -147,11 +153,11 @@ func _input(event: InputEvent) -> void:
 func _process(delta: float) -> void:
 	if _speaking_seat == NO_SEAT:
 		return
-	var seat_node := _seat_node(_speaking_seat)
-	if seat_node == null:
+	var anchor = _speaker_anchor(_speaking_seat)
+	if anchor == null:
 		_end_line()
 		return
-	_bubble.place_at(seat_node.global_position + SEAT_OFFSETS[_speaking_seat])
+	_bubble.place_at(anchor)
 	if auto_advance and _bubble.is_typed:
 		_auto_advance_time += delta
 		if _auto_advance_time >= AUTO_ADVANCE_HOLD:
@@ -180,15 +186,15 @@ func _show_next() -> void:
 			_running_cue = false
 		if line[0] == NO_SEAT:
 			continue
-		var seat_node := _seat_node(line[0])
-		if seat_node == null:
+		var anchor = _speaker_anchor(line[0])
+		if anchor == null:
 			push_error("DialogueManager: seat %d is not at the table" % line[0])
 			continue
 		_speaking_seat = line[0]
 		_auto_advance_time = 0.0
 		_bubble.tail_side = _tail_side(_speaking_seat)
 		_bubble.show_line(line[1])
-		_bubble.place_at(seat_node.global_position + SEAT_OFFSETS[_speaking_seat])
+		_bubble.place_at(anchor)
 		line_started.emit(_speaking_seat, line[1])
 		return
 	_close()
@@ -219,8 +225,18 @@ func _seat_node(seat: int) -> Player:
 		return player
 	return null
 
+func _speaker_anchor(speaker: int):
+	if speaker == BAR_SPEAKER:
+		return Vector2(get_viewport().get_visible_rect().size.x * 0.5, BAR_TOP_MARGIN)
+	var seat_node := _seat_node(speaker)
+	if seat_node == null:
+		return null
+	return seat_node.global_position + SEAT_OFFSETS[speaker]
+
 func _tail_side(seat: int) -> SpeechBubble.TailSide:
 	match seat:
+		BAR_SPEAKER:
+			return SpeechBubble.TailSide.UP
 		1:
 			return SpeechBubble.TailSide.LEFT
 		2:
@@ -233,6 +249,7 @@ func _on_round_started() -> void:
 		_match_running = true
 		_match += 1
 		_round = 0
+		_fired_this_match.clear()
 	_round += 1
 	if _round == 1:
 		_fire("match_start")
@@ -243,6 +260,8 @@ func _on_turn_started(turn_index: int, _starting_player_id: int) -> void:
 
 func _on_turn_completed(turn_index: int, _winner_id: int) -> void:
 	_fire("turn_end", _round, turn_index)
+	if CardManager.turn_won_by_zero():
+		_fire("zero_beats_nine")
 
 func _on_round_finished(_loosers) -> void:
 	if not GameManager.get_total_loosers().is_empty():
@@ -257,6 +276,10 @@ func _on_match_lost(_looser_id: int) -> void:
 	_fire("match_end")
 
 func _fire(trigger: String, round_number := ANY, turn_number := ANY) -> void:
+	if trigger in ONCE_PER_MATCH_TRIGGERS:
+		if trigger in _fired_this_match:
+			return
+		_fired_this_match.append(trigger)
 	for entry in lines:
 		if entry.when != trigger or not _matches(entry.match_number, _match):
 			continue
@@ -392,6 +415,14 @@ static func _rows_to_lines(rows: Array):
 			cue = ""
 			wait = 0
 			last_line = row_line
+		elif key.to_lower() == BAR_KEY:
+			if value == "":
+				push_error("DialogueLines line %d: the bar person has no text" % row_line)
+				return null
+			spoken_lines.append([BAR_SPEAKER, value, wait, cue])
+			cue = ""
+			wait = 0
+			last_line = row_line
 		elif key == "cue":
 			var checked := _check_cue(value, row_line)
 			if checked == "":
@@ -405,7 +436,7 @@ static func _rows_to_lines(rows: Array):
 			if wait == 0:
 				return null
 		else:
-			push_error("DialogueLines line %d: expected '<seat>: <text>', 'cue: <name>' or 'wait_for_cards_played: <number>'" % row_line)
+			push_error("DialogueLines line %d: expected '<seat>: <text>', 'Bar: <text>', 'cue: <name>' or 'wait_for_cards_played: <number>'" % row_line)
 			return null
 	if wait > 0:
 		push_error("DialogueLines line %d: 'wait_for_cards_played' needs a spoken line below it" % rows[-1].line)
@@ -460,6 +491,11 @@ static func _check_cue(value, line: int) -> String:
 			push_error("DialogueLines line %d: '%s' needs an amount of 1 or more, like '%s 30'" % [line, words[0], words[0]])
 			return ""
 		return "%s %d" % [words[0], words[1].to_int()]
+	if words.size() == 2 and words[0] == GIVE_CIGS_CUE:
+		if not words[1].is_valid_int() or words[1].to_int() < 1:
+			push_error("DialogueLines line %d: '%s' needs an amount of 1 or more, like '%s 3'" % [line, GIVE_CIGS_CUE, GIVE_CIGS_CUE])
+			return ""
+		return "%s %d" % [GIVE_CIGS_CUE, words[1].to_int()]
 	if not value in CUES:
 		push_error("DialogueLines line %d: unknown cue '%s' (allowed: %s)" % [line, str(value), ", ".join(CUES)])
 		return ""

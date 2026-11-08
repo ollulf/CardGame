@@ -9,6 +9,7 @@ signal round_started()
 signal match_lost(looser_id: int)
 signal next_round_available()
 signal match_finished(looser_ids: Array[int])
+signal run_won()
 signal new_match_started()
 signal player_kicked()
 signal send_message(text: String)
@@ -122,13 +123,21 @@ func run_cue(cue: String) -> void:
 		"ai_two_smokes":
 			if ai_player_2:
 				await ai_player_2.smoke()
+		"unlock_cig_automat":
+			PlayerDataManager.unlock_cig_machine()
+		"ai_1_buys_cigarettes":
+			Missions.add_cigarettes(1, PlayerDataManager.CIGARETTES_PER_PACK)
 		"show_won_turns", "show_life_cards":
 			var ui = get_tree().get_first_node_in_group(WON_ROUNDS_UI_GROUP)
 			if ui:
 				await ui.run_cue(cue)
 		_:
 			var words := cue.split(" ", false)
-			if not words.is_empty() and DialogueManager.PAY_CUES.has(words[0]):
+			if words.size() == 2 and words[0] == DialogueManager.GIVE_CIGS_CUE:
+				var pack: CigPack = InteractionManager.cigPack
+				if pack != null:
+					pack.add_cigarettes(words[1].to_int())
+			elif not words.is_empty() and DialogueManager.PAY_CUES.has(words[0]):
 				var amount := words[1].to_int() if words.size() > 1 else Missions.prize_money(DialogueManager.upcoming_match())
 				await _pay_prize(DialogueManager.PAY_CUES[words[0]], amount)
 
@@ -206,6 +215,7 @@ func start_new_match() -> void:
 	CardManager.clear_all_cards()
 
 	new_match_started.emit()
+	starting_over = false
 
 	await _auto_pay_prize()
 
@@ -316,15 +326,22 @@ func _end_round(loosers: Array[int]) -> void:
 	else:
 		last_match_loosers = total_loosers.duplicate()
 		await _pay_out_prize(total_loosers)
-		match_finished.emit(total_loosers)
+		if Missions.is_last_match(current_match()):
+			run_won.emit()
+		else:
+			match_finished.emit(total_loosers)
 
 func retry_match() -> void:
 	_restore_state(_match_start_state)
 	start_new_match()
 
+var starting_over := false
+
 func start_over() -> void:
 	_intro_done = false
+	PlayerDataManager.reset_buttons_unlock()
 	_restore_state(_game_start_state)
+	starting_over = true
 	start_new_match()
 
 func current_match() -> int:

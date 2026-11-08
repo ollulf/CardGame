@@ -2,7 +2,7 @@ extends CanvasLayer
 class_name DebugMenu
 
 const TOGGLE_ACTION := "toggle_debug_menu"
-const UNLOCK_CUES := ["show_deck", "show_won_turns", "show_life_cards", "show_purse", "show_cigs", "show_trump"]
+const UNLOCK_CUES := ["show_deck", "show_won_turns", "show_life_cards", "show_purse", "show_cigs", "show_trump", "unlock_cig_automat"]
 const PANEL_WIDTH := 260.0
 const MARGIN := 16.0
 const TOP_OFFSET := 60.0
@@ -123,6 +123,8 @@ func skip_tutorial() -> void:
 
 func unlock_all() -> void:
 	unlocked = true
+	PlayerDataManager.mark_booster_collected()
+	PlayerDataManager.mark_deck_edited()
 	for cue in UNLOCK_CUES:
 		GameManager.run_cue(cue)
 
