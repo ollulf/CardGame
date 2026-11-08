@@ -66,8 +66,9 @@ func apply_buffs(player_id: int) -> void:
 
 func load_player_decks():
 	var match_number := DialogueManager.upcoming_match()
+	var min_rank := Missions.lowest_rank(match_number)
 	if Missions.deck_cards(match_number, 0).is_empty() and PlayerDataManager.has_active_deck():
-		player_deck = Deck.new(PlayerDataManager.active_deck_copy())
+		player_deck = Deck.new(_raise_low_ranks(PlayerDataManager.active_deck_copy(), min_rank))
 	else:
 		player_deck = Deck.new(_mission_cards(match_number, 0, Card.Owner.HUMAN))
 	AI_1_deck = Deck.new(_mission_cards(match_number, 1, Card.Owner.AI_1))
@@ -75,14 +76,26 @@ func load_player_decks():
 	print("Decks generated")
 
 func _mission_cards(match_number: int, seat: int, owner: Card.Owner) -> Array[Card]:
+	var min_rank := Missions.lowest_rank(match_number)
 	var listed: Array = Missions.deck_cards(match_number, seat)
-	var cards := generate_cards(Missions.DECK_SIZE - listed.size(), owner)
+	var cards := generate_cards(Missions.DECK_SIZE - listed.size(), owner, min_rank)
 	if listed.is_empty():
 		return cards
+	var given: Array[Card] = []
 	for entry in listed:
-		cards.append(Card.new(entry[0], entry[1], owner, false))
+		given.append(Card.new(entry[0], entry[1], owner, false))
+	cards.append_array(_raise_low_ranks(given, min_rank))
 	cards.shuffle()
 	return cards
+
+func _raise_low_ranks(cards: Array[Card], min_rank: int) -> Array[Card]:
+	var result: Array[Card] = []
+	for card in cards:
+		if card.base_rank < min_rank:
+			result.append(Card.new(card.suit, randi_range(min_rank, 9), card.owner, false))
+		else:
+			result.append(card)
+	return result
 
 func pick_trump_suit() -> void:
 	trump_suit = TutorialScript.trump([Card.Suit.DIAMONDS, Card.Suit.HEARTS, Card.Suit.SPADES, Card.Suit.CLUBS].pick_random())
@@ -148,7 +161,7 @@ func is_legal_play(hand: Hand, card: Card) -> bool:
 		return card.is_trump or not hand.has_trump_card()
 	return card.suit == leading_card.suit or not hand.contains_card_of_suit(leading_card.suit)
 
-func generate_cards(amount: int, owner : Card.Owner) -> Array[Card]:
+func generate_cards(amount: int, owner : Card.Owner, min_rank: int = 0) -> Array[Card]:
 	var cards: Array[Card] = []
 
 	var rng := RandomNumberGenerator.new()
@@ -156,7 +169,7 @@ func generate_cards(amount: int, owner : Card.Owner) -> Array[Card]:
 
 	for i in range(amount):
 		var random_suit: Card.Suit = rng.randi_range(0, Card.Suit.CLUBS)
-		var random_rank: int = rng.randi_range(0, 9)
+		var random_rank: int = rng.randi_range(min_rank, 9)
 
 		var card := Card.new(
 			random_suit,
@@ -191,6 +204,8 @@ func submit_play(player_id: int, card: Card, from: Transform2D = Transform2D.IDE
 	played_cards_round.append(card)
 	render_played_card(card, from)
 	card_played.emit(player_id, card)
+	if card.suit == Card.Suit.SMOKE:
+		PlayerDataManager.unlock_smoke()
 
 	GameManager.play_callback(player_id)
 	print("played: ", card)
