@@ -3,6 +3,7 @@ extends  Node
 signal trump_chosen(suit: Card.Suit)
 signal card_played(player_id: int, card: Card)
 
+const CARD_PLAYED_SOUND := preload("res://sounds/card_played.wav")
 const PLAY_ZONE_OFFSET := Vector2(-330, -350)
 const PLAY_ZONE_SIZE := Vector2(660, 400)
 const HAND_SIZE := 5
@@ -225,6 +226,7 @@ func submit_play(player_id: int, card: Card, from: Transform2D = Transform2D.IDE
 	played_cards_turn.append(card)
 	played_cards_round.append(card)
 	render_played_card(card, from)
+	Sfx.play(CARD_PLAYED_SOUND, 0.1)
 	card_played.emit(player_id, card)
 	if card.suit == Card.Suit.SMOKE:
 		PlayerDataManager.unlock_smoke()
