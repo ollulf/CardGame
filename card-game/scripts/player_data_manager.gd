@@ -1,6 +1,7 @@
 extends Node
 
 signal stats_changed(player_id: int)
+signal smoke_unlocked_changed
 signal money_changed(money: int)
 signal booster_bought
 signal collection_changed
@@ -23,6 +24,7 @@ var drinking_level := 0
 
 var money := 0
 var starting_money_granted := false
+var smoke_unlocked := false
 
 var collection: Array[Card] = []
 var active_deck: Array[Card] = []
@@ -39,6 +41,12 @@ func smoke(player_id: int, amount: int) -> void:
 		"amount": amount
 	})
 	stats_changed.emit(player_id)
+
+func unlock_smoke() -> void:
+	if smoke_unlocked:
+		return
+	smoke_unlocked = true
+	smoke_unlocked_changed.emit()
 
 func drink() -> void:
 	drinking_level -= 1
@@ -149,6 +157,7 @@ func capture_state() -> Dictionary:
 	return {
 		"money": money,
 		"starting_money_granted": starting_money_granted,
+		"smoke_unlocked": smoke_unlocked,
 		"collection": collection.duplicate(),
 		"active_deck": active_deck.duplicate(),
 		"new_cards": new_cards.duplicate(),
@@ -156,10 +165,12 @@ func capture_state() -> Dictionary:
 
 func restore_state(state: Dictionary) -> void:
 	starting_money_granted = state.get("starting_money_granted", false)
+	smoke_unlocked = state.get("smoke_unlocked", false)
 	set_money(state.get("money", 0))
 	collection.assign(state.get("collection", []))
 	active_deck.assign(state.get("active_deck", []))
 	new_cards.assign(state.get("new_cards", []))
 	clear_smoking()
+	smoke_unlocked_changed.emit()
 	collection_changed.emit()
 	deck_changed.emit()
