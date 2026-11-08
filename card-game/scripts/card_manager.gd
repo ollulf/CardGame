@@ -15,6 +15,13 @@ const COLLECT_FLIP_TIME := 0.15
 const COLLECT_FLY_TIME := 0.45
 const COLLECT_SCALE := 1.1
 const ZERO_BEATS_RANK := 9
+const TIE_CARD_SCALE := 1.5
+const TIE_CARD_SPACING := 120.0
+const TIE_FLY_TIME := 0.4
+const TIE_FLIP_TIME := 0.3
+const TIE_REVEAL_PAUSE := 0.35
+const TIE_RESULT_TIME := 0.8
+const TIE_LOSER_COLOR := Color(0.55, 0.55, 0.55, 0.8)
 
 var table_root: Control
 
@@ -364,6 +371,82 @@ static func has_rank_at_least(cards: Array[Card], rank: int) -> bool:
 		if card.rank >= rank:
 			return true
 	return false
+
+func deck_of(player_id: int) -> Deck:
+	match player_id:
+		0:
+			return player_deck
+		1:
+			return AI_1_deck
+		2:
+			return AI_2_deck
+	return null
+
+func draw_tie_card(player_id: int) -> Card:
+	var deck := deck_of(player_id)
+	if deck == null or deck.cards.is_empty():
+		return null
+	return deck.cards.pop_back()
+
+func return_tie_card(player_id: int, card: Card) -> void:
+	var deck := deck_of(player_id)
+	if deck != null and card != null:
+		deck.cards.insert(0, card)
+
+func show_tie_break(draws: Dictionary, losers: Array[int]) -> void:
+	var ids: Array = draws.keys()
+	var visuals := {}
+	var homes := {}
+	if table_root != null:
+		var center := _get_table_center_world()
+		for i in ids.size():
+			var id: int = ids[i]
+			var card: Card = draws[id]
+			if card == null:
+				continue
+			var visual := preload("res://scenes/Card.tscn").instantiate() as CardVisual
+			visual.setup(card, true)
+			visual.hover_enabled = false
+			visual.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			visual.z_index = 40
+			table_root.add_child(visual)
+			visual.show_back()
+			visual.pivot_offset = visual.size * 0.5
+			var home := _deck_pile_center(id as Card.Owner, table_root)
+			homes[id] = home
+			visual.global_position = home - visual.size * 0.5
+			var target := center + Vector2((i - (ids.size() - 1) * 0.5) * TIE_CARD_SPACING, -150.0)
+			var tween := visual.create_tween().set_parallel().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+			tween.tween_property(visual, "global_position", target - visual.size * 0.5, TIE_FLY_TIME)
+			tween.tween_property(visual, "scale", Vector2.ONE * TIE_CARD_SCALE, TIE_FLY_TIME)
+			visuals[id] = visual
+	if visuals.is_empty():
+		for id in ids:
+			return_tie_card(id, draws[id])
+		return
+	await get_tree().create_timer(TIE_FLY_TIME, false).timeout
+	for id in visuals:
+		visuals[id].flip_face_up(TIE_FLIP_TIME)
+	await get_tree().create_timer(TIE_FLIP_TIME + TIE_REVEAL_PAUSE, false).timeout
+	for id in visuals:
+		var visual: CardVisual = visuals[id]
+		if losers.has(id):
+			visual.shake_and_dim(TIE_LOSER_COLOR)
+		else:
+			visual.set_winner(true)
+	await get_tree().create_timer(TIE_RESULT_TIME, false).timeout
+	for id in visuals:
+		var visual: CardVisual = visuals[id]
+		if not is_instance_valid(visual):
+			continue
+		var tween := visual.create_tween().set_parallel().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+		tween.tween_property(visual, "global_position", homes[id] - visual.size * 0.5, TIE_FLY_TIME)
+		tween.tween_property(visual, "scale", Vector2.ONE, TIE_FLY_TIME)
+		tween.tween_callback(visual.show_back).set_delay(TIE_FLY_TIME * 0.5)
+		tween.chain().tween_callback(visual.queue_free)
+	await get_tree().create_timer(TIE_FLY_TIME, false).timeout
+	for id in ids:
+		return_tie_card(id, draws[id])
 
 # - - - HELPER - - -
 

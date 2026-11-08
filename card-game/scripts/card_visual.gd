@@ -242,6 +242,34 @@ func show_back() -> void:
 	add_child(back)
 
 
+func flip_face_up(duration: float) -> void:
+	pivot_offset = size * 0.5
+	var flat_scale := scale.x
+	_kill_tween()
+	_tween = create_tween()
+	_tween.set_trans(Tween.TRANS_SINE)
+	_tween.tween_property(self, "scale:x", 0.0, duration * 0.5).set_ease(Tween.EASE_IN)
+	_tween.tween_callback(show_front)
+	_tween.tween_property(self, "scale:x", flat_scale, duration * 0.5).set_ease(Tween.EASE_OUT)
+
+
+func show_front() -> void:
+	face_down = false
+	var back := get_node_or_null("Back")
+	if back != null:
+		back.free()
+	update_visuals()
+
+
+func shake_and_dim(dim_color: Color) -> void:
+	var start := position
+	_kill_tween()
+	_tween = create_tween()
+	for offset in [8.0, -8.0, 6.0, -6.0, 3.0, 0.0]:
+		_tween.tween_property(self, "position:x", start.x + offset, 0.05)
+	_tween.tween_property(self, "modulate", dim_color, 0.2)
+
+
 func _deal_step(t: float, start_scale: Vector2, target_scale: Vector2, reveal: bool) -> void:
 	var s := start_scale.lerp(target_scale, t)
 	if reveal:

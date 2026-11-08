@@ -19,6 +19,7 @@ const MAX_TURNS := 5
 const MAX_LIVES := 2
 const TRUMP_REVEAL_TIME := 1.2
 const TURN_WINNER_SHOW_TIME := 2.5
+const MAX_TIE_DRAWS := 5
 
 const HUMAN_ID := 0
 const PLAYER_NAMES := ["YOU","AI player 1", "AI player 2"]
@@ -293,7 +294,10 @@ func _finish_turn() -> void:
 
 	#Checks if round is over
 	if current_turn >= MAX_TURNS:
-		await _end_round(get_round_looser())
+		var loosers := await resolve_tie(get_round_looser())
+		if token != round_token:
+			return
+		await _end_round(loosers)
 		return
 
 	start_new_turn(owner_to_id(winner))
@@ -438,6 +442,35 @@ func get_round_looser() -> Array[int]:
 
 	print(result)
 	return result
+
+func resolve_tie(loosers: Array[int]) -> Array[int]:
+	var token := round_token
+	var attempts := 0
+	while loosers.size() > 1 and attempts < MAX_TIE_DRAWS:
+		attempts += 1
+		var draws := {}
+		var any_card := false
+		for id in loosers:
+			draws[id] = CardManager.draw_tie_card(id)
+			any_card = any_card or draws[id] != null
+		if not any_card:
+			return loosers
+		message("Tie! Drawing...")
+		var lowest := 99
+		for id in loosers:
+			lowest = mini(lowest, tie_rank(draws[id]))
+		var next: Array[int] = []
+		for id in loosers:
+			if tie_rank(draws[id]) == lowest:
+				next.append(id)
+		await CardManager.show_tie_break(draws, next)
+		if token != round_token:
+			return next
+		loosers = next
+	return loosers
+
+func tie_rank(card: Card) -> int:
+	return 0 if card == null else card.base_rank
 
 func id_to_player(id : int) -> Player:
 	match id:
