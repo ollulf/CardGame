@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=7 format=3]
 
 [ext_resource type="Script" path="res://scripts/bar_screen.gd" id="1_bar"]
 [ext_resource type="Script" path="res://scripts/cigarette_machine.gd" id="2_machine"]
@@ -7,30 +7,16 @@
 [ext_resource type="Texture2D" path="res://sprites/suit_Alk.png" id="5_alk"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_back"]
-bg_color = Color(0.08, 0.07, 0.07, 0.92)
+bg_color = Color(0.0901961, 0.0862745, 0.109804, 0.96)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.85, 0.8, 0.7, 1)
+border_color = Color(0.419608, 0.388235, 0.564706, 1)
 content_margin_left = 10.0
 content_margin_top = 6.0
 content_margin_right = 10.0
 content_margin_bottom = 6.0
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_back_hover"]
-bg_color = Color(0.22, 0.17, 0.13, 1)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(1, 0.95, 0.8, 1)
-content_margin_left = 10.0
-content_margin_top = 6.0
-content_margin_right = 10.0
-content_margin_bottom = 6.0
-
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_focus"]
 
 [node name="BarScreen" type="CanvasLayer"]
 process_mode = 3
@@ -244,14 +230,7 @@ offset_top = 20.0
 offset_right = 190.0
 offset_bottom = 62.0
 focus_mode = 0
-theme_override_colors/font_color = Color(0.95, 0.92, 0.85, 1)
-theme_override_colors/font_hover_color = Color(1, 0.98, 0.9, 1)
-theme_override_colors/font_pressed_color = Color(1, 0.98, 0.9, 1)
 theme_override_font_sizes/font_size = 16
-theme_override_styles/focus = SubResource("StyleBoxEmpty_focus")
-theme_override_styles/hover = SubResource("StyleBoxFlat_back_hover")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_back_hover")
-theme_override_styles/normal = SubResource("StyleBoxFlat_back")
 text = "< Back to table"
 
 [node name="CigaretteMachine" type="Control" parent="Room"]
@@ -280,7 +259,6 @@ offset_top = -40.0
 offset_right = 259.0
 offset_bottom = -8.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.95, 0.92, 0.85, 1)
 theme_override_font_sizes/font_size = 13
 theme_override_styles/normal = SubResource("StyleBoxFlat_back")
 text = "Buy Cigarettes (5$)"
@@ -313,7 +291,6 @@ offset_top = -40.0
 offset_right = 205.0
 offset_bottom = -8.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.95, 0.92, 0.85, 1)
 theme_override_font_sizes/font_size = 13
 theme_override_styles/normal = SubResource("StyleBoxFlat_back")
 text = "Buy Booster"
@@ -346,7 +323,6 @@ offset_top = -40.0
 offset_right = 136.0
 offset_bottom = -8.0
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.95, 0.92, 0.85, 1)
 theme_override_font_sizes/font_size = 13
 theme_override_styles/normal = SubResource("StyleBoxFlat_back")
 text = "Round of Drinks"
@@ -362,7 +338,7 @@ offset_right = 1132.0
 offset_bottom = 62.0
 pivot_offset = Vector2(85, 21)
 mouse_filter = 2
-theme_override_colors/font_color = Color(0.98, 0.84, 0.55, 1)
+theme_override_colors/font_color = Color(1, 0.811765, 0.431373, 1)
 theme_override_font_sizes/font_size = 24
 theme_override_styles/normal = SubResource("StyleBoxFlat_back")
 text = "0$"

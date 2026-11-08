@@ -60,6 +60,7 @@ if ls "$worktree"/card-game/tests/*.tscn >/dev/null 2>&1; then
 fi
 
 timeout 300 "$godot" --headless --path "$worktree/card-game" --import >"$logs/import.log" 2>&1
+timeout 300 "$godot" --headless --path "$worktree/card-game" --import >"$logs/import.log" 2>&1
 import_code=$?
 timeout 120 "$godot" --headless --path "$worktree/card-game" --quit >"$logs/quit.log" 2>&1
 quit_code=$?

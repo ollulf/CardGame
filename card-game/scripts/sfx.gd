@@ -8,6 +8,13 @@ const AMBIENT_VOLUME_DB := -24.0
 const AMBIENT_SILENT_DB := -60.0
 const AMBIENT_FADE_TIME := 2.0
 
+const MUSIC_SOUND := preload("res://sounds/jazz_track.mp3")
+const MUSIC_VOLUME_DB := -14.0
+const MUSIC_SILENT_DB := -60.0
+const MUSIC_FADE_TIME := 3.0
+
+var _music: AudioStreamPlayer
+var _music_tween: Tween
 var _players: Array[AudioStreamPlayer] = []
 var _ambient: AudioStreamPlayer
 var _ambient_tween: Tween
@@ -20,6 +27,9 @@ func _ready() -> void:
 	_ambient = AudioStreamPlayer.new()
 	add_child(_ambient)
 	play_ambient(AMBIENT_SOUND, AMBIENT_VOLUME_DB)
+	_music = AudioStreamPlayer.new()
+	add_child(_music)
+	play_music(MUSIC_SOUND, MUSIC_VOLUME_DB)
 	get_tree().node_added.connect(_hook_node)
 	_hook_tree(get_tree().root)
 
@@ -56,6 +66,25 @@ func stop_ambient() -> void:
 	if _ambient_tween:
 		_ambient_tween.kill()
 	_ambient.stop()
+
+
+func play_music(stream: AudioStream, volume_db: float = MUSIC_VOLUME_DB) -> void:
+	if stream == null:
+		return
+	if _music_tween:
+		_music_tween.kill()
+	if _music.stream != stream or not _music.playing:
+		_music.stream = stream
+		_music.volume_db = MUSIC_SILENT_DB
+		_music.play()
+	_music_tween = create_tween()
+	_music_tween.tween_property(_music, "volume_db", volume_db, MUSIC_FADE_TIME)
+
+
+func stop_music() -> void:
+	if _music_tween:
+		_music_tween.kill()
+	_music.stop()
 
 
 func play_button() -> void:
