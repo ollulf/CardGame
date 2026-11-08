@@ -13,6 +13,10 @@ uniform float interval = 2.6;
 uniform float sweep_time = 0.9;
 uniform float band_width = 0.16;
 uniform float glint_strength = 0.55;
+uniform float crimp_rows = 8.0;
+uniform float crimp_fade_rows = 3.0;
+uniform float crimp_holo = 0.0;
+uniform float crimp_glint = 0.12;
 
 vec3 hsv_to_rgb(float h, float s, float v) {
 	vec3 k = clamp(abs(mod(h * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
@@ -39,7 +43,11 @@ void fragment() {
 
 	vec2 light = vec2(cos(t * light_speed), sin(t * light_speed));
 	float facing = clamp(0.55 + dot(normal, light) * 1.5, 0.0, 1.0);
-	float holo = holo_strength * facing;
+	float row = floor(UV.y / TEXTURE_PIXEL_SIZE.y);
+	float rows_total = 1.0 / TEXTURE_PIXEL_SIZE.y;
+	float edge_dist = min(row, rows_total - 1.0 - row);
+	float body_mask = mix(crimp_holo, 1.0, clamp((edge_dist - crimp_rows + 1.0) / crimp_fade_rows, 0.0, 1.0));
+	float holo = holo_strength * facing * body_mask;
 	vec3 color = mix(base.rgb, base.rgb * rainbow * 1.35, holo);
 	color += rainbow * holo * 0.12 * height;
 
@@ -47,7 +55,7 @@ void fragment() {
 	float progress = clamp(mod(t, interval) / sweep_time, 0.0, 1.0);
 	float center = mix(-band_width * 2.0, 1.5 + band_width * 2.0, progress);
 	float glint = band(diag, center, band_width) + band(diag, center - band_width * 1.6, band_width * 0.35) * 0.6;
-	glint = clamp(glint, 0.0, 1.0) * glint_strength;
+	glint = clamp(glint, 0.0, 1.0) * glint_strength * mix(crimp_glint, 1.0, body_mask);
 	color = mix(color, mix(vec3(1.0), rainbow, 0.5), glint);
 
 	COLOR = vec4(clamp(color, 0.0, 1.0), base.a);
