@@ -18,12 +18,18 @@ match: 3
 	prize_money: 40
 	ai_one_cigarettes: 0
 	ai_two_cigarettes: 1
+	you_drinks: 2
+	ai_one_drinks: 2
+	ai_two_drinks: 1
+	ai_one_budget: 5
+	you_bonus_cards:
+		AL: 5,6,7
 	ai_one_deck:
-		H: 9,8,7,5,3
+		H: 9,8,7,5
 		S: 9,7,6,5,4
-		C: 8,7,6,2
+		C: 8,7,6
 		D: 9,8,6,5
-		AL: 4,6
+		AL: 3,4,6,8
 		SM: 1
 	ai_two_deck:
 		D 8,7,6,5,4
@@ -36,6 +42,9 @@ match: 4
 	prize_money: 40
 	ai_one_cigarettes: 8
 	ai_two_cigarettes: 8
+	ai_one_drinks: 0
+	ai_two_drinks: 1
+	ai_two_budget: 5
 	ai_one_deck:
 		H: 7,5,3,1
 		S: 6,4,2
@@ -46,13 +55,17 @@ match: 4
 		D 7,5,4,2
 		H 6,4,0
 		S 7,5,3,1
-		C 6,3,2
-		AL 4
+		C 6,3
+		AL 4,7
 		SM 6,5,4,3,2,1
 match: 5
 	prize_money: 80
 	ai_one_cigarettes: 6
 	ai_two_cigarettes: 6
+	ai_one_drinks: 2
+	ai_two_drinks: 2
+	ai_one_budget: 10
+	ai_two_budget: 10
 	ai_one_deck:
 		H: 9,8,6,4
 		S: 9,7,6,5
