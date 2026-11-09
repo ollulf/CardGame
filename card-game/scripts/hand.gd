@@ -9,6 +9,8 @@ class_name HandVisualisation
 @export var cigarette_slots: Array[Control] = []
 
 const MAX_CIGARETTES := 3
+const PARK_OFFSET := Vector2(150.0, 130.0)
+const PARK_HIT_MARGIN := Vector2(20.0, 20.0)
 
 # Store actual Cigarette nodes we hold
 var _cigs: Array[Cigarette] = []
@@ -24,6 +26,8 @@ func _process(delta: float) -> void:
 
 	# Clamp to the visible viewport rect (keeps it inside the window)
 	var vs := get_viewport().get_visible_rect().size
+	if InteractionManager.touch_mode:
+		m = vs - PARK_OFFSET
 	m.x = clampf(m.x, 0.0, vs.x)
 	m.y = clampf(m.y, 0.0, vs.y)
 
@@ -40,6 +44,12 @@ func _process(delta: float) -> void:
 		target_pos,
 		1.0 - exp(-follow_speed * delta)
 	)
+
+func is_parked_hit(screen_pos: Vector2) -> bool:
+	if not InteractionManager.touch_mode:
+		return false
+	var vs := get_viewport().get_visible_rect().size
+	return Rect2(vs - PARK_OFFSET - PARK_HIT_MARGIN, PARK_OFFSET + PARK_HIT_MARGIN).has_point(screen_pos)
 
 # --- Inventory / actions ---
 

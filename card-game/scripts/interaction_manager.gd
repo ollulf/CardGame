@@ -21,11 +21,71 @@ var _is_dragging : bool = false
 var _skip_double_click : bool = false
 var _table_blocked : bool = false
 
+const TOUCH_MOUSE_GRACE_MS := 800
+
+var touch_mode : bool = false
+var _last_touch_ms : int = -100000
+var _touch_selected : CardVisual = null
+var _touch_play_on_release : bool = false
+
+const MOBILE_FONT_BONUS := 3
+
+func _ready() -> void:
+	touch_mode = DisplayServer.is_touchscreen_available()
+	if OS.has_feature("web_android") or OS.has_feature("web_ios") or OS.has_feature("mobile"):
+		enlarge_theme_text(MOBILE_FONT_BONUS)
+
+func enlarge_theme_text(bonus: int) -> void:
+	var theme := ThemeDB.get_project_theme()
+	if theme == null:
+		return
+	theme.default_font_size += bonus
+	for type in theme.get_font_size_type_list():
+		for font_size_name in theme.get_font_size_list(type):
+			theme.set_font_size(font_size_name, type, theme.get_font_size(font_size_name, type) + bonus)
+
 func register(player : Player):
 	human_player = player
 
 func _process(delta: float) -> void:
 	check_for_hovered_card()
+
+func _is_touch_event(event: InputEvent) -> bool:
+	return event is InputEventScreenTouch or event is InputEventScreenDrag or (event is InputEventMouse and event.device == InputEvent.DEVICE_ID_EMULATION)
+
+func _track_pointer(event: InputEvent) -> void:
+	if _is_touch_event(event):
+		touch_mode = true
+		_last_touch_ms = Time.get_ticks_msec()
+	elif event is InputEventMouseMotion and Time.get_ticks_msec() - _last_touch_ms > TOUCH_MOUSE_GRACE_MS:
+		touch_mode = false
+
+func _hand_card_at(canvas_pos: Vector2) -> CardVisual:
+	if human_player == null:
+		return null
+	var candidates: Array[CardVisual] = []
+	if _is_draggable(hovered_card):
+		candidates.append(hovered_card)
+	for i in range(human_player.card_visuals.size() - 1, -1, -1):
+		candidates.append(human_player.card_visuals[i])
+	for cv in candidates:
+		if not _is_draggable(cv) or not cv.is_visible_in_tree():
+			continue
+		var local := cv.get_global_transform_with_canvas().affine_inverse() * canvas_pos
+		if Rect2(Vector2.ZERO, cv.size).has_point(local):
+			return cv
+	return null
+
+func _set_hovered(card_visual: CardVisual) -> void:
+	if card_visual == hovered_card:
+		return
+	if is_instance_valid(hovered_card):
+		hovered_card.hover_exit()
+	hovered_card = card_visual
+	if is_instance_valid(hovered_card):
+		hovered_card.hover_enter()
+		if hovered_card.hover_enabled and not hovered_card.face_down:
+			Sfx.play_hover_card()
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
@@ -56,6 +116,10 @@ func check_for_hovered_card() -> void:
 	if _is_press_active():
 		return
 
+	if touch_mode and _is_draggable(_touch_selected) and not DialogueManager.is_open() and not _table_blocked:
+		_set_hovered(_touch_selected)
+		return
+
 	var c: Control = null if DialogueManager.is_open() or _table_blocked else get_viewport().gui_get_hovered_control()
 	var new_hovered: CardVisual = null
 
@@ -84,6 +148,15 @@ func check_for_hovered_card() -> void:
 
 
 func _input(event: InputEvent) -> void:
+	_track_pointer(event)
+
+	if event is InputEventMouseButton and event.device == InputEvent.DEVICE_ID_EMULATION \
+			and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		_skip_double_click = false
+		if not _table_blocked:
+			_begin_touch_press(event)
+		return
+
 	if _table_blocked:
 		return
 
@@ -107,6 +180,20 @@ func _input(event: InputEvent) -> void:
 				human_player.try_play_card(hovered_card.card)
 			_skip_double_click = false
 			_begin_press(event)
+
+func _begin_touch_press(event: InputEventMouseButton) -> void:
+	if DialogueManager.is_open():
+		return
+	var hit := _hand_card_at(event.position)
+	var was_selected := hit != null and hit == _touch_selected
+	_touch_selected = hit
+	if hit == null:
+		if hand != null and hand.is_parked_hit(event.position):
+			_return_one_unlit_to_pack()
+		return
+	_set_hovered(hit)
+	_begin_press(event)
+	_touch_play_on_release = was_selected and _pressed_card == hit
 
 func _begin_press(event: InputEventMouseButton) -> void:
 	if _is_press_active() or not _is_draggable(hovered_card):
@@ -134,9 +221,12 @@ func _release_press(mouse_position: Vector2) -> void:
 
 	var card_visual := _pressed_card
 	var was_dragging := _is_dragging
+	var play_on_tap := _touch_play_on_release
 	_clear_press()
 
 	if not was_dragging:
+		if play_on_tap:
+			human_player.try_play_card(card_visual.card)
 		return
 
 	hovered_card = null
@@ -167,6 +257,7 @@ func _is_draggable(card_visual) -> bool:
 func _clear_press() -> void:
 	_pressed_card = null
 	_is_dragging = false
+	_touch_play_on_release = false
 
 func pickedUpCig() -> void:
 	addCigToHand()
