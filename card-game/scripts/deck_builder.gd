@@ -293,6 +293,8 @@ func _rebuild_collection() -> void:
 			stacks[key] = []
 		stacks[key].append(card)
 	for suit in SUIT_ORDER:
+		if (suit == Card.Suit.ALK or suit == Card.Suit.SMOKE) and not _owns_suit(suit):
+			continue
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 10)
 		row.custom_minimum_size = Vector2(0, CARD_SIZE.y * COLLECTION_CARD_SCALE + 6)
@@ -317,6 +319,16 @@ func _rebuild_collection() -> void:
 			_stack_cells[key] = cell
 			row.add_child(cell)
 		_rows.add_child(row)
+
+
+func _owns_suit(suit: Card.Suit) -> bool:
+	for card in PlayerDataManager.collection:
+		if card.suit == suit:
+			return true
+	for card in PlayerDataManager.active_deck:
+		if card.suit == suit:
+			return true
+	return false
 
 
 func _card_cell(card: Card, card_scale: float, amount: int, is_new: bool) -> Control:
