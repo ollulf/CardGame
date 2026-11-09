@@ -37,7 +37,7 @@ const DRINK_ROUND_FROM_MATCH := 3
 const DRINKING_BOOSTER_FROM_MATCH := 4
 const BOOSTERS: Array[Dictionary] = [
 	{"name": "Smoke Booster", "price": 8, "cards": 5, "min_rank": 1, "max_rank": 9, "smoke_min": 2, "smoke_max": 3, "contents": "2-3 Smoke + basic suits"},
-	{"name": "Standard Booster", "price": 5, "cards": 8, "min_rank": 1, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "contents": "Basic suits only"},
+	{"name": "Standard Booster", "price": 5, "cards": 6, "min_rank": 1, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "high_min": 2, "high_rank": 7, "contents": "Basic suits, two 7+ cards"},
 	{"name": "Premium Booster", "price": 12, "cards": 8, "min_rank": 5, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "contents": "Basic suits, ranks 5-9"},
 	{"name": "Zero Booster", "price": 7, "cards": 2, "min_rank": 0, "max_rank": 0, "smoke_min": 0, "smoke_max": 0, "contents": "Two 0 cards, any suit", "any_suit": true, "from_match": 3},
 	{"name": "Drinking Booster", "price": 8, "cards": 5, "min_rank": 1, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "alk_min": 2, "alk_max": 3, "contents": "2-3 Drinking + basic suits", "from_match": DRINKING_BOOSTER_FROM_MATCH},

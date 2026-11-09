@@ -7,6 +7,7 @@ signal closed
 const NOT_ENOUGH_MONEY_TEXT := "Not enough money"
 const WAIT_TEXT := "Wait..."
 const ROUND_ORDERED_TEXT := "Round ordered!"
+const PULSE_COLOR := Color(1.35, 1.25, 0.85, 1)
 
 @export var pointer: Control
 
@@ -23,6 +24,7 @@ var booster_window: BoosterWindow
 var _cash_tween: Tween
 var _machine_busy := false
 var _round_ordered := false
+var _stand_pulse: Tween
 
 
 func _ready() -> void:
@@ -62,6 +64,7 @@ func open() -> void:
 	pointer.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_DISABLED
 	_refresh_cash()
 	_refresh_drinks_tap()
+	_refresh_stand_pulse()
 	show()
 	opened.emit()
 
@@ -71,6 +74,7 @@ func close() -> void:
 		return
 
 	hide()
+	_stop_stand_pulse()
 	pointer.reparent(_pointer_parent)
 	_pointer_parent.move_child(pointer, _pointer_index)
 	InteractionManager.skip_next_double_click()
@@ -123,12 +127,36 @@ func _serve_ordered_round() -> void:
 
 
 func _on_booster_stand_clicked() -> void:
+	booster_shelf.show_hint = _guide_suggests_booster()
+	_stop_stand_pulse()
 	booster_shelf.open()
 
 
 func _on_booster_window_finished() -> void:
 	if visible:
+		booster_shelf.show_hint = false
 		booster_shelf.open()
+
+
+func _guide_suggests_booster() -> bool:
+	var guide := get_tree().get_first_node_in_group("deck_screen")
+	return guide != null and guide.suggests_booster()
+
+
+func _refresh_stand_pulse() -> void:
+	_stop_stand_pulse()
+	if not _guide_suggests_booster():
+		return
+	_stand_pulse = create_tween().set_loops()
+	_stand_pulse.tween_property(booster_stand.sprite, "self_modulate", PULSE_COLOR, 0.6).set_trans(Tween.TRANS_SINE)
+	_stand_pulse.tween_property(booster_stand.sprite, "self_modulate", Color.WHITE, 0.6).set_trans(Tween.TRANS_SINE)
+
+
+func _stop_stand_pulse() -> void:
+	if _stand_pulse:
+		_stand_pulse.kill()
+		_stand_pulse = null
+	booster_stand.sprite.self_modulate = Color.WHITE
 
 
 func _refresh_cash() -> void:

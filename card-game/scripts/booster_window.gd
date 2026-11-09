@@ -154,8 +154,13 @@ func roll_cards() -> Array[Card]:
 	var max_rank: int = clampi(_booster.get("max_rank", MAX_RANK), min_rank, MAX_RANK)
 	var smoke_count := mini(_roll_smoke_count(), count)
 	var alk_count := mini(_roll_count("alk_min", "alk_max"), count - smoke_count)
+	var high_count := mini(int(_booster.get("high_min", 0)), count - smoke_count - alk_count)
+	var high_rank: int = clampi(_booster.get("high_rank", min_rank), min_rank, max_rank)
 	var result: Array[Card] = []
 	for i in count:
+		var rank := randi_range(min_rank, max_rank)
+		if i >= smoke_count + alk_count and i < smoke_count + alk_count + high_count:
+			rank = randi_range(high_rank, max_rank)
 		var suit: Card.Suit
 		if i < smoke_count:
 			suit = Card.Suit.SMOKE
@@ -165,7 +170,7 @@ func roll_cards() -> Array[Card]:
 			suit = _roll_any_suit()
 		else:
 			suit = NORMAL_SUITS.pick_random()
-		result.append(Card.new(suit, randi_range(min_rank, max_rank), Card.Owner.HUMAN, false))
+		result.append(Card.new(suit, rank, Card.Owner.HUMAN, false))
 	result.shuffle()
 	return result
 
