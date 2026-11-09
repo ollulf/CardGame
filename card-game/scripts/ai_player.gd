@@ -2,7 +2,7 @@ extends Player
 class_name AIPlayer
 
 # Visual settings
-@export var show_hand: bool = false
+@export var show_hand: bool = true
 
 # Layout
 @export var card_space: float = 320
@@ -184,6 +184,7 @@ func render_hand() -> void:
 
 		c.setup(card, not show_hand)
 		c.hover_enabled = false
+		_make_passive(c)
 
 		add_child(c)
 		card_visuals.append(c)
@@ -232,6 +233,7 @@ func deal_card(card: Card, from_center: Vector2, slot: int, slot_count: int) -> 
 	hand.append(card)
 	var c := preload("res://scenes/Card.tscn").instantiate() as CardVisual
 	c.setup(card, true)
+	_make_passive(c)
 	add_child(c)
 	card_visuals.append(c)
 	c.position = _slot_position(slot, slot_count) - c.size * 0.5
@@ -240,6 +242,13 @@ func deal_card(card: Card, from_center: Vector2, slot: int, slot_count: int) -> 
 	_orient(c)
 	Sfx.play_card_move()
 	c.deal_from(Transform2D(0.0, Vector2.ONE, 0.0, from_center - c.pivot_offset), show_hand)
+
+
+func _make_passive(card_visual: CardVisual) -> void:
+	card_visual.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	for child in card_visual.get_children():
+		if child is Control:
+			child.mouse_filter = Control.MOUSE_FILTER_IGNORE
 
 
 func finish_deal() -> void:
