@@ -26,8 +26,6 @@ func _ready() -> void:
 	_build()
 	hide()
 	GameManager.new_match_started.connect(_on_new_match_started)
-	GameManager.match_finished.connect(_on_match_finished)
-	GameManager.player_kicked.connect(_on_player_kicked)
 
 
 func _build() -> void:
@@ -115,8 +113,8 @@ func skip_round(looser_id: int) -> void:
 func skip_tutorial() -> void:
 	if not GameManager.can_skip_tutorial():
 		return
+	close()
 	GameManager.skip_tutorial(UNLOCK_CUES)
-	_refresh()
 
 
 func unlock_all() -> void:
@@ -141,15 +139,6 @@ func add_cash() -> void:
 func _on_new_match_started() -> void:
 	if unlocked:
 		unlock_all.call_deferred()
-
-
-func _on_match_finished(_loosers: Array[int]) -> void:
-	_on_player_kicked()
-
-
-func _on_player_kicked() -> void:
-	if visible:
-		_was_blocked = true
 
 
 func _refresh() -> void:

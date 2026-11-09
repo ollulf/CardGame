@@ -399,8 +399,8 @@ func skip_tutorial(cues: Array) -> void:
 	for cue in cues:
 		run_cue(cue)
 	ai_player_1.lost_rounds = MAX_LIVES - 1
-	await skip_round(1)
 	DialogueManager.skip_all(false)
+	await skip_round(1)
 
 func get_total_loosers() -> Array[int]:
 	var result: Array[int] = []
