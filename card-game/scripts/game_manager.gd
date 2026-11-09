@@ -73,6 +73,7 @@ func start_round(starting_player_id: int) -> void:
 	current_turn = 0
 	round_over = false
 	CardManager.played_cards_round.empty()
+	var tutorial_before := TutorialScript.capture_state()
 	TutorialScript.begin_round()
 	starting_player_id = TutorialScript.starter(starting_player_id)
 	await CardManager.load_player_decks()
@@ -80,6 +81,7 @@ func start_round(starting_player_id: int) -> void:
 	_intro_done = true
 	if _game_start_state.is_empty():
 		_game_start_state = _capture_state()
+		_game_start_state["tutorial"] = tutorial_before
 		_match_start_state = _game_start_state
 	_trump_pending = first_round and DialogueManager.has_cue(1, "match_start", "show_trump")
 	if first_round and DialogueManager.has_cue(1, "match_start", "show_deck"):
