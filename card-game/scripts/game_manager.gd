@@ -287,7 +287,6 @@ func _finish_turn() -> void:
 
 	turn_completed.emit(current_turn, owner_to_id(winner))
 
-	await get_tree().create_timer(3.0, false).timeout
 	await DialogueManager.wait_until_idle()
 	if token != round_token:
 		return
