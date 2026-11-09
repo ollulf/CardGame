@@ -34,7 +34,7 @@ const DRINK_PENALTY_PER_ROUND := 1
 const DRINK_ROUND_PRICE := 3
 const DRINK_ROUND_FROM_MATCH := 3
 const BOOSTERS: Array[Dictionary] = [
-	{"name": "Smoke Booster", "price": 8, "cards": 5, "min_rank": 1, "max_rank": 9, "smoke_min": 1, "smoke_max": 2, "contents": "1-2 Smoke + basic suits"},
+	{"name": "Smoke Booster", "price": 8, "cards": 5, "min_rank": 1, "max_rank": 9, "smoke_min": 2, "smoke_max": 3, "contents": "2-3 Smoke + basic suits"},
 	{"name": "Standard Booster", "price": 5, "cards": 8, "min_rank": 1, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "contents": "Basic suits only"},
 	{"name": "Premium Booster", "price": 12, "cards": 8, "min_rank": 5, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "contents": "Basic suits, ranks 5-9"},
 	{"name": "Zero Booster", "price": 7, "cards": 2, "min_rank": 0, "max_rank": 0, "smoke_min": 0, "smoke_max": 0, "contents": "Two 0 cards, any suit", "any_suit": true, "from_match": 3},
@@ -244,9 +244,15 @@ func restore_state(state: Dictionary) -> void:
 	set_cig_machine_unlocked(state.get("cig_machine_unlocked", false))
 	collection.assign(state.get("collection", []))
 	active_deck.assign(state.get("active_deck", []))
+	_top_up_active_deck()
 	new_cards.assign(state.get("new_cards", []))
 	clear_smoking()
 	clear_drinking()
 	smoke_unlocked_changed.emit()
 	collection_changed.emit()
 	deck_changed.emit()
+
+func _top_up_active_deck() -> void:
+	if active_deck.is_empty() or active_deck.size() >= Missions.DECK_SIZE:
+		return
+	active_deck.append_array(CardManager.generate_cards(Missions.DECK_SIZE - active_deck.size(), Card.Owner.HUMAN, 1))
