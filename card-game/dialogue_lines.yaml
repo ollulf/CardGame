@@ -22,7 +22,7 @@ match: 1
 			1: Nobody can beat my *hearts 9*.
 			1: Since it's *trump* for this round, it's the *highest*.
 			2: Yeah, I cannot beat that...
-			2: And I also have to follow the *suit*.
+			2: And if I have the *first played suit*, I have to play that.
 
 		when: turn_end
 		round: 1
