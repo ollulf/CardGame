@@ -15,6 +15,7 @@ match: 1
 			1: That means the *highest* card of the *first played suit* wins the turn.
 			2: ... unless ...
 			2: Unless it's of the *trump color*, that is *always higher*, right?
+			1: But the *trump* is picked *at random* every round.
 			1: Yes.
 			1: But still the *highest trump* card wins.
 			wait_for_cards_played: 1

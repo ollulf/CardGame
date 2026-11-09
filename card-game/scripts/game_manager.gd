@@ -17,7 +17,7 @@ signal send_message(text: String)
 # --- Config ---
 const MAX_TURNS := 5
 const MAX_LIVES := 2
-const TRUMP_REVEAL_TIME := 1.2
+const TRUMP_REVEAL_TIME := 3.2
 const TURN_WINNER_SHOW_TIME := 1.5
 const TURN_FINISH_DELAY := 1.0
 const MAX_TIE_DRAWS := 5
