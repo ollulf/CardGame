@@ -105,7 +105,7 @@ match: 2
 		lines:
 			2: Alright, lets spice it up and play with some *money*!
 			1: Sounds good! Since I lost last round I have to put in the *price money*.
-			cue: ai_2_pays 30
+			cue: ai_1_pays
 			1: The *price money* is *split* between the two *winners*.
 			2: And the *new looser* has to *pay* for the next round.
 			1: Let's hope its not me again...

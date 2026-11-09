@@ -7,8 +7,9 @@ const RULE_WORDS := ["highest", "lowest", "trump"]
 const AUTO_WORDS := ["auto", "-"]
 const SMOKE_WORD := "smoke"
 const HAND_KEYS := ["you", "ai_one", "ai_two"]
-const PLAY_KEYS := ["ai_one_plays", "ai_two_plays"]
-const ALLOWED_KEYS := ["round", "trump", "starter", "you", "ai_one", "ai_two", "ai_one_plays", "ai_two_plays"]
+const PLAY_KEYS := ["you_plays", "ai_one_plays", "ai_two_plays"]
+const HUMAN_SEAT := 0
+const ALLOWED_KEYS := ["round", "trump", "starter", "you", "ai_one", "ai_two", "you_plays", "ai_one_plays", "ai_two_plays"]
 
 var rounds: Dictionary = load_rounds(SCRIPT_PATH)
 var active := true
@@ -40,7 +41,17 @@ func hand_cards(seat: int) -> Array:
 func planned_smoke(seat: int, turn: int) -> int:
 	return _current.get("smokes", {}).get(seat, {}).get(turn, 0)
 
-func planned_card(seat: int, hand: Hand, turn: int) -> Card:
+func blocks_human_play(hand: Hand, card: Card, turn: int) -> bool:
+	var intended := planned_card(HUMAN_SEAT, hand, turn, false)
+	return intended != null and intended != card
+
+func human_hint(hand: Hand, turn: int) -> String:
+	var intended := planned_card(HUMAN_SEAT, hand, turn, false)
+	if intended == null:
+		return ""
+	return "Play your %s %d now." % [Card.Suit.keys()[intended.suit].capitalize(), intended.base_rank]
+
+func planned_card(seat: int, hand: Hand, turn: int, warn := true) -> Card:
 	var plan: Array = _current.get("plays", {}).get(seat, [])
 	if turn < 1 or turn > plan.size():
 		return null
@@ -52,7 +63,8 @@ func planned_card(seat: int, hand: Hand, turn: int) -> Card:
 		for card in legal:
 			if card.suit == step[0] and card.base_rank == step[1]:
 				return card
-		push_warning("TutorialGame round %d: seat %d cannot play %s %d on turn %d, playing normally" % [_round_index, seat, Card.Suit.keys()[step[0]], step[1], turn])
+		if warn:
+			push_warning("TutorialGame round %d: seat %d cannot play %s %d on turn %d, playing normally" % [_round_index, seat, Card.Suit.keys()[step[0]], step[1], turn])
 		return null
 	match step:
 		"highest":
@@ -138,8 +150,8 @@ static func _clean_round(raw, line: int):
 			push_error("TutorialGame line %d: %s needs exactly %d cards, found %d" % [line, key, HAND_SIZE, cards.size()])
 			return null
 		entry.hands[seat] = cards
-	for seat in [1, 2]:
-		var key: String = PLAY_KEYS[seat - 1]
+	for seat in SEAT_COUNT:
+		var key: String = PLAY_KEYS[seat]
 		if not raw.has(key):
 			continue
 		var plan: Array = []
@@ -148,6 +160,9 @@ static func _clean_round(raw, line: int):
 			var word: String = raw_word
 			var parts := word.split("+", false, 1)
 			if parts.size() == 2 and parts[0].strip_edges().to_lower() == SMOKE_WORD:
+				if seat == HUMAN_SEAT:
+					push_error("TutorialGame line %d: %s cannot plan a smoke, the player smokes on their own" % [line, key])
+					return null
 				smokes[plan.size() + 1] = 1
 				word = parts[1].strip_edges()
 			if word in RULE_WORDS or word in AUTO_WORDS:
