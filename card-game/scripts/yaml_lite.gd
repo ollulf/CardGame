@@ -62,7 +62,7 @@ func _tokenize(text: String) -> Array:
 		var raw: String = lines[number]
 		number += 1
 		var start := number
-		if start == 1 and raw.begins_with("﻿"):
+		if start == 1 and not raw.is_empty() and raw.unicode_at(0) == 0xFEFF:
 			raw = raw.substr(1)
 		var content := raw.strip_edges()
 		if content == "" or content.begins_with("#"):

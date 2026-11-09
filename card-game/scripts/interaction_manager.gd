@@ -130,6 +130,9 @@ func check_for_hovered_card() -> void:
 			break
 		c = c.get_parent() as Control
 
+	if touch_mode and _is_draggable(new_hovered):
+		new_hovered = null
+
 	# If nothing changed, do nothing
 	if new_hovered == hovered_card:
 		return
