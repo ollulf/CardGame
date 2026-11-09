@@ -251,7 +251,8 @@ func reveal_trump() -> void:
 	await get_tree().create_timer(TRUMP_REVEAL_TIME, false).timeout
 
 func start_new_match() -> void:
-	var starting_player_id: int = get_total_loosers().pick_random()
+	var total_loosers := get_total_loosers()
+	var starting_player_id: int = total_loosers.pick_random() if not total_loosers.is_empty() else randi() % 3
 	_match_start_state = _capture_state()
 
 	for id in range(3):
@@ -395,6 +396,17 @@ func start_over() -> void:
 	_restore_state(_game_start_state)
 	starting_over = true
 	start_new_match()
+
+func resume_run(match_state: Dictionary, game_state: Dictionary, between_matches: bool) -> void:
+	_intro_done = true
+	_game_start_state = game_state
+	_restore_state(match_state)
+	_match_start_state = match_state
+	if between_matches:
+		new_match_started.emit()
+		match_finished.emit(last_match_loosers.duplicate())
+	else:
+		start_new_match()
 
 func current_match() -> int:
 	return _match_start_state.get("match", 1)
