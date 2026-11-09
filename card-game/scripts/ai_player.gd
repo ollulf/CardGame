@@ -9,7 +9,10 @@ class_name AIPlayer
 @export var MAX_GAP := 70.0
 
 @export var auto_smoke: bool = true
-@export_range(0.0, 1.0) var smoke_chance: float = 0.2
+@export_range(0.0, 1.0) var smoke_chance: float = 0.35
+@export_range(0.0, 1.0) var smoke_chance_per_trump: float = 0.15
+@export_range(0.0, 1.0) var smoke_chance_per_left: float = 0.03
+@export var max_smokes_per_turn: int = 3
 @export var smoke_offset := Vector2(46.0, 6.0)
 @export var smoke_stack_step := Vector2(22.0, 26.0)
 
@@ -47,14 +50,26 @@ func _free_smoke_slot() -> int:
 	return slot
 
 
-func _wants_to_smoke() -> bool:
+func _smokes_this_turn() -> int:
 	if not auto_smoke or TutorialScript.is_scripted():
-		return false
-	if not Missions.can_smoke(player_id):
-		return false
-	if hand == null or not hand.has_trump_card():
-		return false
-	return randf() < smoke_chance
+		return 0
+	if hand == null:
+		return 0
+	var trumps := hand.get_trump_cards().size()
+	if trumps == 0:
+		return 0
+	var left := Missions.cigarettes_left(player_id)
+	if left == 0:
+		return 0
+	var left_bonus := 10 if left == Missions.UNLIMITED else left
+	var chance := smoke_chance + smoke_chance_per_trump * (trumps - 1) + smoke_chance_per_left * left_bonus
+	var count := 0
+	while count < max_smokes_per_turn and count < trumps and (left == Missions.UNLIMITED or count < left):
+		if randf() >= clampf(chance, 0.0, 0.95):
+			break
+		count += 1
+		chance *= 0.5
+	return count
 
 
 func recieve_hand(new_hand: Hand) -> void:
@@ -83,8 +98,9 @@ func _on_request_play_card(requested_player_id: int) -> void:
 	var planned_cigarettes := TutorialScript.planned_smoke(player_id, GameManager.current_turn)
 	if planned_cigarettes > 0:
 		await smoke(planned_cigarettes)
-	elif _wants_to_smoke():
-		smoke()
+	else:
+		for i in _smokes_this_turn():
+			await smoke()
 
 	# Play Delay
 	await get_tree().create_timer(3.0, false).timeout
