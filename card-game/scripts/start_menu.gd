@@ -1,7 +1,9 @@
 extends CanvasLayer
 class_name StartMenu
 
-signal chosen(continue_run: bool)
+signal chosen(choice: Choice)
+
+enum Choice { CONTINUE, NEW_RUN, SKIP_TUTORIAL }
 
 const MENU_LAYER := 56
 const FADE_TIME := 0.4
@@ -10,6 +12,8 @@ var _hand_parent: Node
 var _hand_index := 0
 var _continue_button: Button
 var _new_run_button: Button
+var _skip_button: Button
+var _title: Label
 var _subtitle: Label
 var _content: Control
 
@@ -38,11 +42,11 @@ func _ready() -> void:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 12)
 	margin.add_child(box)
-	var title := Label.new()
-	title.text = "Welcome back"
-	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title.add_theme_font_size_override("font_size", 32)
-	box.add_child(title)
+	_title = Label.new()
+	_title.text = "Welcome back"
+	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_title.add_theme_font_size_override("font_size", 32)
+	box.add_child(_title)
 	_subtitle = Label.new()
 	_subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_subtitle.add_theme_font_size_override("font_size", 18)
@@ -53,16 +57,31 @@ func _ready() -> void:
 	box.add_child(spacer)
 	_continue_button = _add_button(box, "Continue", &"ButtonPrimary", 44)
 	_new_run_button = _add_button(box, "New run", &"", 40)
-	_continue_button.pressed.connect(_choose.bind(true))
-	_new_run_button.pressed.connect(_choose.bind(false))
+	_skip_button = _add_button(box, "New run (skip tutorial)", &"", 40)
+	_continue_button.pressed.connect(_choose.bind(Choice.CONTINUE))
+	_new_run_button.pressed.connect(_choose.bind(Choice.NEW_RUN))
+	_skip_button.pressed.connect(_choose.bind(Choice.SKIP_TUTORIAL))
 
 func open(save: Dictionary) -> void:
+	if save.is_empty():
+		_title.text = "Rauchen"
+		_subtitle.text = "New here? The tutorial teaches you the rules."
+		_continue_button.hide()
+		_new_run_button.text = "Start with tutorial"
+		_new_run_button.theme_type_variation = &"ButtonPrimary"
+		_new_run_button.custom_minimum_size.y = 44
+		_skip_button.text = "Skip tutorial"
+		_fade_in()
+		return
 	var state: Dictionary = save.state
 	var match_number: int = state.match
 	if save.between_matches:
 		_subtitle.text = "Saved before match %d  ·  %d$" % [match_number, state.money]
 	else:
 		_subtitle.text = "Saved at the start of match %d  ·  %d$" % [match_number, state.money]
+	_fade_in()
+
+func _fade_in() -> void:
 	_lift_hand_pointer()
 	show()
 	_content.modulate.a = 0.0
@@ -78,12 +97,13 @@ func _add_button(box: VBoxContainer, text: String, variation: StringName, height
 	box.add_child(button)
 	return button
 
-func _choose(continue_run: bool) -> void:
+func _choose(choice: Choice) -> void:
 	_continue_button.disabled = true
 	_new_run_button.disabled = true
+	_skip_button.disabled = true
 	_lower_hand_pointer()
 	InteractionManager.skip_next_double_click()
-	chosen.emit(continue_run)
+	chosen.emit(choice)
 	queue_free()
 
 func _lift_hand_pointer() -> void:

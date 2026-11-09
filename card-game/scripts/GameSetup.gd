@@ -5,24 +5,31 @@ func _ready() -> void:
 	$Wallet.clicked.connect($BarScreen.open)
 	for pile: DeckPile in $DeckPiles.get_children():
 		pile.clicked.connect($DeckVisualizer.toggle_for_owner)
+	var rules := RulesCard.new()
+	add_child(rules)
+	rules.attach_button(self)
 	
 	await CardManager.load_player_decks()
 	
 	if Engine.get_write_movie_path() == "" and DisplayServer.get_name() != "headless":
 		Input.set_mouse_mode(Input.MOUSE_MODE_HIDDEN)
 	var save := SaveManager.load_save()
-	if save.is_empty():
+	if save.is_empty() and not SaveManager.enabled:
 		GameManager.start_round(0)
 		return
 	var menu := StartMenu.new()
 	add_child(menu)
 	menu.open(save)
-	var continue_run: bool = await menu.chosen
-	if continue_run:
-		SaveManager.continue_run(save)
-	else:
-		SaveManager.delete_save()
-		GameManager.start_round(0)
+	var choice: StartMenu.Choice = await menu.chosen
+	match choice:
+		StartMenu.Choice.CONTINUE:
+			SaveManager.continue_run(save)
+		StartMenu.Choice.SKIP_TUTORIAL:
+			SaveManager.delete_save()
+			GameManager.start_without_tutorial()
+		_:
+			SaveManager.delete_save()
+			GameManager.start_round(0)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo:

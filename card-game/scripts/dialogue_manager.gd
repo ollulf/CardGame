@@ -138,6 +138,9 @@ func wait_until_idle() -> void:
 func clear_waiting() -> void:
 	_drop_waiting()
 
+func play_match_end() -> void:
+	_fire("match_end")
+
 func rewind_to_match(match_number: int) -> void:
 	_match = maxi(0, match_number - 1)
 	_match_running = false
