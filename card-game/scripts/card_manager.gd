@@ -66,12 +66,15 @@ func apply_buffs(player_id: int) -> void:
 		return
 	var smoke_bonus := PlayerDataManager.get_smoking(player_id)
 	var drink_penalty := PlayerDataManager.get_drink_penalty(player_id)
+	var drink_bonus := PlayerDataManager.get_drink_bonus(player_id)
 	for card in hand.cards:
 		var target := card.base_rank
 		if card.suit == Card.Suit.SMOKE:
 			target += smoke_bonus
-		if card.suit != Card.Suit.ALK:
-			target = maxi(target - drink_penalty, 0)
+		if card.suit == Card.Suit.ALK:
+			target += drink_bonus
+		else:
+			target = maxi(target - drink_penalty, mini(card.base_rank, 1))
 		if card.rank != target:
 			card.rank = target
 			card.apply_modifiers()
@@ -79,10 +82,12 @@ func apply_buffs(player_id: int) -> void:
 func load_player_decks():
 	var match_number := DialogueManager.upcoming_match()
 	var min_rank := Missions.lowest_rank(match_number)
+	var player_cards: Array[Card]
 	if Missions.deck_cards(match_number, 0).is_empty() and PlayerDataManager.has_active_deck():
-		player_deck = Deck.new(_lock_suits(_raise_low_ranks(PlayerDataManager.active_deck_copy(), min_rank), match_number))
+		player_cards = _lock_suits(_raise_low_ranks(PlayerDataManager.active_deck_copy(), min_rank), match_number)
 	else:
-		player_deck = Deck.new(_mission_cards(match_number, 0, Card.Owner.HUMAN))
+		player_cards = _mission_cards(match_number, 0, Card.Owner.HUMAN)
+	player_deck = Deck.new(_add_bonus_cards(player_cards, match_number))
 	AI_1_deck = Deck.new(_mission_cards(match_number, 1, Card.Owner.AI_1))
 	AI_2_deck = Deck.new(_mission_cards(match_number, 2, Card.Owner.AI_2))
 	print("Decks generated")
@@ -101,6 +106,24 @@ func _mission_cards(match_number: int, seat: int, owner: Card.Owner) -> Array[Ca
 	cards.append_array(_lock_suits(_raise_low_ranks(given, min_rank), match_number))
 	cards.shuffle()
 	return cards
+
+func _add_bonus_cards(cards: Array[Card], match_number: int) -> Array[Card]:
+	var bonus: Array = Missions.bonus_cards(match_number)
+	if bonus.is_empty():
+		return cards
+	var result: Array[Card] = cards.duplicate()
+	var free_slots: Array[int] = []
+	for i in result.size():
+		if result[i].suit != Card.Suit.ALK and result[i].suit != Card.Suit.SMOKE:
+			free_slots.append(i)
+	free_slots.shuffle()
+	for entry in bonus:
+		var card := Card.new(entry[0], entry[1], Card.Owner.HUMAN, false)
+		if free_slots.is_empty():
+			result.append(card)
+		else:
+			result[free_slots.pop_back()] = card
+	return result
 
 func _raise_low_ranks(cards: Array[Card], min_rank: int) -> Array[Card]:
 	var result: Array[Card] = []

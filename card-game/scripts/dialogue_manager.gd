@@ -6,8 +6,8 @@ signal closed
 const SPEECH_BUBBLE := preload("res://scenes/speech_bubble.tscn")
 const SEAT_COUNT := 3
 const SEAT_OFFSETS := [Vector2(-276, -18), Vector2(66, 0), Vector2(-66, 0)]
-const TRIGGERS := ["match_start", "round_start", "turn_start", "turn_end", "round_end", "match_end", "zero_beats_nine"]
-const ONCE_PER_MATCH_TRIGGERS := ["zero_beats_nine"]
+const TRIGGERS := ["match_start", "round_start", "turn_start", "turn_end", "round_end", "match_end", "zero_beats_nine", "zero_played", "alk_played"]
+const ONCE_PER_MATCH_TRIGGERS := ["zero_beats_nine", "zero_played", "alk_played"]
 const ROUND_TRIGGERS := ["round_start", "turn_start", "turn_end", "round_end"]
 const TURN_TRIGGERS := ["turn_start", "turn_end"]
 const TRIGGER_ALIASES := {"start": "match_start", "end": "match_end"}
@@ -20,7 +20,7 @@ const SPEAKER_PITCH := {0: 1.0, 1: 0.85, 2: 1.2, 3: 0.7}
 const AUTO_ADVANCE_HOLD := 1.5
 const DIALOGUE_LAYER := 100
 const LINES_PATH := "res://dialogue_lines.yaml"
-const CUES := ["show_deck", "deal_cards", "show_trump", "show_won_turns", "show_one_turns", "show_life_cards", "show_purse", "show_cigs", "ai_one_smokes", "ai_two_smokes", "ai_1_pays", "ai_2_pays", "you_pay", "unlock_cig_automat", "ai_1_buys_cigarettes"]
+const CUES := ["show_deck", "deal_cards", "show_trump", "show_won_turns", "show_one_turns", "show_life_cards", "show_purse", "show_cigs", "ai_one_smokes", "ai_two_smokes", "ai_1_pays", "ai_2_pays", "you_pay", "unlock_cig_automat", "ai_1_buys_cigarettes", "show_drinks"]
 const PAY_CUES := {"you_pay": 0, "ai_1_pays": 1, "ai_2_pays": 2}
 const GIVE_CIGS_CUE := "give_player_cigs"
 
@@ -84,6 +84,8 @@ func _enqueue(player_id: int, text: String, cue: String) -> void:
 		if cue != "":
 			for cue_name in cue.split(","):
 				GameManager.run_cue(cue_name)
+		return
+	if PlayerDataManager.cig_machine_unlocked and cue == "unlock_cig_automat":
 		return
 	var was_open := is_open()
 	_queue.append([player_id, text, cue])
@@ -306,7 +308,12 @@ func _queue_lines(spoken_lines: Array) -> void:
 			return
 		_enqueue(line[0], line[1], line[3])
 
-func _on_card_played(_player_id: int, _card: Card) -> void:
+func _on_card_played(_player_id: int, card: Card) -> void:
+	if card != null and _match_running:
+		if card.base_rank == 0:
+			_fire("zero_played")
+		if card.suit == Card.Suit.ALK:
+			_fire("alk_played")
 	var due: Array = []
 	for waiting in _waiting:
 		waiting.cards_left -= 1

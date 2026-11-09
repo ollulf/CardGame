@@ -97,6 +97,12 @@ func _build() -> void:
 
 	_collection_button = Button.new()
 	_collection_button.text = "Collection"
+	var flat_style := StyleBoxFlat.new()
+	flat_style.bg_color = Color(0.2, 0.19, 0.26)
+	flat_style.set_border_width_all(1)
+	flat_style.border_color = Color("6b6390")
+	for style_name in ["normal", "hover", "pressed", "disabled", "focus"]:
+		_collection_button.add_theme_stylebox_override(style_name, flat_style)
 	_collection_button.focus_mode = Control.FOCUS_NONE
 	_collection_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_collection_button.size = Vector2(120, 32)
@@ -147,11 +153,14 @@ func roll_cards() -> Array[Card]:
 	var min_rank: int = clampi(_booster.get("min_rank", MIN_RANK), 0, MAX_RANK)
 	var max_rank: int = clampi(_booster.get("max_rank", MAX_RANK), min_rank, MAX_RANK)
 	var smoke_count := mini(_roll_smoke_count(), count)
+	var alk_count := mini(_roll_count("alk_min", "alk_max"), count - smoke_count)
 	var result: Array[Card] = []
 	for i in count:
 		var suit: Card.Suit
 		if i < smoke_count:
 			suit = Card.Suit.SMOKE
+		elif i < smoke_count + alk_count:
+			suit = Card.Suit.ALK
 		elif _booster.get("any_suit", false):
 			suit = _roll_any_suit()
 		else:
@@ -169,8 +178,12 @@ func _roll_any_suit() -> Card.Suit:
 
 
 func _roll_smoke_count() -> int:
-	var low: int = _booster.get("smoke_min", 0)
-	var high: int = _booster.get("smoke_max", 0)
+	return _roll_count("smoke_min", "smoke_max")
+
+
+func _roll_count(min_key: String, max_key: String) -> int:
+	var low: int = _booster.get(min_key, 0)
+	var high: int = _booster.get(max_key, 0)
 	if high <= 0:
 		return 0
 	return randi_range(low, high)
@@ -235,6 +248,7 @@ func _rip_open() -> void:
 		visual.z_index = 1
 		add_child(visual)
 		visual.setup(cards[i], true)
+		visual.show_back()
 		visual.position = pack_center - CARD_SIZE / 2.0
 		visual.scale = Vector2.ONE * 0.6
 		visual.modulate.a = 0.0
@@ -258,12 +272,12 @@ func flip(index: int) -> void:
 	if state != State.REVEAL or flipped[index]:
 		return
 	flipped[index] = true
+	Sfx.play_card_flip()
 	var visual := card_visuals[index]
 	var turn := create_tween()
 	turn.tween_property(visual, "scale:x", 0.0, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	turn.tween_callback(func() -> void:
-		visual.face_down = false
-		visual.update_visuals())
+		visual.show_front())
 	turn.tween_property(visual, "scale:x", CARD_SCALE, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	if not flipped.has(false):
 		state = State.COLLECTING

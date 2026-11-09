@@ -10,6 +10,9 @@ const HOVER_CARD_SOUND := preload("res://sounds/hover_card.wav")
 const HOVER_CARD_DB := -12.0
 const HOVER_CARD_PITCH_VARIATION := 0.05
 const HOVER_CARD_INTERVAL_MSEC := 50
+const CARD_FLIP_SOUND := preload("res://sounds/card_flip.wav")
+const CARD_FLIP_DB := -8.0
+const CARD_FLIP_PITCH_VARIATION := 0.12
 const TYPE_SOUND := preload("res://sounds/type_sound.wav")
 const TYPE_SOUND_DB := -14.0
 const TYPE_PITCH_VARIATION := 0.06
@@ -195,6 +198,9 @@ func play_type(base_pitch: float) -> void:
 
 func play_win_card() -> void:
 	play(WIN_CARD_SOUND, WIN_CARD_PITCH_VARIATION, WIN_CARD_DB)
+
+func play_card_flip() -> void:
+	play(CARD_FLIP_SOUND, CARD_FLIP_PITCH_VARIATION, CARD_FLIP_DB)
 
 func play_button() -> void:
 	play(BUTTON_SOUND, 0.05)

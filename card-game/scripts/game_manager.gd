@@ -17,12 +17,20 @@ signal send_message(text: String)
 # --- Config ---
 const MAX_TURNS := 5
 const MAX_LIVES := 2
-const TRUMP_REVEAL_TIME := 1.2
-const TURN_WINNER_SHOW_TIME := 2.5
+const TRUMP_REVEAL_TIME := 3.2
+const TURN_WINNER_SHOW_TIME := 1.5
+const TURN_FINISH_DELAY := 1.0
 const MAX_TIE_DRAWS := 5
 
 const HUMAN_ID := 0
 const PLAYER_NAMES := ["YOU","AI player 1", "AI player 2"]
+const ROUND_ORDER_LINES := {
+	0: "A *round of drinks* from *YOU*? Cheers, everybody drinks!",
+	1: "Bartender, a *round* for the whole table! Everybody drinks!",
+	2: "This *round* is on me! Bottoms up, all of you!",
+}
+const ROUND_SERVE_STAGGER := 0.25
+const ROUND_SERVE_TIME := 1.6
 
 const MOVIE_WINDOW_POSITION := Vector2i(-10000, -10000)
 const DECK_PILE_GROUP := "deck_piles"
@@ -73,6 +81,7 @@ func start_round(starting_player_id: int) -> void:
 	current_turn = 0
 	round_over = false
 	CardManager.played_cards_round.empty()
+	var tutorial_before := TutorialScript.capture_state()
 	TutorialScript.begin_round()
 	starting_player_id = TutorialScript.starter(starting_player_id)
 	await CardManager.load_player_decks()
@@ -80,6 +89,7 @@ func start_round(starting_player_id: int) -> void:
 	_intro_done = true
 	if _game_start_state.is_empty():
 		_game_start_state = _capture_state()
+		_game_start_state["tutorial"] = tutorial_before
 		_match_start_state = _game_start_state
 	_trump_pending = first_round and DialogueManager.has_cue(1, "match_start", "show_trump")
 	if first_round and DialogueManager.has_cue(1, "match_start", "show_deck"):
@@ -124,6 +134,10 @@ func run_cue(cue: String) -> void:
 		"ai_two_smokes":
 			if ai_player_2:
 				await ai_player_2.smoke()
+		"show_drinks":
+			var cigs_ui = get_tree().get_first_node_in_group("ai_cigarettes_ui")
+			if cigs_ui:
+				cigs_ui.reveal_drinks()
 		"unlock_cig_automat":
 			PlayerDataManager.unlock_cig_machine()
 		"ai_1_buys_cigarettes":
@@ -141,6 +155,28 @@ func run_cue(cue: String) -> void:
 			elif not words.is_empty() and DialogueManager.PAY_CUES.has(words[0]):
 				var amount := words[1].to_int() if words.size() > 1 else Missions.prize_money(DialogueManager.upcoming_match())
 				await _pay_prize(DialogueManager.PAY_CUES[words[0]], amount)
+
+func serve_round_of_drinks(buyer: int) -> void:
+	var speaker := buyer if buyer != HUMAN_ID else 1
+	DialogueManager.say(speaker, ROUND_ORDER_LINES[buyer])
+	var glass = get_tree().get_first_node_in_group(DrinkGlass.GROUP)
+	var servings: Array = []
+	for seat in PlayerDataManager.PLAYERS:
+		if seat == HUMAN_ID:
+			if glass:
+				glass.drink_round()
+			else:
+				PlayerDataManager.drink(seat)
+		else:
+			var ai: AIPlayer = ai_player_1 if seat == 1 else ai_player_2
+			if ai is AIPlayer:
+				servings.append(ai)
+			else:
+				PlayerDataManager.drink(seat)
+	for ai in servings:
+		await get_tree().create_timer(ROUND_SERVE_STAGGER, false).timeout
+		ai.drink()
+	await get_tree().create_timer(ROUND_SERVE_TIME, false).timeout
 
 func _pay_prize(seat: int, amount: int) -> void:
 	var pot = get_tree().get_first_node_in_group(PRIZE_POT_GROUP)
@@ -206,7 +242,8 @@ func reveal_trump() -> void:
 	await get_tree().create_timer(TRUMP_REVEAL_TIME, false).timeout
 
 func start_new_match() -> void:
-	var starting_player_id: int = get_total_loosers().pick_random()
+	var total_loosers := get_total_loosers()
+	var starting_player_id: int = total_loosers.pick_random() if not total_loosers.is_empty() else randi() % 3
 	_match_start_state = _capture_state()
 
 	for id in range(3):
@@ -221,6 +258,10 @@ func start_new_match() -> void:
 	await _auto_pay_prize()
 
 	start_round(starting_player_id)
+
+func _message_name(player_id: int) -> String:
+	return "You" if player_id == HUMAN_ID else str(PLAYER_NAMES[player_id])
+
 
 func start_new_turn(starting_player_id: int) -> void:
 	current_turn += 1
@@ -257,7 +298,7 @@ func _request_current_player() -> void:
 		return
 
 	var player_id := play_order[current_play_index]
-	message(str(PLAYER_NAMES[player_id]) + "'s turn")
+	message("Your turn" if player_id == HUMAN_ID else str(PLAYER_NAMES[player_id]) + "'s turn")
 	emit_signal("request_play_card", player_id)
 
 # Called by human & AI controllers
@@ -268,7 +309,7 @@ func play_callback(player_id: int) -> void:
 
 func _finish_turn() -> void:
 	var token := round_token
-	await get_tree().create_timer(2.0, false).timeout
+	await get_tree().create_timer(TURN_FINISH_DELAY, false).timeout
 	await DialogueManager.wait_until_idle()
 	if token != round_token:
 		return
@@ -276,7 +317,7 @@ func _finish_turn() -> void:
 	var winner : Card.Owner = CardManager.get_turn_winner()
 	CardManager.highlight_turn_winner()
 
-	message(str(PLAYER_NAMES[winner]) + " won the turn")
+	message(_message_name(winner) + " won the turn")
 
 	await get_tree().create_timer(TURN_WINNER_SHOW_TIME, false).timeout
 	if token != round_token:
@@ -307,10 +348,10 @@ func _end_round(loosers: Array[int]) -> void:
 	notify_round_loosers(last_round_loosers)
 
 	if(last_round_loosers.size() == 1):
-		message(str(PLAYER_NAMES[last_round_loosers[0]]) + " lost the round!")
+		message(_message_name(last_round_loosers[0]) + " lost the round!")
 	else:
-		message(str(PLAYER_NAMES[last_round_loosers[0]]) + " and " +
-		str(PLAYER_NAMES[last_round_loosers[1]]) + " lost the round!")
+		message(_message_name(last_round_loosers[0]) + " and " +
+		_message_name(last_round_loosers[1]) + " lost the round!")
 
 	round_over = true
 	round_finished.emit(last_round_loosers)
@@ -346,6 +387,17 @@ func start_over() -> void:
 	_restore_state(_game_start_state)
 	starting_over = true
 	start_new_match()
+
+func resume_run(match_state: Dictionary, game_state: Dictionary, between_matches: bool) -> void:
+	_intro_done = true
+	_game_start_state = game_state
+	_restore_state(match_state)
+	_match_start_state = match_state
+	if between_matches:
+		new_match_started.emit()
+		match_finished.emit(last_match_loosers.duplicate())
+	else:
+		start_new_match()
 
 func current_match() -> int:
 	return _match_start_state.get("match", 1)
@@ -399,6 +451,9 @@ func skip_tutorial(cues: Array) -> void:
 	for cue in cues:
 		run_cue(cue)
 	ai_player_1.lost_rounds = MAX_LIVES - 1
+	var life_ui = get_tree().get_first_node_in_group(WON_ROUNDS_UI_GROUP)
+	if life_ui:
+		life_ui.sync_lost_lifes(1)
 	DialogueManager.skip_all(false)
 	await skip_round(1)
 

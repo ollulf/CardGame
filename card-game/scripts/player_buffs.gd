@@ -18,7 +18,8 @@ func _ready() -> void:
 		chips[player_id] = chip
 		chip.visible = false
 		_place_chip(player_id, chip, 0)
-		var drink_chip := _build_chip(player_id, DRINK_ICON, "-0", DEBUFF_COLOR, "")
+		var drink_chip := _build_chip(player_id, DRINK_ICON, "+0", BUFF_COLOR, "others -0", "· match")
+		drink_chip.get_child(0).get_node("Count").add_theme_color_override("font_color", DEBUFF_COLOR)
 		drink_chip.name = "Drink_%d" % player_id
 		drink_chips[player_id] = drink_chip
 		drink_chip.visible = false
@@ -53,7 +54,7 @@ func _place_chip(player_id: int, chip: PanelContainer, slot: int) -> void:
 			chip.offset_top = AI_OFFSET.y - shift
 			chip.offset_bottom = AI_OFFSET.y + chip_size.y - shift
 
-func _build_chip(player_id: int, icon_texture: Texture2D, bonus_text: String, bonus_color: Color, count_text: String) -> PanelContainer:
+func _build_chip(player_id: int, icon_texture: Texture2D, bonus_text: String, bonus_color: Color, count_text: String, duration_text := "· round") -> PanelContainer:
 	var chip := PanelContainer.new()
 	chip.name = "Buff_%d" % player_id
 	chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -79,7 +80,7 @@ func _build_chip(player_id: int, icon_texture: Texture2D, bonus_text: String, bo
 	row.add_child(_make_label("Bonus", bonus_text, bonus_color))
 	if count_text != "":
 		row.add_child(_make_label("Count", count_text, Color.WHITE))
-	row.add_child(_make_label("Duration", "· round", MUTED_COLOR))
+	row.add_child(_make_label("Duration", duration_text, MUTED_COLOR))
 	return chip
 
 func _make_label(label_name: String, text: String, color: Color) -> Label:
@@ -120,10 +121,11 @@ func _refresh_drink_chip(player_id: int) -> void:
 		_hide_chip(chip)
 		return
 	var label: Label = chip.get_child(0).get_node("Bonus")
-	var text := "-%d" % penalty
+	var text := "+%d" % PlayerDataManager.get_drink_bonus(player_id)
 	if label.text == text and chip.visible:
 		return
 	label.text = text
+	chip.get_child(0).get_node("Count").text = "others -%d" % penalty
 	_pop_chip(chip)
 
 func _pop_chip(chip: PanelContainer) -> void:

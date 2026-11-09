@@ -141,9 +141,11 @@ func _release_press(mouse_position: Vector2) -> void:
 
 	hovered_card = null
 
-	if CardManager.is_in_play_zone(mouse_position) and human_player.can_play(card_visual.card):
-		human_player.try_play_card(card_visual.card)
-		return
+	if CardManager.is_in_play_zone(mouse_position):
+		if human_player.can_play(card_visual.card):
+			human_player.try_play_card(card_visual.card)
+			return
+		human_player.explain_refusal(card_visual.card)
 
 	_return_to_hand(card_visual)
 

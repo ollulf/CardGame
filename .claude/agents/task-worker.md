@@ -34,7 +34,7 @@ You are working on **Rauchen Game**, a Godot 4.5 card game (the Godot project li
 5. Only if your prompt says **"Visual result page: yes"**, build and publish a short result page (below). Otherwise make no HTML page and publish nothing.
 
 ## Time limit
-Your prompt gives a `Time limit: <N> min` (15 if missing). Note the time when you start (`date +%s`) and check it between steps.
+Your prompt gives a `Time limit: <N> min` (45 if missing). Note the time when you start (`date +%s`) and check it between steps.
 - **Plan first.** After reading the code, if the task clearly can't be done well within the limit, report `needs-time` right away instead of starting.
 - **At the limit, stop**, even mid-task: commit your work in progress (message starting with `WIP:`), skip the result page, and report `needs-time`. Also stop when the manager sends you "Time limit reached".
 - `needs-time` report: `OUTCOME: needs-time`, plus `TIME_REQUEST: <extra minutes>` and `TIME_REASON: <short bullets: what's done, what's left, why>`.

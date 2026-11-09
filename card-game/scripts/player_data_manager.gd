@@ -31,13 +31,16 @@ const STARTING_MONEY := 15
 const CIGARETTE_PACK_PRICE := 5
 const CIGARETTES_PER_PACK := 8
 const DRINK_PENALTY_PER_ROUND := 1
-const DRINK_ROUND_PRICE := 3
+const DRINK_BONUS_PER_DRINK := 1
+const DRINK_ROUND_PRICE := 5
 const DRINK_ROUND_FROM_MATCH := 3
+const DRINKING_BOOSTER_FROM_MATCH := 4
 const BOOSTERS: Array[Dictionary] = [
 	{"name": "Smoke Booster", "price": 8, "cards": 5, "min_rank": 1, "max_rank": 9, "smoke_min": 2, "smoke_max": 3, "contents": "2-3 Smoke + basic suits"},
 	{"name": "Standard Booster", "price": 5, "cards": 8, "min_rank": 1, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "contents": "Basic suits only"},
 	{"name": "Premium Booster", "price": 12, "cards": 8, "min_rank": 5, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "contents": "Basic suits, ranks 5-9"},
 	{"name": "Zero Booster", "price": 7, "cards": 2, "min_rank": 0, "max_rank": 0, "smoke_min": 0, "smoke_max": 0, "contents": "Two 0 cards, any suit", "any_suit": true, "from_match": 3},
+	{"name": "Drinking Booster", "price": 8, "cards": 5, "min_rank": 1, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "alk_min": 2, "alk_max": 3, "contents": "2-3 Drinking + basic suits", "from_match": DRINKING_BOOSTER_FROM_MATCH},
 ]
 
 var smoking_stacks := {
@@ -101,6 +104,9 @@ func get_drinking(player_id: int) -> int:
 func get_drink_penalty(player_id: int) -> int:
 	return get_drinking(player_id) * DRINK_PENALTY_PER_ROUND
 
+func get_drink_bonus(player_id: int) -> int:
+	return get_drinking(player_id) * DRINK_BONUS_PER_DRINK
+
 func clear_drinking() -> void:
 	for pid in PLAYERS:
 		if drinking_levels[pid] == 0:
@@ -112,11 +118,7 @@ func is_round_of_drinks_available() -> bool:
 	return DialogueManager.upcoming_match() >= DRINK_ROUND_FROM_MATCH
 
 func buy_round_of_drinks() -> bool:
-	if not is_round_of_drinks_available() or not spend(DRINK_ROUND_PRICE):
-		return false
-	for pid in PLAYERS:
-		drink(pid)
-	return true
+	return is_round_of_drinks_available() and spend(DRINK_ROUND_PRICE)
 
 func clear_smoking() -> void:
 	for pid in PLAYERS:

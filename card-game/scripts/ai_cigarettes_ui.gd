@@ -2,11 +2,13 @@ extends CanvasLayer
 
 const PACK_ICON := preload("res://sprites/Cigarettes_icon.png")
 const EMPTY_COLOR := Color("d9645a")
+const BUDGET_COLOR := Color("f2d16b")
 const AI_OFFSET := Vector2(6.0, 122.0)
 const SEATS := [1, 2]
 
 var chips := {}
 var _hidden_by_cue := false
+var _drinks_hidden_by_cue := false
 
 func _ready() -> void:
 	add_to_group("ai_cigarettes_ui")
@@ -15,6 +17,7 @@ func _ready() -> void:
 		chips[seat] = chip
 		_place_chip(seat, chip)
 	Missions.cigarettes_changed.connect(_on_cigarettes_changed)
+	Missions.budget_changed.connect(_on_cigarettes_changed)
 	GameManager.new_match_started.connect(_on_new_match_started)
 	GameManager.round_started.connect(_refresh_all)
 	_on_new_match_started()
@@ -35,7 +38,14 @@ func _on_new_match_started() -> void:
 	var pack: CigPack = InteractionManager.cigPack
 	var pack_shown := pack != null and pack.cig_amount > 0
 	_hidden_by_cue = DialogueManager.upcoming_match_uses_cue("show_cigs") and not pack_shown
+	_drinks_hidden_by_cue = DialogueManager.upcoming_match_uses_cue("show_drinks")
 	visible = not _hidden_by_cue
+	_refresh_all()
+
+func reveal_drinks() -> void:
+	if not _drinks_hidden_by_cue:
+		return
+	_drinks_hidden_by_cue = false
 	_refresh_all()
 
 func _refresh_all() -> void:
@@ -47,10 +57,20 @@ func _refresh(seat: int) -> void:
 	if chip == null:
 		return
 	var left := Missions.cigarettes_left(seat)
-	chip.visible = left != Missions.UNLIMITED
 	var count: Label = chip.get_node("Row/Count")
 	count.text = "x%d" % maxi(left, 0)
 	count.add_theme_color_override("font_color", EMPTY_COLOR if left == 0 else Color.WHITE)
+	var show_cigs := left != Missions.UNLIMITED
+	chip.get_node("Row/Icon").visible = show_cigs
+	count.visible = show_cigs
+	var show_budget := Missions.budget(DialogueManager.upcoming_match(), seat) > 0 and not _drinks_hidden_by_cue
+	var budget_left := Missions.budget_left(seat)
+	var budget_label: Label = chip.get_node("Row/Budget")
+	budget_label.text = "%d$" % budget_left
+	budget_label.add_theme_color_override("font_color", EMPTY_COLOR if budget_left < PlayerDataManager.DRINK_ROUND_PRICE else BUDGET_COLOR)
+	budget_label.visible = show_budget
+	chip.visible = show_cigs or show_budget
+	_fit_chip(seat, chip)
 
 func _on_cigarettes_changed(seat: int) -> void:
 	_refresh(seat)
@@ -64,6 +84,9 @@ func _on_cigarettes_changed(seat: int) -> void:
 
 func _place_chip(seat: int, chip: PanelContainer) -> void:
 	add_child(chip)
+	_fit_chip(seat, chip)
+
+func _fit_chip(seat: int, chip: PanelContainer) -> void:
 	var chip_size := chip.get_combined_minimum_size()
 	if seat == 1:
 		chip.set_anchors_preset(Control.PRESET_TOP_LEFT)
@@ -90,6 +113,7 @@ func _build_chip(seat: int) -> PanelContainer:
 	chip.add_child(row)
 
 	var icon := TextureRect.new()
+	icon.name = "Icon"
 	icon.texture = PACK_ICON
 	icon.custom_minimum_size = Vector2(12, 16)
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -105,4 +129,11 @@ func _build_chip(seat: int) -> PanelContainer:
 	count.add_theme_font_size_override("font_size", 14)
 	count.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(count)
+
+	var budget_label := Label.new()
+	budget_label.name = "Budget"
+	budget_label.text = "0$"
+	budget_label.add_theme_font_size_override("font_size", 14)
+	budget_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_child(budget_label)
 	return chip

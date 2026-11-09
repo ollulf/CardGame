@@ -1,14 +1,18 @@
 extends Node
 
 signal cigarettes_changed(seat: int)
+signal budget_changed(seat: int)
 
 const MISSIONS_PATH := "res://missions.yaml"
 const ANY := 0
 const DECK_SIZE := 21
 const DECK_KEYS := ["you_deck", "ai_one_deck", "ai_two_deck"]
 const CIGARETTE_KEYS := {1: "ai_one_cigarettes", 2: "ai_two_cigarettes"}
+const BUDGET_KEYS := {1: "ai_one_budget", 2: "ai_two_budget"}
+const BONUS_CARDS_KEY := "you_bonus_cards"
+const CARD_LIST_KEYS := ["you_deck", "ai_one_deck", "ai_two_deck", "you_bonus_cards"]
 const PRIZE_KEY := "prize_money"
-const ALLOWED_KEYS := ["match", "you_deck", "ai_one_deck", "ai_two_deck", "ai_one_cigarettes", "ai_two_cigarettes", "prize_money"]
+const ALLOWED_KEYS := ["match", "you_deck", "ai_one_deck", "ai_two_deck", "ai_one_cigarettes", "ai_two_cigarettes", "ai_one_budget", "ai_two_budget", "you_bonus_cards", "prize_money"]
 const SUIT_CODES := {
 	"H": Card.Suit.HEARTS,
 	"D": Card.Suit.DIAMONDS,
@@ -25,6 +29,7 @@ const LAST_MATCH := 5
 var matches: Dictionary = load_missions(MISSIONS_PATH)
 var _cigarettes_used := {}
 var _cigarettes_added := {}
+var _budget_spent := {}
 
 func _ready() -> void:
 	GameManager.new_match_started.connect(_on_new_match_started)
@@ -66,9 +71,30 @@ func add_cigarettes(seat: int, amount: int) -> void:
 	_cigarettes_added[seat] = _cigarettes_added.get(seat, 0) + amount
 	cigarettes_changed.emit(seat)
 
+func bonus_cards(match_number: int) -> Array:
+	return _lookup(match_number, BONUS_CARDS_KEY, [])
+
+func budget(match_number: int, seat: int) -> int:
+	if not BUDGET_KEYS.has(seat):
+		return 0
+	return _lookup(match_number, BUDGET_KEYS[seat], 0)
+
+func budget_left(seat: int) -> int:
+	return maxi(0, budget(DialogueManager.upcoming_match(), seat) - _budget_spent.get(seat, 0))
+
+func spend_budget(seat: int, amount: int) -> bool:
+	if amount < 0 or budget_left(seat) < amount:
+		return false
+	_budget_spent[seat] = _budget_spent.get(seat, 0) + amount
+	budget_changed.emit(seat)
+	return true
+
 func _on_new_match_started() -> void:
 	_cigarettes_used.clear()
 	_cigarettes_added.clear()
+	_budget_spent.clear()
+	for seat in BUDGET_KEYS:
+		budget_changed.emit(seat)
 
 func _lookup(match_number: int, key: String, fallback):
 	for wanted in [match_number, ANY]:
@@ -80,13 +106,13 @@ func _lookup(match_number: int, key: String, fallback):
 static func load_missions(path: String) -> Dictionary:
 	if not FileAccess.file_exists(path):
 		return {}
-	var yaml := YamlLite.parse_file(path, ["match"], DECK_KEYS)
+	var yaml := YamlLite.parse_file(path, ["match"], CARD_LIST_KEYS)
 	return _collect(yaml)
 
 static func parse_text(text: String) -> Dictionary:
 	var yaml := YamlLite.new()
 	yaml.entry_keys = ["match"]
-	yaml.raw_keys = DECK_KEYS
+	yaml.raw_keys = CARD_LIST_KEYS
 	yaml.parse(text, "missions.yaml")
 	return _collect(yaml)
 
@@ -118,7 +144,7 @@ static func _clean_match(raw, line: int):
 			push_error("Missions line %d: unknown key '%s' (allowed: %s)" % [line, key, ", ".join(ALLOWED_KEYS)])
 			return null
 	var settings := {}
-	for key in DECK_KEYS:
+	for key in CARD_LIST_KEYS:
 		if not raw.has(key) or raw[key] == null:
 			continue
 		var cards = _deck(raw[key], key, line)
@@ -128,7 +154,7 @@ static func _clean_match(raw, line: int):
 			push_error("Missions line %d: %s lists %d cards, a deck holds at most %d" % [line, key, cards.size(), DECK_SIZE])
 			return null
 		settings[key] = cards
-	for key in CIGARETTE_KEYS.values() + [PRIZE_KEY]:
+	for key in CIGARETTE_KEYS.values() + BUDGET_KEYS.values() + [PRIZE_KEY]:
 		if not raw.has(key):
 			continue
 		if not raw[key] is int or raw[key] < 0:
