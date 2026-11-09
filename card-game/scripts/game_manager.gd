@@ -18,7 +18,8 @@ signal send_message(text: String)
 const MAX_TURNS := 5
 const MAX_LIVES := 2
 const TRUMP_REVEAL_TIME := 1.2
-const TURN_WINNER_SHOW_TIME := 2.5
+const TURN_WINNER_SHOW_TIME := 1.5
+const TURN_FINISH_DELAY := 1.0
 const MAX_TIE_DRAWS := 5
 
 const HUMAN_ID := 0
@@ -268,7 +269,7 @@ func play_callback(player_id: int) -> void:
 
 func _finish_turn() -> void:
 	var token := round_token
-	await get_tree().create_timer(2.0, false).timeout
+	await get_tree().create_timer(TURN_FINISH_DELAY, false).timeout
 	await DialogueManager.wait_until_idle()
 	if token != round_token:
 		return
