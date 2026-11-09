@@ -97,6 +97,12 @@ func _build() -> void:
 
 	_collection_button = Button.new()
 	_collection_button.text = "Collection"
+	var flat_style := StyleBoxFlat.new()
+	flat_style.bg_color = Color(0.2, 0.19, 0.26)
+	flat_style.set_border_width_all(1)
+	flat_style.border_color = Color("6b6390")
+	for style_name in ["normal", "hover", "pressed", "disabled", "focus"]:
+		_collection_button.add_theme_stylebox_override(style_name, flat_style)
 	_collection_button.focus_mode = Control.FOCUS_NONE
 	_collection_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_collection_button.size = Vector2(120, 32)
@@ -242,6 +248,7 @@ func _rip_open() -> void:
 		visual.z_index = 1
 		add_child(visual)
 		visual.setup(cards[i], true)
+		visual.show_back()
 		visual.position = pack_center - CARD_SIZE / 2.0
 		visual.scale = Vector2.ONE * 0.6
 		visual.modulate.a = 0.0
@@ -269,8 +276,7 @@ func flip(index: int) -> void:
 	var turn := create_tween()
 	turn.tween_property(visual, "scale:x", 0.0, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	turn.tween_callback(func() -> void:
-		visual.face_down = false
-		visual.update_visuals())
+		visual.show_front())
 	turn.tween_property(visual, "scale:x", CARD_SCALE, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	if not flipped.has(false):
 		state = State.COLLECTING
