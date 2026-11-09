@@ -86,7 +86,7 @@ texture = ExtResource("6_r2isv")
 
 [node name="Wallet" type="Area2D" parent="."]
 visible = false
-position = Vector2(1106, 606)
+position = Vector2(1090, 565)
 script = ExtResource("wallet_script")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Wallet"]
