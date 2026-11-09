@@ -104,6 +104,12 @@ func update_round_looser(looser_id : int):
 	if lost_rounds == 1 or lost_rounds == 2:
 		_life_card(looser_id, lost_rounds).split()
 
+func sync_lost_lifes(player_id: int) -> void:
+	var lost: int = GameManager.id_to_player(player_id).lost_rounds
+	for life in [1, 2]:
+		if life <= lost:
+			_life_card(player_id, life).split()
+
 func _life_card(player_id: int, life: int) -> LifeCard:
 	return get_node("Player_%d/LostRounds/Hearts_%d" % [player_id, life])
 
