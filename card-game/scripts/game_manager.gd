@@ -18,7 +18,8 @@ signal send_message(text: String)
 const MAX_TURNS := 5
 const MAX_LIVES := 2
 const TRUMP_REVEAL_TIME := 1.2
-const TURN_WINNER_SHOW_TIME := 2.5
+const TURN_WINNER_SHOW_TIME := 1.5
+const TURN_FINISH_DELAY := 1.0
 const MAX_TIE_DRAWS := 5
 
 const HUMAN_ID := 0
@@ -80,6 +81,7 @@ func start_round(starting_player_id: int) -> void:
 	current_turn = 0
 	round_over = false
 	CardManager.played_cards_round.empty()
+	var tutorial_before := TutorialScript.capture_state()
 	TutorialScript.begin_round()
 	starting_player_id = TutorialScript.starter(starting_player_id)
 	await CardManager.load_player_decks()
@@ -87,6 +89,7 @@ func start_round(starting_player_id: int) -> void:
 	_intro_done = true
 	if _game_start_state.is_empty():
 		_game_start_state = _capture_state()
+		_game_start_state["tutorial"] = tutorial_before
 		_match_start_state = _game_start_state
 	_trump_pending = first_round and DialogueManager.has_cue(1, "match_start", "show_trump")
 	if first_round and DialogueManager.has_cue(1, "match_start", "show_deck"):
@@ -264,6 +267,10 @@ func start_new_match() -> void:
 
 	start_round(starting_player_id)
 
+func _message_name(player_id: int) -> String:
+	return "You" if player_id == HUMAN_ID else str(PLAYER_NAMES[player_id])
+
+
 func start_new_turn(starting_player_id: int) -> void:
 	current_turn += 1
 
@@ -299,7 +306,7 @@ func _request_current_player() -> void:
 		return
 
 	var player_id := play_order[current_play_index]
-	message(str(PLAYER_NAMES[player_id]) + "'s turn")
+	message("Your turn" if player_id == HUMAN_ID else str(PLAYER_NAMES[player_id]) + "'s turn")
 	emit_signal("request_play_card", player_id)
 
 # Called by human & AI controllers
@@ -310,7 +317,7 @@ func play_callback(player_id: int) -> void:
 
 func _finish_turn() -> void:
 	var token := round_token
-	await get_tree().create_timer(2.0, false).timeout
+	await get_tree().create_timer(TURN_FINISH_DELAY, false).timeout
 	await DialogueManager.wait_until_idle()
 	if token != round_token:
 		return
@@ -318,7 +325,7 @@ func _finish_turn() -> void:
 	var winner : Card.Owner = CardManager.get_turn_winner()
 	CardManager.highlight_turn_winner()
 
-	message(str(PLAYER_NAMES[winner]) + " won the turn")
+	message(_message_name(winner) + " won the turn")
 
 	await get_tree().create_timer(TURN_WINNER_SHOW_TIME, false).timeout
 	if token != round_token:
@@ -349,10 +356,10 @@ func _end_round(loosers: Array[int]) -> void:
 	notify_round_loosers(last_round_loosers)
 
 	if(last_round_loosers.size() == 1):
-		message(str(PLAYER_NAMES[last_round_loosers[0]]) + " lost the round!")
+		message(_message_name(last_round_loosers[0]) + " lost the round!")
 	else:
-		message(str(PLAYER_NAMES[last_round_loosers[0]]) + " and " +
-		str(PLAYER_NAMES[last_round_loosers[1]]) + " lost the round!")
+		message(_message_name(last_round_loosers[0]) + " and " +
+		_message_name(last_round_loosers[1]) + " lost the round!")
 
 	round_over = true
 	round_finished.emit(last_round_loosers)
@@ -441,6 +448,9 @@ func skip_tutorial(cues: Array) -> void:
 	for cue in cues:
 		run_cue(cue)
 	ai_player_1.lost_rounds = MAX_LIVES - 1
+	var life_ui = get_tree().get_first_node_in_group(WON_ROUNDS_UI_GROUP)
+	if life_ui:
+		life_ui.sync_lost_lifes(1)
 	DialogueManager.skip_all(false)
 	await skip_round(1)
 

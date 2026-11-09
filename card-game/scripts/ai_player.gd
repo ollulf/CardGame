@@ -13,6 +13,9 @@ class_name AIPlayer
 @export var smoke_offset := Vector2(46.0, 6.0)
 @export var smoke_stack_step := Vector2(22.0, 26.0)
 
+const THINK_TIME_MIN := 0.8
+const THINK_TIME_MAX := 1.5
+
 @export var auto_drink: bool = true
 @export_range(0.0, 1.0) var drink_chance: float = 0.15
 @export var drink_offset := Vector2(150.0, -40.0)
@@ -174,7 +177,7 @@ func _on_request_play_card(requested_player_id: int) -> void:
 			return
 
 	# Play Delay
-	await get_tree().create_timer(3.0, false).timeout
+	await get_tree().create_timer(randf_range(THINK_TIME_MIN, THINK_TIME_MAX), false).timeout
 	await DialogueManager.wait_until_idle()
 	if token != GameManager.round_token:
 		return

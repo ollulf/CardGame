@@ -5,7 +5,7 @@ signal closed
 
 const CARD_SCENE := preload("res://scenes/Card.tscn")
 const CARD_SIZE := Vector2(60, 90)
-const DECK_CARD_SCALE := 0.65
+const DECK_CARD_SCALE := 0.6
 const COLLECTION_CARD_SCALE := 0.62
 const SUIT_ORDER: Array[Card.Suit] = [Card.Suit.HEARTS, Card.Suit.DIAMONDS, Card.Suit.SPADES, Card.Suit.CLUBS, Card.Suit.ALK, Card.Suit.SMOKE]
 const SUIT_NAMES := {

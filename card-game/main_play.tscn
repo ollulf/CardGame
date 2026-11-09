@@ -21,7 +21,7 @@
 [ext_resource type="PackedScene" path="res://scenes/deck_screen.tscn" id="deck_screen"]
 [ext_resource type="PackedScene" path="res://scenes/lose_screen.tscn" id="lose_screen"]
 [ext_resource type="PackedScene" path="res://scenes/post_fx.tscn" id="post_fx_scene"]
-[ext_resource type="Script" uid="uid://c80n6b1k87gya" path="res://scripts/player_buffs.gd" id="player_buffs_script"]
+[ext_resource type="Script" uid="uid://ctutg2fkttpql" path="res://scripts/player_buffs.gd" id="player_buffs_script"]
 [ext_resource type="Script" uid="uid://dyuahxm0drxv4" path="res://scripts/prize_pot.gd" id="prize_pot_script"]
 [ext_resource type="Script" uid="uid://blqah5u23lspk" path="res://scripts/trump_display.gd" id="trump_display_script"]
 [ext_resource type="Script" uid="uid://lc3gscm8u4vo" path="res://scripts/wallet.gd" id="wallet_script"]
@@ -86,7 +86,7 @@ texture = ExtResource("6_r2isv")
 
 [node name="Wallet" type="Area2D" parent="."]
 visible = false
-position = Vector2(1106, 606)
+position = Vector2(1090, 565)
 script = ExtResource("wallet_script")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Wallet"]

@@ -85,6 +85,8 @@ func _enqueue(player_id: int, text: String, cue: String) -> void:
 			for cue_name in cue.split(","):
 				GameManager.run_cue(cue_name)
 		return
+	if PlayerDataManager.cig_machine_unlocked and cue == "unlock_cig_automat":
+		return
 	var was_open := is_open()
 	_queue.append([player_id, text, cue])
 	if not was_open:
