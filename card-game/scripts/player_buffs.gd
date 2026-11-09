@@ -79,7 +79,7 @@ func _build_chip(player_id: int, icon_texture: Texture2D, bonus_text: String, bo
 	row.add_child(_make_label("Bonus", bonus_text, bonus_color))
 	if count_text != "":
 		row.add_child(_make_label("Count", count_text, Color.WHITE))
-	row.add_child(_make_label("Duration", "· match", MUTED_COLOR))
+	row.add_child(_make_label("Duration", "· round", MUTED_COLOR))
 	return chip
 
 func _make_label(label_name: String, text: String, color: Color) -> Label:
