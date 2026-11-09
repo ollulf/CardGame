@@ -41,7 +41,7 @@ func _ready() -> void:
 	_badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_badge.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_badge.add_theme_color_override("font_color", Color(1.0, 0.85, 0.2))
-	_badge.add_theme_font_size_override("font_size", 13)
+	_badge.add_theme_font_size_override("font_size", InteractionManager.font_px(13))
 	var style := StyleBoxFlat.new()
 	style.content_margin_left = 5
 	style.content_margin_right = 5
@@ -56,7 +56,7 @@ func _ready() -> void:
 	_tooltip.z_index = 10
 	_tooltip.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_tooltip.add_theme_color_override("font_color", Color(0.95, 0.92, 0.85))
-	_tooltip.add_theme_font_size_override("font_size", 13)
+	_tooltip.add_theme_font_size_override("font_size", InteractionManager.font_px(13))
 	var tip_style := StyleBoxFlat.new()
 	tip_style.bg_color = Color(0.08, 0.07, 0.07, 0.92)
 	tip_style.set_border_width_all(2)

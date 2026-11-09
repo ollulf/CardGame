@@ -29,11 +29,41 @@ var _touch_selected : CardVisual = null
 var _touch_play_on_release : bool = false
 
 const MOBILE_FONT_BONUS := 3
+const MOBILE_MIN_FONT := 16
+const MOBILE_MIN_BUTTON_HEIGHT := 64.0
+
+var is_phone : bool = false
 
 func _ready() -> void:
 	touch_mode = DisplayServer.is_touchscreen_available()
-	if OS.has_feature("web_android") or OS.has_feature("web_ios") or OS.has_feature("mobile"):
+	is_phone = OS.has_feature("web_android") or OS.has_feature("web_ios") or OS.has_feature("mobile")
+	if is_phone:
 		enlarge_theme_text(MOBILE_FONT_BONUS)
+		get_tree().node_added.connect(_on_node_added)
+
+func _on_node_added(node: Node) -> void:
+	if node is BaseButton:
+		_enlarge_button.call_deferred(node)
+
+func _enlarge_button(button: BaseButton) -> void:
+	if not is_instance_valid(button):
+		return
+	button.custom_minimum_size.y = maxf(button.custom_minimum_size.y, MOBILE_MIN_BUTTON_HEIGHT)
+
+func font_px(base: int) -> int:
+	return maxi(base + MOBILE_FONT_BONUS, MOBILE_MIN_FONT) if is_phone else base
+
+func uses_touch() -> bool:
+	return touch_mode or is_phone
+
+func grow_touch_shape(collision: CollisionShape2D, min_size: Vector2) -> void:
+	if not uses_touch() or collision == null or not collision.shape is RectangleShape2D:
+		return
+	var rect := collision.shape.duplicate() as RectangleShape2D
+	var scale_factor := collision.get_global_transform().get_scale().abs()
+	var wanted := min_size / scale_factor
+	rect.size = Vector2(maxf(rect.size.x, wanted.x), maxf(rect.size.y, wanted.y))
+	collision.shape = rect
 
 func enlarge_theme_text(bonus: int) -> void:
 	var theme := ThemeDB.get_project_theme()

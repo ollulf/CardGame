@@ -25,6 +25,7 @@ func _ready() -> void:
 	PlayerDataManager.money_changed.connect(_on_money_changed)
 	_on_money_changed(PlayerDataManager.money)
 	tooltip.visible = false
+	tooltip.add_theme_font_size_override("font_size", InteractionManager.font_px(13))
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
 	add_to_group("wallet")

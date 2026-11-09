@@ -9,6 +9,7 @@ var _base_position: Vector2
 func _ready() -> void:
 	
 	_base_position = sprite.position
+	InteractionManager.grow_touch_shape($CollisionShape2D, Vector2(60, 84))
 
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)

@@ -50,6 +50,9 @@ var _pending_rebuild := false
 var _deck_cells := {}
 var _stack_cells := {}
 var _flights: Array[Dictionary] = []
+var _touch_pick: Control = null
+
+const TOUCH_LIFT := 10.0
 
 
 func _ready() -> void:
@@ -176,7 +179,7 @@ func _label(text: String, font_size: int, color: Color) -> Label:
 	var label := Label.new()
 	label.text = text
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_font_size_override("font_size", InteractionManager.font_px(font_size))
 	label.add_theme_color_override("font_color", color)
 	return label
 
@@ -190,6 +193,7 @@ func _queue_rebuild() -> void:
 
 func _rebuild() -> void:
 	_pending_rebuild = false
+	_touch_pick = null
 	_deck_cells.clear()
 	_stack_cells.clear()
 	_rebuild_deck()
@@ -417,6 +421,8 @@ func _on_cell_unhovered(cell: Control) -> void:
 func _on_deck_cell_input(event: InputEvent, card: Card, cell: Control) -> void:
 	if _is_left_click(event):
 		accept_event()
+		if not _confirm_touch_pick(cell, card):
+			return
 		if PlayerDataManager.move_to_collection(card):
 			_fly_card(cell, card, false)
 
@@ -424,8 +430,34 @@ func _on_deck_cell_input(event: InputEvent, card: Card, cell: Control) -> void:
 func _on_collection_cell_input(event: InputEvent, card: Card, cell: Control) -> void:
 	if _is_left_click(event):
 		accept_event()
+		if not _confirm_touch_pick(cell, card):
+			return
 		if PlayerDataManager.move_to_deck(card):
 			_fly_card(cell, card, true)
+
+
+func _confirm_touch_pick(cell: Control, card: Card) -> bool:
+	if not InteractionManager.uses_touch():
+		return true
+	if _touch_pick == cell:
+		_clear_touch_pick()
+		return true
+	_clear_touch_pick()
+	_touch_pick = cell
+	_on_cell_hovered(cell, card)
+	cell.position.y -= TOUCH_LIFT
+	cell.set_meta("touch_lifted", true)
+	Sfx.play_hover_card()
+	return false
+
+
+func _clear_touch_pick() -> void:
+	if is_instance_valid(_touch_pick):
+		if _touch_pick.has_meta("touch_lifted"):
+			_touch_pick.position.y += TOUCH_LIFT
+			_touch_pick.remove_meta("touch_lifted")
+		_on_cell_unhovered(_touch_pick)
+	_touch_pick = null
 
 
 func _is_left_click(event: InputEvent) -> bool:
@@ -434,7 +466,10 @@ func _is_left_click(event: InputEvent) -> bool:
 
 func _show_card(card: Card) -> void:
 	if card == null:
-		_card_info.text = "Hover a card to see it here.\nClick a card to move it between your deck and your cards."
+		if InteractionManager.uses_touch():
+			_card_info.text = "Tap a card to see it here.\nTap it again to move it between your deck and your cards."
+		else:
+			_card_info.text = "Hover a card to see it here.\nClick a card to move it between your deck and your cards."
 		return
 	var lines: Array[String] = ["%s %d" % [SUIT_NAMES[card.suit], card.base_rank]]
 	match card.suit:

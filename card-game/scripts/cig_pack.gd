@@ -23,6 +23,7 @@ func _ready() -> void:
 	InteractionManager.cigPack = self
 	
 	_base_position = sprite.position
+	InteractionManager.grow_touch_shape($CollisionShape2D, Vector2(84, 100))
 
 	if normal_texture != null:
 		sprite.texture = normal_texture

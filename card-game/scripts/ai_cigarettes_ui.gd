@@ -126,14 +126,14 @@ func _build_chip(seat: int) -> PanelContainer:
 	var count := Label.new()
 	count.name = "Count"
 	count.text = "x0"
-	count.add_theme_font_size_override("font_size", 14)
+	count.add_theme_font_size_override("font_size", InteractionManager.font_px(14))
 	count.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(count)
 
 	var budget_label := Label.new()
 	budget_label.name = "Budget"
 	budget_label.text = "0$"
-	budget_label.add_theme_font_size_override("font_size", 14)
+	budget_label.add_theme_font_size_override("font_size", InteractionManager.font_px(14))
 	budget_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(budget_label)
 	return chip

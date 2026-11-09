@@ -9,7 +9,8 @@ class_name HandVisualisation
 @export var cigarette_slots: Array[Control] = []
 
 const MAX_CIGARETTES := 3
-const PARK_OFFSET := Vector2(150.0, 130.0)
+const PARK_OFFSET := Vector2(270.0, 100.0)
+const PARK_HIT_SIZE := Vector2(150.0, 120.0)
 const PARK_HIT_MARGIN := Vector2(20.0, 20.0)
 
 # Store actual Cigarette nodes we hold
@@ -49,7 +50,7 @@ func is_parked_hit(screen_pos: Vector2) -> bool:
 	if not InteractionManager.touch_mode:
 		return false
 	var vs := get_viewport().get_visible_rect().size
-	return Rect2(vs - PARK_OFFSET - PARK_HIT_MARGIN, PARK_OFFSET + PARK_HIT_MARGIN).has_point(screen_pos)
+	return Rect2(vs - PARK_OFFSET - PARK_HIT_MARGIN, PARK_HIT_SIZE + PARK_HIT_MARGIN).has_point(screen_pos)
 
 # --- Inventory / actions ---
 

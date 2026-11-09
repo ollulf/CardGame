@@ -88,7 +88,7 @@ func _make_label(label_name: String, text: String, color: Color) -> Label:
 	label.name = label_name
 	label.text = text
 	label.add_theme_color_override("font_color", color)
-	label.add_theme_font_size_override("font_size", 14)
+	label.add_theme_font_size_override("font_size", InteractionManager.font_px(14))
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return label
 
