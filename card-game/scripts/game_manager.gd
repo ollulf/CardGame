@@ -441,6 +441,9 @@ func skip_tutorial(cues: Array) -> void:
 	for cue in cues:
 		run_cue(cue)
 	ai_player_1.lost_rounds = MAX_LIVES - 1
+	var life_ui = get_tree().get_first_node_in_group(WON_ROUNDS_UI_GROUP)
+	if life_ui:
+		life_ui.sync_lost_lifes(1)
 	DialogueManager.skip_all(false)
 	await skip_round(1)
 
