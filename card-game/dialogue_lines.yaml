@@ -150,14 +150,11 @@ match: 3
 			cue: show_drinks
 			1: From now on there are *drinking cards* in the decks, the ones with the *glass*.
 			2: Just like *smoking cards*, they are *always trump*.
-			1: *YOU* have *2 drinks* this match. Click your *glass* to take one.
 			2: And we slipped *3 drinking cards* into *YOUR* deck, just for this match.
+			1: Drinks come from the *bar*: a *Round of Drinks* costs *$5*.
+			2: Then *everybody* at the table has to *drink*, whether they like it or not.
 			2: A drink gives *all* your *drinking cards +1*, but *all* your *other cards -1*.
-			1: And it lasts the *whole match*, not just the round. Drink twice, it stacks!
-			cue: ai_one_drinks
-			1: Like this. Cheers!
-			2: One more thing: the *bar* sells a *Round of Drinks* for *$5*.
-			1: Then *everybody* at the table has to *drink*, and it doesn't use up a *glass*.
+			1: And it lasts the *whole match*, not just the round. Two rounds, it stacks!
 			2: The *$* next to us is our money. So watch out, *we* can order rounds too!
 
 		when: alk_played
@@ -165,15 +162,6 @@ match: 3
 			1: A *drinking card*! Somebody came thirsty.
 			2: Careful, it's *trump*, and it only gets *stronger* with every *drink*.
 			1: And everything else gets a bit *blurry*, hehe.
-
-		when: turn_start
-		round: 2
-		turn: 2
-		lines:
-			2: Okay, my *drinking cards* look good... and the rest looks bad anyway.
-			cue: ai_two_drinks
-			2: Cheers! *+1* for my glasses, *-1* for the rest.
-			1: Bold move. Let's see if it pays off.
 
 		when: match_end
 		lines:

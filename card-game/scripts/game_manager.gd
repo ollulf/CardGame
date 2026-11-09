@@ -135,18 +135,9 @@ func run_cue(cue: String) -> void:
 			if ai_player_2:
 				await ai_player_2.smoke()
 		"show_drinks":
-			var glass = get_tree().get_first_node_in_group(DrinkGlass.GROUP)
 			var cigs_ui = get_tree().get_first_node_in_group("ai_cigarettes_ui")
 			if cigs_ui:
 				cigs_ui.reveal_drinks()
-			if glass:
-				await glass.reveal()
-		"ai_one_drinks":
-			if ai_player_1:
-				await ai_player_1.drink()
-		"ai_two_drinks":
-			if ai_player_2:
-				await ai_player_2.drink()
 		"unlock_cig_automat":
 			PlayerDataManager.unlock_cig_machine()
 		"ai_1_buys_cigarettes":
@@ -184,7 +175,7 @@ func serve_round_of_drinks(buyer: int) -> void:
 				PlayerDataManager.drink(seat)
 	for ai in servings:
 		await get_tree().create_timer(ROUND_SERVE_STAGGER, false).timeout
-		ai.drink(true)
+		ai.drink()
 	await get_tree().create_timer(ROUND_SERVE_TIME, false).timeout
 
 func _pay_prize(seat: int, amount: int) -> void:

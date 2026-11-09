@@ -107,13 +107,6 @@ func get_drink_penalty(player_id: int) -> int:
 func get_drink_bonus(player_id: int) -> int:
 	return get_drinking(player_id) * DRINK_BONUS_PER_DRINK
 
-func take_drink(player_id: int) -> bool:
-	if not Missions.can_drink(player_id):
-		return false
-	Missions.use_drink(player_id)
-	drink(player_id)
-	return true
-
 func clear_drinking() -> void:
 	for pid in PLAYERS:
 		if drinking_levels[pid] == 0:
