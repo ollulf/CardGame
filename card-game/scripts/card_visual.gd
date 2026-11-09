@@ -8,6 +8,7 @@ var dragging: bool = false
 
 const RANK_INCREASED_COLOR := Color(0.4, 1.0, 0.45)
 const RANK_DECREASED_COLOR := Color(1.0, 0.4, 0.4)
+const LOCKED_COLOR := Color(0.5, 0.5, 0.5)
 const CARD_BACK := preload("res://sprites/card_backside.png")
 
 # --- Hover FX (driven externally) ---
@@ -44,6 +45,9 @@ func update_layout():
 
 func set_playable(playable: bool) -> void:
 	$PlayableOutline.visible = playable
+
+func set_locked(locked: bool) -> void:
+	modulate = LOCKED_COLOR if locked else Color.WHITE
 
 func set_winner(active: bool) -> void:
 	var outline := get_node_or_null("WinnerOutline")
