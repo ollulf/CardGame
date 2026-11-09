@@ -13,6 +13,15 @@ class_name AIPlayer
 @export var smoke_offset := Vector2(46.0, 6.0)
 @export var smoke_stack_step := Vector2(22.0, 26.0)
 
+@export var auto_drink: bool = true
+@export_range(0.0, 1.0) var drink_chance: float = 0.15
+@export var drink_offset := Vector2(150.0, -40.0)
+
+const DRINK_PIXEL_SCALE := 3.0
+const DRINK_FADE_TIME := 0.3
+const DRINK_LINGER_TIME := 0.6
+const DRINK_LEFT_IN_GLASS := 0.35
+
 var card_visuals : Array[CardVisual] = []
 var _smoke_visuals: Array[AiSmoke] = []
 
@@ -37,6 +46,41 @@ func smoke(cigarettes: int = 1) -> void:
 	_smoke_visuals.append(visual)
 	await visual.lit
 	CardManager.update_cards(cigarettes, player_id)
+
+
+func drink() -> void:
+	if not Missions.can_drink(player_id):
+		return
+	var side := 1.0 if player_id == 1 else -1.0
+	var art := DrinkArt.new()
+	art.scale = Vector2.ONE * DRINK_PIXEL_SCALE
+	art.position = Vector2(drink_offset.x * side, drink_offset.y)
+	art.z_index = 50
+	art.modulate.a = 0.0
+	add_child(art)
+	var appear := art.create_tween()
+	appear.tween_property(art, "modulate:a", 1.0, DRINK_FADE_TIME)
+	await appear.finished
+	art.sipped.connect(func(): PlayerDataManager.take_drink(player_id), CONNECT_ONE_SHOT)
+	await art.play_sip(DRINK_LEFT_IN_GLASS, side)
+	var fade := art.create_tween()
+	fade.tween_interval(DRINK_LINGER_TIME)
+	fade.tween_property(art, "modulate:a", 0.0, DRINK_FADE_TIME)
+	fade.tween_callback(art.queue_free)
+
+
+func _wants_to_drink() -> bool:
+	if not auto_drink or TutorialScript.is_scripted():
+		return false
+	if not Missions.can_drink(player_id) or hand == null:
+		return false
+	var alk_cards := 0
+	for card in hand.cards:
+		if card.suit == Card.Suit.ALK:
+			alk_cards += 1
+	if alk_cards == 0:
+		return false
+	return alk_cards >= hand.cards.size() - alk_cards or randf() < drink_chance
 
 
 func _free_smoke_slot() -> int:
@@ -85,6 +129,10 @@ func _on_request_play_card(requested_player_id: int) -> void:
 		await smoke(planned_cigarettes)
 	elif _wants_to_smoke():
 		smoke()
+	if _wants_to_drink():
+		await drink()
+		if token != GameManager.round_token:
+			return
 
 	# Play Delay
 	await get_tree().create_timer(3.0, false).timeout

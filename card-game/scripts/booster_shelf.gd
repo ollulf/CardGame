@@ -4,7 +4,7 @@ class_name BoosterShelf
 signal closed
 signal denied
 
-const PANEL_RECT := Rect2(206, 104, 740, 440)
+const PANEL_RECT := Rect2(106, 84, 940, 490)
 const ENTRY_SIZE := Vector2(222, 300)
 const ENTRY_GAP := 18.0
 const ENTRY_PADDING := Vector2(18, 16)
@@ -17,7 +17,7 @@ const SELECTED_COLOR := Color("ffcf6e")
 const DENY_COLOR := Color(1.0, 0.45, 0.4)
 const CONFIRM_TEXT := "Really?"
 const NOT_ENOUGH_MONEY_TEXT := "Not enough money"
-const PACK_COLORS: Array[Color] = [Color(0.8, 0.8, 0.84, 1), Color(0.78, 0.88, 1.0, 1), Color(1.0, 0.86, 0.6, 1), Color(0.72, 1.0, 0.78, 1)]
+const PACK_COLORS: Array[Color] = [Color(0.8, 0.8, 0.84, 1), Color(0.78, 0.88, 1.0, 1), Color(1.0, 0.86, 0.6, 1), Color(0.72, 1.0, 0.78, 1), Color(1.0, 0.7, 0.42, 1)]
 const PACK_TEXTURE := preload("res://sprites/booster_pack.png")
 const SHINE_SHADER := preload("res://shaders/booster_shine.gdshader")
 const SHADING_MAP := preload("res://sprites/booster_pack_map.png")

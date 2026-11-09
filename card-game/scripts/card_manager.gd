@@ -66,12 +66,15 @@ func apply_buffs(player_id: int) -> void:
 		return
 	var smoke_bonus := PlayerDataManager.get_smoking(player_id)
 	var drink_penalty := PlayerDataManager.get_drink_penalty(player_id)
+	var drink_bonus := PlayerDataManager.get_drink_bonus(player_id)
 	for card in hand.cards:
 		var target := card.base_rank
 		if card.suit == Card.Suit.SMOKE:
 			target += smoke_bonus
-		if card.suit != Card.Suit.ALK:
-			target = maxi(target - drink_penalty, 0)
+		if card.suit == Card.Suit.ALK:
+			target += drink_bonus
+		else:
+			target = maxi(target - drink_penalty, mini(card.base_rank, 1))
 		if card.rank != target:
 			card.rank = target
 			card.apply_modifiers()

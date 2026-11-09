@@ -116,7 +116,16 @@ match: 2
 			1: I hope you already added *smokeing cards* to your *deck*.
 			2: I hope not...
 			2: Thats going to make it harder for us, to win.
-			
+			1: Oh, and one more thing: from now on our *decks* also have *0s* in them.
+			2: Don't laugh at them. A *0* is not as *worthless* as it looks...
+			1: Shh, don't spoil it! *YOU* will see.
+
+		when: zero_played
+		lines:
+			2: There it is, the first *0* of the match!
+			1: Looks harmless, right? Just wait until somebody plays a *9*.
+			2: Hehe, I'm saying nothing.
+
 		when: round_start
 		round: 2
 		lines:
@@ -131,6 +140,43 @@ match: 2
 			2: Hehe, yes! A *0* beats a *9 or higher*, but only of the *same suit*.
 			2: So only a *trump 0* beats a *trump 9*, and a *hearts 0* cannot beat a *smoking 9*.
 			1: So the tiny ones are dangerous... I should keep mine for the big ones.
+
+match: 3
+	dialogues:
+		when: match_start
+		lines:
+			2: Okay, cigarettes are nice, but a bar game needs *drinks*!
+			cue: show_drinks
+			1: From now on there are *drinking cards* in the decks, the ones with the *glass*.
+			2: Just like *smoking cards*, they are *always trump*.
+			1: *YOU* have *2 drinks* this match. Click your *glass* to take one.
+			2: A drink gives *all* your *drinking cards +1*, but *all* your *other cards -1*.
+			1: And it lasts the *whole match*, not just the round. Drink twice, it stacks!
+			cue: ai_one_drinks
+			1: Like this. Cheers!
+
+		when: alk_played
+		lines:
+			1: A *drinking card*! Somebody came thirsty.
+			2: Careful, it's *trump*, and it only gets *stronger* with every *drink*.
+			1: And everything else gets a bit *blurry*, hehe.
+
+		when: turn_start
+		round: 2
+		turn: 2
+		lines:
+			2: Okay, my *drinking cards* look good... and the rest looks bad anyway.
+			cue: ai_two_drinks
+			2: Cheers! *+1* for my glasses, *-1* for the rest.
+			1: Bold move. Let's see if it pays off.
+
+		when: match_end
+		lines:
+			1: Phew, my *hearts 7* looked like a *5* after those drinks.
+			2: If *YOU* like drinking, check the shop next time. There is a *Drinking Booster* with *drinking cards*.
+			1: Or go to the bar and buy a *Round of Drinks* for *$3*.
+			2: Then *everybody* takes a *drink* at the start of the next match.
+			1: Everybody... including the ones without drinking cards. Hehe.
 
 match: any
 	dialogues:

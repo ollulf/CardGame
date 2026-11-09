@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=3 uid="uid://sho7nec3ufwc"]
+[gd_scene load_steps=33 format=3 uid="uid://sho7nec3ufwc"]
 
 [ext_resource type="Script" uid="uid://b1ufuvgq634xj" path="res://scripts/GameSetup.gd" id="1_yo8lh"]
 [ext_resource type="PackedScene" uid="uid://bjmm2q84dkq0v" path="res://scenes/hand_visualisation.tscn" id="2_r2isv"]
@@ -25,6 +25,8 @@
 [ext_resource type="Script" uid="uid://blqah5u23lspk" path="res://scripts/trump_display.gd" id="trump_display_script"]
 [ext_resource type="Script" uid="uid://lc3gscm8u4vo" path="res://scripts/wallet.gd" id="wallet_script"]
 [ext_resource type="Texture2D" uid="uid://5hwi7n46gelf" path="res://sprites/wallet.png" id="wallet_tex"]
+[ext_resource type="Script" path="res://scripts/drink_glass.gd" id="drink_glass_script"]
+[ext_resource type="Script" path="res://scripts/drunk_overlay.gd" id="drunk_overlay_script"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_2ja4j"]
 size = Vector2(44, 56)
@@ -169,6 +171,10 @@ text = "99"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="DrinkGlass" type="Area2D" parent="."]
+position = Vector2(965, 614)
+script = ExtResource("drink_glass_script")
+
 [node name="DeckPiles" type="Node2D" parent="."]
 
 [node name="HumanDeckPile" parent="DeckPiles" instance=ExtResource("deck_pile_scene")]
@@ -216,6 +222,9 @@ anchors_preset = 0
 [node name="PrizePot" type="Node2D" parent="."]
 position = Vector2(766, 110)
 script = ExtResource("prize_pot_script")
+
+[node name="DrunkOverlay" type="CanvasLayer" parent="."]
+script = ExtResource("drunk_overlay_script")
 
 [node name="TrumpDisplay" type="CanvasLayer" parent="."]
 visible = false
