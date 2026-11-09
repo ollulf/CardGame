@@ -89,6 +89,8 @@ func load_player_decks():
 
 func _mission_cards(match_number: int, seat: int, owner: Card.Owner) -> Array[Card]:
 	var min_rank := Missions.lowest_rank(match_number)
+	if seat == 0:
+		min_rank = 1
 	var listed: Array = Missions.deck_cards(match_number, seat)
 	var cards := generate_cards(Missions.DECK_SIZE - listed.size(), owner, min_rank)
 	if listed.is_empty():
