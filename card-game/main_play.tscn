@@ -214,6 +214,11 @@ offset_right = 1072.0
 offset_bottom = 324.0
 script = ExtResource("2_shfjk")
 player_id = 2
+lead_strong_rank = 6
+lead_strong_chance = 0.8
+safe_rank = 5
+safe_win_chance = 0.5
+bluff_chance = 0.15
 
 [node name="TableRoot" type="Control" parent="."]
 unique_name_in_owner = true

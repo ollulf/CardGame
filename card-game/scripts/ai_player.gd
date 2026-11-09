@@ -2,7 +2,7 @@ extends Player
 class_name AIPlayer
 
 # Visual settings
-@export var show_hand: bool = true
+@export var show_hand: bool = false
 
 # Layout
 @export var card_space: float = 320
@@ -22,6 +22,18 @@ const THINK_TIME_MAX := 1.5
 @export var auto_order_round: bool = true
 @export var drink_offset := Vector2(150.0, -40.0)
 @export_range(0.0, 1.0) var order_round_chance: float = 0.6
+
+@export_range(0, 9) var lead_strong_rank: int = 8
+@export_range(0.0, 1.0) var lead_strong_chance: float = 0.5
+@export_range(0, 9) var safe_rank: int = 7
+@export_range(0.0, 1.0) var safe_win_chance: float = 0.85
+@export_range(0.0, 1.0) var bluff_chance: float = 0.03
+
+const TRUMP_COST := 10.0
+const SPECIAL_COST := 0.5
+const ZERO_COST := 1.5
+const PLAYERS_PER_TRICK := 3
+const ENDGAME_TRICKS := 2
 
 const DRINK_PIXEL_SCALE := 3.0
 const DRINK_FADE_TIME := 0.3
@@ -194,67 +206,89 @@ func _on_request_play_card(requested_player_id: int) -> void:
 
 
 func choose_card() -> Card:
-	# If no lead yet, dump a random card
-	if CardManager.leading_card == null:
-		return hand.cards[randi() % hand.size()]
-
-	var winning_zero := _zero_beating_table()
-	if winning_zero != null:
-		return winning_zero
-
-	# Highest rank already played in lead suit
-	var lead_card := CardManager.leading_card
-
-	if lead_card.is_trump:
-		if hand.has_trump_card():
-			return hand.get_highest_trump_card()
-		return hand.get_lowest_card()
-
-	# Try play the highest card that follows the lead card
-	var highest_card = hand.get_random_higher_card_than(lead_card)
-	
-	if highest_card != null:
-		return highest_card
-
-	# Try play the lowest now since if we can not go over the lead card
-	var lowest_card = hand.get_lowest_card_of_suit(lead_card.suit)
-	
-	if lowest_card != null:
-		return lowest_card
-
-# --- WE DON'T HAVE TO FOLLOW THE LEADING SUIT ---
-
-	var first_trump_card = CardManager.first_trump_card
-
-# If no trump has been played and we have one play a random trump
-	if first_trump_card == null:
-		var trumps = hand.get_trump_cards()
-		if trumps.size() != 0:
-			return trumps[randi() % trumps.size()]
-		else:
-			return hand.get_lowest_card()
-
-# If there is a first played trump card we try to play over it
-	if first_trump_card != null:
-		var higher_trump_card = hand.get_random_higher_card_than(first_trump_card)
-		
-		if higher_trump_card != null:
-			return higher_trump_card
-
-#If we cant play over it we play our lowest card
-	return hand.get_lowest_card()
+	var legal: Array[Card] = hand.cards.filter(func(c): return CardManager.is_legal_play(hand, c))
+	if legal.is_empty():
+		return hand.cards[0]
+	var behind := won_turns <= _fewest_other_wins()
+	return choose_from(legal, CardManager.played_cards_turn.cards, hand.size(), behind)
 
 
-func _zero_beating_table() -> Card:
-	if CardManager.turn_won_by_zero():
-		return null
-	var best := CardManager.get_normal_winning_card()
-	if best == null or best.rank < CardManager.ZERO_BEATS_RANK:
-		return null
-	for card in hand.cards:
-		if card.rank == 0 and card.suit == best.suit and CardManager.is_legal_play(hand, card):
+func choose_from(legal: Array[Card], table: Array[Card], tricks_left: int, behind: bool) -> Card:
+	var by_cost := legal.duplicate()
+	by_cost.sort_custom(func(a, b): return card_cost(a) < card_cost(b))
+	if legal.size() > 1 and randf() < bluff_chance:
+		return legal.pick_random()
+	if table.is_empty():
+		return _choose_lead(by_cost, tricks_left, behind)
+	return _choose_follow(by_cost, table)
+
+
+func _choose_lead(by_cost: Array[Card], tricks_left: int, behind: bool) -> Card:
+	var strongest: Card = by_cost.back()
+	if behind and tricks_left <= ENDGAME_TRICKS:
+		return strongest
+	if _is_strong_lead(strongest) and randf() < lead_strong_chance:
+		return strongest
+	for card in by_cost:
+		if not card.is_trump:
 			return card
-	return null
+	return by_cost.front()
+
+
+func _is_strong_lead(card: Card) -> bool:
+	return card.is_trump and card.rank >= lead_strong_rank
+
+
+func _choose_follow(by_cost: Array[Card], table: Array[Card]) -> Card:
+	var winners: Array[Card] = by_cost.filter(func(c): return trick_winner(table + [c]) == c)
+	if winners.is_empty():
+		return by_cost.front()
+	if table.size() >= PLAYERS_PER_TRICK - 1:
+		return winners.front()
+	var safe: Array[Card] = winners.filter(func(c): return c.is_trump or c.rank >= safe_rank)
+	if not safe.is_empty() and randf() < safe_win_chance:
+		return safe.front()
+	return winners.front()
+
+
+static func card_cost(card: Card) -> float:
+	var cost := float(card.rank)
+	if card.rank == 0:
+		cost = ZERO_COST
+	if card.is_trump:
+		cost += TRUMP_COST
+	if card.suit == Card.Suit.ALK or card.suit == Card.Suit.SMOKE:
+		cost += SPECIAL_COST
+	return cost
+
+
+static func trick_winner(table: Array) -> Card:
+	if table.is_empty():
+		return null
+	var best: Card = null
+	for card in table:
+		if card.is_trump and (best == null or card.rank > best.rank):
+			best = card
+	if best == null:
+		best = table[0]
+		for card in table:
+			if card.suit == table[0].suit and card.rank > best.rank:
+				best = card
+	if best.rank >= CardManager.ZERO_BEATS_RANK:
+		for card in table:
+			if card.rank == 0 and card.suit == best.suit:
+				return card
+	return best
+
+
+func _fewest_other_wins() -> int:
+	var fewest := -1
+	for other in [GameManager.human_player, GameManager.ai_player_1, GameManager.ai_player_2]:
+		if other == self or not (other is Player):
+			continue
+		if fewest < 0 or other.won_turns < fewest:
+			fewest = other.won_turns
+	return maxi(fewest, 0)
 
 
 func render_hand() -> void:
