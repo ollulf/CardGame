@@ -264,6 +264,10 @@ func start_new_match() -> void:
 
 	start_round(starting_player_id)
 
+func _message_name(player_id: int) -> String:
+	return "You" if player_id == HUMAN_ID else str(PLAYER_NAMES[player_id])
+
+
 func start_new_turn(starting_player_id: int) -> void:
 	current_turn += 1
 
@@ -299,7 +303,7 @@ func _request_current_player() -> void:
 		return
 
 	var player_id := play_order[current_play_index]
-	message(str(PLAYER_NAMES[player_id]) + "'s turn")
+	message("Your turn" if player_id == HUMAN_ID else str(PLAYER_NAMES[player_id]) + "'s turn")
 	emit_signal("request_play_card", player_id)
 
 # Called by human & AI controllers
@@ -318,7 +322,7 @@ func _finish_turn() -> void:
 	var winner : Card.Owner = CardManager.get_turn_winner()
 	CardManager.highlight_turn_winner()
 
-	message(str(PLAYER_NAMES[winner]) + " won the turn")
+	message(_message_name(winner) + " won the turn")
 
 	await get_tree().create_timer(TURN_WINNER_SHOW_TIME, false).timeout
 	if token != round_token:
@@ -349,10 +353,10 @@ func _end_round(loosers: Array[int]) -> void:
 	notify_round_loosers(last_round_loosers)
 
 	if(last_round_loosers.size() == 1):
-		message(str(PLAYER_NAMES[last_round_loosers[0]]) + " lost the round!")
+		message(_message_name(last_round_loosers[0]) + " lost the round!")
 	else:
-		message(str(PLAYER_NAMES[last_round_loosers[0]]) + " and " +
-		str(PLAYER_NAMES[last_round_loosers[1]]) + " lost the round!")
+		message(_message_name(last_round_loosers[0]) + " and " +
+		_message_name(last_round_loosers[1]) + " lost the round!")
 
 	round_over = true
 	round_finished.emit(last_round_loosers)
