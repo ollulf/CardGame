@@ -9,10 +9,10 @@ const SMOKE_WORD := "smoke"
 const HAND_KEYS := ["you", "ai_one", "ai_two"]
 const PLAY_KEYS := ["you_plays", "ai_one_plays", "ai_two_plays"]
 const HUMAN_SEAT := 0
-const ALLOWED_KEYS := ["round", "trump", "starter", "you", "ai_one", "ai_two", "you_plays", "ai_one_plays", "ai_two_plays"]
+const ALLOWED_KEYS := ["match", "round", "trump", "starter", "you", "ai_one", "ai_two", "you_plays", "ai_one_plays", "ai_two_plays"]
 
 var rounds: Dictionary = load_rounds(SCRIPT_PATH)
-var active := true
+var _match_number := 0
 var _round_index := 0
 var _current: Dictionary = {}
 
@@ -20,11 +20,12 @@ func _ready() -> void:
 	GameManager.match_finished.connect(_on_match_finished)
 
 func begin_round() -> void:
-	_current = {}
-	if not active:
-		return
+	var match_number := DialogueManager.upcoming_match()
+	if match_number != _match_number:
+		_match_number = match_number
+		_round_index = 0
 	_round_index += 1
-	_current = rounds.get(_round_index, {})
+	_current = rounds.get(match_number, {}).get(_round_index, {})
 
 func is_scripted() -> bool:
 	return not _current.is_empty()
@@ -64,7 +65,7 @@ func planned_card(seat: int, hand: Hand, turn: int, warn := true) -> Card:
 			if card.suit == step[0] and card.base_rank == step[1]:
 				return card
 		if warn:
-			push_warning("TutorialGame round %d: seat %d cannot play %s %d on turn %d, playing normally" % [_round_index, seat, Card.Suit.keys()[step[0]], step[1], turn])
+			push_warning("TutorialGame match %d round %d: seat %d cannot play %s %d on turn %d, playing normally" % [_match_number, _round_index, seat, Card.Suit.keys()[step[0]], step[1], turn])
 		return null
 	match step:
 		"highest":
@@ -86,14 +87,13 @@ func _pick(cards: Array, highest: bool) -> Card:
 	return best
 
 func _on_match_finished(_loosers) -> void:
-	active = false
 	_current = {}
 
 func capture_state() -> Dictionary:
-	return {"active": active, "round_index": _round_index}
+	return {"match": _match_number, "round_index": _round_index}
 
 func restore_state(state: Dictionary) -> void:
-	active = state.get("active", true)
+	_match_number = state.get("match", 0)
 	_round_index = state.get("round_index", 0)
 	_current = {}
 
@@ -106,16 +106,14 @@ static func load_rounds(path: String) -> Dictionary:
 		var entry = _clean_round(yaml.data[i], yaml.item_lines[i])
 		if entry == null:
 			continue
-		if result.has(entry.round):
-			push_error("TutorialGame line %d: round %d is listed twice" % [yaml.item_lines[i], entry.round])
+		var match_rounds: Dictionary = result.get_or_add(entry.match, {})
+		if match_rounds.has(entry.round):
+			push_error("TutorialGame line %d: match %d round %d is listed twice" % [yaml.item_lines[i], entry.match, entry.round])
 			continue
-		result[entry.round] = entry
+		match_rounds[entry.round] = entry
 	return result
 
 static func _clean_round(raw, line: int):
-	if raw is Dictionary and raw.has("match"):
-		push_error("TutorialGame line %d: 'match' was renamed to 'round', write 'round: %s'" % [line, str(raw["match"])])
-		return null
 	if not raw is Dictionary or not raw.get("round") is int or raw.round < 1:
 		push_error("TutorialGame line %d: entry needs 'round' with a number of 1 or more" % line)
 		return null
@@ -123,7 +121,10 @@ static func _clean_round(raw, line: int):
 		if not key in ALLOWED_KEYS:
 			push_error("TutorialGame line %d: unknown key '%s' (allowed: %s)" % [line, key, ", ".join(ALLOWED_KEYS)])
 			return null
-	var entry := {"round": raw.round, "hands": {}, "plays": {}, "smokes": {}}
+	if raw.has("match") and (not raw.match is int or raw.match < 1):
+		push_error("TutorialGame line %d: match must be a number of 1 or more" % line)
+		return null
+	var entry := {"match": raw.get("match", 1), "round": raw.round, "hands": {}, "plays": {}, "smokes": {}}
 	if raw.has("trump"):
 		var suit := _suit(raw.trump)
 		if suit < 0 or suit > Card.Suit.CLUBS:
@@ -146,8 +147,8 @@ static func _clean_round(raw, line: int):
 				push_error("TutorialGame line %d: '%s' in %s is not a card like 'HEARTS 9'" % [line, word, key])
 				return null
 			cards.append(card)
-		if cards.size() != HAND_SIZE:
-			push_error("TutorialGame line %d: %s needs exactly %d cards, found %d" % [line, key, HAND_SIZE, cards.size()])
+		if cards.is_empty() or cards.size() > HAND_SIZE:
+			push_error("TutorialGame line %d: %s needs 1 to %d cards, found %d" % [line, key, HAND_SIZE, cards.size()])
 			return null
 		entry.hands[seat] = cards
 	for seat in SEAT_COUNT:

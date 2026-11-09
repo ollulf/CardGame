@@ -124,7 +124,7 @@ match: 2
 		when: zero_played
 		lines:
 			2: There it is, the first *0* of the match!
-			1: Looks harmless, right? Just wait until somebody plays a *9*.
+			1: Looks harmless, right? Good thing my *9* is safe.
 			2: Hehe, I'm saying nothing.
 
 		when: round_start
