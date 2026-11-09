@@ -9,15 +9,17 @@ class_name AIPlayer
 @export var MAX_GAP := 70.0
 
 @export var auto_smoke: bool = true
-@export_range(0.0, 1.0) var smoke_chance: float = 0.2
+@export_range(0.0, 1.0) var smoke_chance: float = 0.35
+@export_range(0.0, 1.0) var smoke_chance_per_trump: float = 0.15
+@export_range(0.0, 1.0) var smoke_chance_per_left: float = 0.03
+@export var max_smokes_per_turn: int = 3
 @export var smoke_offset := Vector2(46.0, 6.0)
 @export var smoke_stack_step := Vector2(22.0, 26.0)
 
 const THINK_TIME_MIN := 0.8
 const THINK_TIME_MAX := 1.5
 
-@export var auto_drink: bool = true
-@export_range(0.0, 1.0) var drink_chance: float = 0.15
+@export var auto_order_round: bool = true
 @export var drink_offset := Vector2(150.0, -40.0)
 @export_range(0.0, 1.0) var order_round_chance: float = 0.6
 
@@ -54,9 +56,7 @@ func smoke(cigarettes: int = 1) -> void:
 	CardManager.update_cards(cigarettes, player_id)
 
 
-func drink(on_the_house := false) -> void:
-	if not on_the_house and not Missions.can_drink(player_id):
-		return
+func drink() -> void:
 	var side := 1.0 if player_id == 1 else -1.0
 	var art := DrinkArt.new()
 	art.scale = Vector2.ONE * DRINK_PIXEL_SCALE
@@ -67,10 +67,7 @@ func drink(on_the_house := false) -> void:
 	var appear := art.create_tween()
 	appear.tween_property(art, "modulate:a", 1.0, DRINK_FADE_TIME)
 	await appear.finished
-	if on_the_house:
-		art.sipped.connect(PlayerDataManager.drink.bind(player_id), CONNECT_ONE_SHOT)
-	else:
-		art.sipped.connect(func(): PlayerDataManager.take_drink(player_id), CONNECT_ONE_SHOT)
+	art.sipped.connect(PlayerDataManager.drink.bind(player_id), CONNECT_ONE_SHOT)
 	await art.play_sip(DRINK_LEFT_IN_GLASS, side)
 	var fade := art.create_tween()
 	fade.tween_interval(DRINK_LINGER_TIME)
@@ -94,7 +91,7 @@ func _alk_cards_in_hand() -> int:
 
 
 func _wants_to_order_round() -> bool:
-	if not auto_drink or TutorialScript.is_scripted() or hand == null:
+	if not auto_order_round or TutorialScript.is_scripted() or hand == null:
 		return false
 	if not PlayerDataManager.is_round_of_drinks_available() or _ordered_this_round:
 		return false
@@ -103,18 +100,7 @@ func _wants_to_order_round() -> bool:
 	var alk_cards := _alk_cards_in_hand()
 	if alk_cards == 0 or alk_cards < hand.cards.size() - alk_cards:
 		return false
-	return not Missions.can_drink(player_id) or randf() < order_round_chance
-
-
-func _wants_to_drink() -> bool:
-	if not auto_drink or TutorialScript.is_scripted():
-		return false
-	if not Missions.can_drink(player_id) or hand == null:
-		return false
-	var alk_cards := _alk_cards_in_hand()
-	if alk_cards == 0:
-		return false
-	return alk_cards >= hand.cards.size() - alk_cards or randf() < drink_chance
+	return randf() < order_round_chance
 
 
 func _free_smoke_slot() -> int:
@@ -125,14 +111,26 @@ func _free_smoke_slot() -> int:
 	return slot
 
 
-func _wants_to_smoke() -> bool:
+func _smokes_this_turn() -> int:
 	if not auto_smoke or TutorialScript.is_scripted():
-		return false
-	if not Missions.can_smoke(player_id):
-		return false
-	if hand == null or not hand.has_trump_card():
-		return false
-	return randf() < smoke_chance
+		return 0
+	if hand == null:
+		return 0
+	var trumps := hand.cards.filter(func(c): return c.suit == Card.Suit.SMOKE).size()
+	if trumps == 0:
+		return 0
+	var left := Missions.cigarettes_left(player_id)
+	if left == 0:
+		return 0
+	var left_bonus := 10 if left == Missions.UNLIMITED else left
+	var chance := smoke_chance + smoke_chance_per_trump * (trumps - 1) + smoke_chance_per_left * left_bonus
+	var count := 0
+	while count < max_smokes_per_turn and count < trumps and (left == Missions.UNLIMITED or count < left):
+		if randf() >= clampf(chance, 0.0, 0.95):
+			break
+		count += 1
+		chance *= 0.5
+	return count
 
 
 func recieve_hand(new_hand: Hand) -> void:
@@ -165,14 +163,11 @@ func _on_request_play_card(requested_player_id: int) -> void:
 	var planned_cigarettes := TutorialScript.planned_smoke(player_id, GameManager.current_turn)
 	if planned_cigarettes > 0:
 		await smoke(planned_cigarettes)
-	elif _wants_to_smoke():
-		smoke()
+	else:
+		for i in _smokes_this_turn():
+			await smoke()
 	if _wants_to_order_round():
 		await order_round_of_drinks()
-		if token != GameManager.round_token:
-			return
-	elif _wants_to_drink():
-		await drink()
 		if token != GameManager.round_token:
 			return
 

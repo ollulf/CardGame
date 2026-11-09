@@ -172,7 +172,7 @@ text = "99"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="DrinkGlass" type="Area2D" parent="."]
+[node name="DrinkGlass" type="Node2D" parent="."]
 position = Vector2(965, 614)
 script = ExtResource("drink_glass_script")
 

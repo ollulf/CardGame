@@ -7,6 +7,8 @@ const CARD_SCENE := preload("res://scenes/Card.tscn")
 const CARD_SIZE := Vector2(60, 90)
 const DECK_CARD_SCALE := 0.6
 const COLLECTION_CARD_SCALE := 0.62
+const DECK_CARD_GAP := 4.0
+const COLLECTION_CARD_GAP := 6.0
 const SUIT_ORDER: Array[Card.Suit] = [Card.Suit.HEARTS, Card.Suit.DIAMONDS, Card.Suit.SPADES, Card.Suit.CLUBS, Card.Suit.ALK, Card.Suit.SMOKE]
 const SUIT_NAMES := {
 	Card.Suit.DIAMONDS: "Diamonds",
@@ -38,7 +40,7 @@ const WARN_COLOR := Color("e5735e")
 const LEFT_RECT := Rect2(16, 16, 210, 616)
 const RIGHT_RECT := Rect2(236, 16, 900, 616)
 
-var _deck_row: HBoxContainer
+var _deck_row: Control
 var _deck_counter: Label
 var _rows: VBoxContainer
 var _card_info: Label
@@ -129,9 +131,11 @@ func _build() -> void:
 	deck_head.add_child(_label("Your deck", 16, FG_COLOR))
 	_deck_counter = _label("", 14, WARN_COLOR)
 	deck_head.add_child(_deck_counter)
-	_deck_row = HBoxContainer.new()
+	_deck_row = Control.new()
+	_deck_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_deck_row.position = Vector2(12, 34)
-	_deck_row.add_theme_constant_override("separation", 4)
+	_deck_row.size = Vector2(RIGHT_RECT.size.x - 24, CARD_SIZE.y * DECK_CARD_SCALE)
+	_deck_row.set_meta("gap", DECK_CARD_GAP)
 	deck_box.add_child(_deck_row)
 
 	var cards_top := RIGHT_RECT.position.y + deck_height + 10
@@ -200,7 +204,7 @@ func _flight_target(flight: Dictionary) -> Control:
 	if flight.to_deck:
 		cell = _deck_cells.get(card)
 	else:
-		cell = _stack_cells.get(Vector2i(card.suit, card.base_rank))
+		cell = _stack_cells.get(card)
 	if cell != null and is_instance_valid(cell) and not cell.is_queued_for_deletion():
 		return cell
 	return null
@@ -217,7 +221,7 @@ func _hide_flight_targets() -> void:
 func _fly_card(cell: Control, card: Card, to_deck: bool) -> void:
 	var from_scale := COLLECTION_CARD_SCALE if to_deck else DECK_CARD_SCALE
 	var to_scale := DECK_CARD_SCALE if to_deck else COLLECTION_CARD_SCALE
-	var copy := _card_cell(card, from_scale, 1, false)
+	var copy := _card_cell(card, from_scale, false)
 	_ignore_mouse(copy)
 	copy.top_level = true
 	copy.z_index = 50
@@ -263,7 +267,7 @@ func _rebuild_deck() -> void:
 	var deck := PlayerDataManager.active_deck.duplicate()
 	deck.sort_custom(_card_before)
 	for card in deck:
-		var cell := _card_cell(card, DECK_CARD_SCALE, 1, false)
+		var cell := _card_cell(card, DECK_CARD_SCALE, false)
 		cell.gui_input.connect(_on_deck_cell_input.bind(card, cell))
 		_deck_cells[card] = cell
 		_deck_row.add_child(cell)
@@ -275,6 +279,7 @@ func _rebuild_deck() -> void:
 		style.set_border_width_all(1)
 		slot.add_theme_stylebox_override("panel", style)
 		_deck_row.add_child(slot)
+	_layout_strip(_deck_row)
 	var count := deck.size()
 	_deck_counter.text = "%d / %d" % [count, Missions.DECK_SIZE]
 	var full := count == Missions.DECK_SIZE
@@ -286,13 +291,11 @@ func _rebuild_deck() -> void:
 func _rebuild_collection() -> void:
 	for child in _rows.get_children():
 		child.queue_free()
-	var stacks := {}
-	for card in PlayerDataManager.collection:
-		var key := Vector2i(card.suit, card.base_rank)
-		if not stacks.has(key):
-			stacks[key] = []
-		stacks[key].append(card)
+	var owned := PlayerDataManager.collection.duplicate()
+	owned.sort_custom(_card_before)
 	for suit in SUIT_ORDER:
+		if (suit == Card.Suit.ALK or suit == Card.Suit.SMOKE) and not _owns_suit(suit):
+			continue
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 10)
 		row.custom_minimum_size = Vector2(0, CARD_SIZE.y * COLLECTION_CARD_SCALE + 6)
@@ -305,21 +308,51 @@ func _rebuild_collection() -> void:
 		icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		row.add_child(icon)
-		var keys := stacks.keys().filter(func(k: Vector2i) -> bool: return k.x == suit)
-		keys.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return a.y < b.y)
-		if keys.is_empty():
+		var cards := owned.filter(func(c: Card) -> bool: return c.suit == suit)
+		if cards.is_empty():
 			row.add_child(_label("none", 12, MUTED_COLOR))
-		for key in keys:
-			var cards: Array = stacks[key]
-			var is_new := cards.any(func(c: Card) -> bool: return PlayerDataManager.new_cards.has(c))
-			var cell := _card_cell(cards[0], COLLECTION_CARD_SCALE, cards.size(), is_new)
-			cell.gui_input.connect(_on_collection_cell_input.bind(cards[0], cell))
-			_stack_cells[key] = cell
-			row.add_child(cell)
+		else:
+			var strip := Control.new()
+			strip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			strip.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			strip.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+			strip.custom_minimum_size = Vector2(0, CARD_SIZE.y * COLLECTION_CARD_SCALE)
+			strip.set_meta("gap", COLLECTION_CARD_GAP)
+			strip.resized.connect(_layout_strip.bind(strip))
+			for card in cards:
+				var cell := _card_cell(card, COLLECTION_CARD_SCALE, PlayerDataManager.new_cards.has(card))
+				cell.gui_input.connect(_on_collection_cell_input.bind(card, cell))
+				_stack_cells[card] = cell
+				strip.add_child(cell)
+			row.add_child(strip)
 		_rows.add_child(row)
 
 
-func _card_cell(card: Card, card_scale: float, amount: int, is_new: bool) -> Control:
+func _layout_strip(strip: Control) -> void:
+	var cells := strip.get_children().filter(func(c: Node) -> bool: return not c.is_queued_for_deletion())
+	if cells.is_empty():
+		return
+	var width: float = cells[0].custom_minimum_size.x
+	var step: float = width + float(strip.get_meta("gap", 0.0))
+	if cells.size() > 1 and width + step * (cells.size() - 1) > strip.size.x:
+		step = maxf((strip.size.x - width) / (cells.size() - 1), 1.0)
+	for i in cells.size():
+		var cell: Control = cells[i]
+		cell.position = Vector2(step * i, 0)
+		cell.size = cell.custom_minimum_size
+
+
+func _owns_suit(suit: Card.Suit) -> bool:
+	for card in PlayerDataManager.collection:
+		if card.suit == suit:
+			return true
+	for card in PlayerDataManager.active_deck:
+		if card.suit == suit:
+			return true
+	return false
+
+
+func _card_cell(card: Card, card_scale: float, is_new: bool) -> Control:
 	var cell := Control.new()
 	cell.custom_minimum_size = CARD_SIZE * card_scale
 	cell.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -340,10 +373,6 @@ func _card_cell(card: Card, card_scale: float, amount: int, is_new: bool) -> Con
 	visual.setup(card, false)
 	visual.scale = Vector2.ONE * card_scale
 	visual.position = Vector2.ZERO
-	if amount > 1:
-		var badge := _badge("x%d" % amount, FG_COLOR, BG_COLOR)
-		badge.position = Vector2(cell.custom_minimum_size.x - 18, -6)
-		cell.add_child(badge)
 	if is_new:
 		var tag := _badge("NEW", NEW_COLOR, BG_COLOR)
 		tag.position = Vector2(cell.custom_minimum_size.x / 2.0 - 14, cell.custom_minimum_size.y - 10)
@@ -361,7 +390,7 @@ func _badge(text: String, fill: Color, text_color: Color) -> Label:
 	style.content_margin_left = 4
 	style.content_margin_right = 4
 	badge.add_theme_stylebox_override("normal", style)
-	badge.z_index = 2
+	badge.z_index = 1
 	return badge
 
 
@@ -373,12 +402,14 @@ func _ignore_mouse(node: Node) -> void:
 
 
 func _on_cell_hovered(cell: Control, card: Card) -> void:
+	cell.z_index = 10
 	if not cell.has_meta("flying"):
 		cell.modulate = Color(1.15, 1.1, 0.95)
 	_show_card(card)
 
 
 func _on_cell_unhovered(cell: Control) -> void:
+	cell.z_index = 0
 	if not cell.has_meta("flying"):
 		cell.modulate = Color.WHITE
 
