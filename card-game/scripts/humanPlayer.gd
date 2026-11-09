@@ -40,13 +40,24 @@ func can_play(card: Card) -> bool:
 	if not is_my_turn:
 		return false
 
+	if _blocked_by_tutorial(card):
+		return false
+
 	return CardManager.is_legal_play(hand, card)
+
+func _blocked_by_tutorial(card: Card) -> bool:
+	return TutorialScript.blocks_human_play(hand, card, GameManager.current_turn)
+
+func explain_refusal(card: Card) -> void:
+	if is_my_turn and _blocked_by_tutorial(card):
+		GameManager.message(TutorialScript.human_hint(hand, GameManager.current_turn))
 
 func has_hand_visual(card_visual: CardVisual) -> bool:
 	return not card_visual.is_queued_for_deletion() and card_visuals.has(card_visual) and hand.contains(card_visual.card)
 
 func try_play_card(card: Card) -> void:
 	if not can_play(card):
+		explain_refusal(card)
 		return
 
 	is_my_turn = false
@@ -71,6 +82,8 @@ func _refresh_playable_cards() -> void:
 	for card_visual in card_visuals:
 		if is_instance_valid(card_visual):
 			card_visual.set_playable(can_play(card_visual.card))
+			if hand.contains(card_visual.card):
+				card_visual.set_locked(is_my_turn and _blocked_by_tutorial(card_visual.card))
 
 
 func render_hand():

@@ -6,6 +6,7 @@ signal closed
 
 const NOT_ENOUGH_MONEY_TEXT := "Not enough money"
 const WAIT_TEXT := "Wait..."
+const ROUND_ORDERED_TEXT := "Round ordered!"
 
 @export var pointer: Control
 
@@ -21,6 +22,7 @@ var booster_shelf: BoosterShelf
 var booster_window: BoosterWindow
 var _cash_tween: Tween
 var _machine_busy := false
+var _round_ordered := false
 
 
 func _ready() -> void:
@@ -74,6 +76,7 @@ func close() -> void:
 	InteractionManager.skip_next_double_click()
 	get_tree().paused = false
 	closed.emit()
+	_serve_ordered_round()
 
 
 func _on_cig_machine_changed(unlocked: bool) -> void:
@@ -100,9 +103,23 @@ func _refresh_drinks_tap() -> void:
 
 
 func _on_drinks_tap_clicked() -> void:
+	if _round_ordered:
+		drinks_tap.deny(ROUND_ORDERED_TEXT)
+		return
 	if not PlayerDataManager.buy_round_of_drinks():
 		drinks_tap.deny(NOT_ENOUGH_MONEY_TEXT)
 		_flash_cash(Color(1.0, 0.35, 0.3))
+		return
+	_round_ordered = true
+	drinks_tap.set_label_text(ROUND_ORDERED_TEXT)
+
+
+func _serve_ordered_round() -> void:
+	if not _round_ordered:
+		return
+	_round_ordered = false
+	drinks_tap.set_label_text("Round of Drinks (%d$)" % PlayerDataManager.DRINK_ROUND_PRICE)
+	GameManager.serve_round_of_drinks(GameManager.HUMAN_ID)
 
 
 func _on_booster_stand_clicked() -> void:

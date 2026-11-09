@@ -38,6 +38,15 @@ func _ready() -> void:
 	_root.visible = false
 
 	CardManager.trump_chosen.connect(show_trump)
+	GameManager.new_match_started.connect(_clear_trump)
+
+func _clear_trump() -> void:
+	if _tween != null and _tween.is_valid():
+		_tween.kill()
+	if _card_visual != null:
+		_card_visual.queue_free()
+		_card_visual = null
+	_root.visible = false
 
 func show_trump(suit: Card.Suit) -> void:
 	if _card_visual != null:
