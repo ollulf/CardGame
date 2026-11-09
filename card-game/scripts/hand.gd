@@ -1,8 +1,8 @@
 extends Control
 class_name HandVisualisation
 
-@export var follow_speed: float = 15.0
-@export var max_distance: float = 500.0
+@export var follow_speed: float = 60.0
+@export var max_distance: float = 5000.0
 
 @onready var cig_finger := $BaseHand/SmokingFingerSprite
 # Assign up to THREE Node2D slots in the inspector
