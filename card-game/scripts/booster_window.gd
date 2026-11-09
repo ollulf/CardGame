@@ -272,6 +272,7 @@ func flip(index: int) -> void:
 	if state != State.REVEAL or flipped[index]:
 		return
 	flipped[index] = true
+	Sfx.play_card_flip()
 	var visual := card_visuals[index]
 	var turn := create_tween()
 	turn.tween_property(visual, "scale:x", 0.0, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
