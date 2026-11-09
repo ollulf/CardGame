@@ -1,4 +1,4 @@
-[gd_scene load_steps=31 format=3 uid="uid://sho7nec3ufwc"]
+[gd_scene load_steps=32 format=3 uid="uid://sho7nec3ufwc"]
 
 [ext_resource type="Script" uid="uid://b1ufuvgq634xj" path="res://scripts/GameSetup.gd" id="1_yo8lh"]
 [ext_resource type="PackedScene" uid="uid://bjmm2q84dkq0v" path="res://scenes/hand_visualisation.tscn" id="2_r2isv"]
@@ -20,6 +20,7 @@
 [ext_resource type="PackedScene" path="res://scenes/deck_pile.tscn" id="deck_pile_scene"]
 [ext_resource type="PackedScene" path="res://scenes/deck_screen.tscn" id="deck_screen"]
 [ext_resource type="PackedScene" path="res://scenes/lose_screen.tscn" id="lose_screen"]
+[ext_resource type="PackedScene" path="res://scenes/post_fx.tscn" id="post_fx_scene"]
 [ext_resource type="Script" uid="uid://c80n6b1k87gya" path="res://scripts/player_buffs.gd" id="player_buffs_script"]
 [ext_resource type="Script" uid="uid://dyuahxm0drxv4" path="res://scripts/prize_pot.gd" id="prize_pot_script"]
 [ext_resource type="Script" uid="uid://blqah5u23lspk" path="res://scripts/trump_display.gd" id="trump_display_script"]
@@ -269,3 +270,5 @@ pointer = NodePath("../HandVisualisation")
 
 [node name="DebugMenu" parent="." node_paths=PackedStringArray("pointer") instance=ExtResource("debug_menu_scene")]
 pointer = NodePath("../HandVisualisation")
+
+[node name="PostFX" parent="." instance=ExtResource("post_fx_scene")]
