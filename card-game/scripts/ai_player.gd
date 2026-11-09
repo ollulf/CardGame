@@ -55,7 +55,7 @@ func _smokes_this_turn() -> int:
 		return 0
 	if hand == null:
 		return 0
-	var trumps := hand.get_trump_cards().size()
+	var trumps := hand.cards.filter(func(c): return c.suit == Card.Suit.SMOKE).size()
 	if trumps == 0:
 		return 0
 	var left := Missions.cigarettes_left(player_id)
