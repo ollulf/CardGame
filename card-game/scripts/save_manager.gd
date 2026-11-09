@@ -110,7 +110,7 @@ static func state_from_data(data: Dictionary):
 	if not tutorial is Dictionary:
 		tutorial = {}
 	state["tutorial"] = {
-		"active": tutorial.get("active", true) == true,
+		"match": maxi(0, _int(tutorial.get("match"), 0)),
 		"round_index": maxi(0, _int(tutorial.get("round_index"), 0)),
 	}
 	var loosers: Array[int] = []
