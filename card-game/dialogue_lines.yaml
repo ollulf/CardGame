@@ -103,7 +103,7 @@ match: 2
 	dialogues:
 		when: match_start
 		lines:
-t		2: Alright, let's spice it up and play with some *money*!
+			2: Alright, let's spice it up and play with some *money*!
 			1: Sounds good! Since I lost last round I have to put in the *prize money*.
 			cue: ai_1_pays
 			1: The *prize money* is *split* between the two *winners*.
