@@ -150,10 +150,14 @@ match: 3
 			1: From now on there are *drinking cards* in the decks, the ones with the *glass*.
 			2: Just like *smoking cards*, they are *always trump*.
 			1: *YOU* have *2 drinks* this match. Click your *glass* to take one.
+			2: And we slipped *3 drinking cards* into *YOUR* deck, just for this match.
 			2: A drink gives *all* your *drinking cards +1*, but *all* your *other cards -1*.
 			1: And it lasts the *whole match*, not just the round. Drink twice, it stacks!
 			cue: ai_one_drinks
 			1: Like this. Cheers!
+			2: One more thing: the *bar* sells a *Round of Drinks* for *$5*.
+			1: Then *everybody* at the table has to *drink*, and it doesn't use up a *glass*.
+			2: The *$* next to us is our money. So watch out, *we* can order rounds too!
 
 		when: alk_played
 		lines:
@@ -173,10 +177,10 @@ match: 3
 		when: match_end
 		lines:
 			1: Phew, my *hearts 7* looked like a *5* after those drinks.
+			2: Those *3 drinking cards* were only borrowed, by the way.
 			2: If *YOU* like drinking, check the shop next time. There is a *Drinking Booster* with *drinking cards*.
-			1: Or go to the bar and buy a *Round of Drinks* for *$3*.
-			2: Then *everybody* takes a *drink* at the start of the next match.
-			1: Everybody... including the ones without drinking cards. Hehe.
+			1: And remember the *Round of Drinks*: *everybody* drinks...
+			2: ...including the ones without drinking cards. Hehe.
 
 match: any
 	dialogues:

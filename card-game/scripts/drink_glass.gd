@@ -10,6 +10,9 @@ const DENY_COLOR := Color(1.0, 0.45, 0.4)
 const TOOLTIP_TEXT := "Drink: Alk +1, others -1\nfor the whole match"
 const EMPTY_TEXT := "No drinks left"
 const TOOLTIP_BG := Color(0.09, 0.08, 0.1, 0.92)
+const ROUND_TINT := Color(1.0, 0.95, 0.8)
+const ROUND_LEFT_IN_GLASS := 0.2
+const ROUND_REFILL_TIME := 0.5
 
 var art: DrinkArt
 var _count_label: Label
@@ -156,6 +159,32 @@ func drink() -> void:
 	_busy = false
 	_refresh()
 	_update_hover()
+
+
+func drink_round() -> void:
+	if _busy or not visible:
+		PlayerDataManager.drink(SEAT)
+		get_tree().call_group(DrunkOverlay.GROUP, "gulp")
+		return
+	_busy = true
+	_tooltip.visible = false
+	art.position = Vector2.ZERO
+	art.modulate = ROUND_TINT
+	var level := art.fill
+	art.fill = 1.0
+	art.sipped.connect(_on_round_sipped, CONNECT_ONE_SHOT)
+	await art.play_sip(ROUND_LEFT_IN_GLASS, 1.0)
+	var refill := create_tween()
+	refill.tween_property(art, "fill", level, ROUND_REFILL_TIME)
+	await refill.finished
+	_busy = false
+	_refresh()
+	_update_hover()
+
+
+func _on_round_sipped() -> void:
+	PlayerDataManager.drink(SEAT)
+	get_tree().call_group(DrunkOverlay.GROUP, "gulp")
 
 
 func _on_sipped() -> void:

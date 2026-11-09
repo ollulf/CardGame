@@ -32,7 +32,7 @@ const CIGARETTE_PACK_PRICE := 5
 const CIGARETTES_PER_PACK := 8
 const DRINK_PENALTY_PER_ROUND := 1
 const DRINK_BONUS_PER_DRINK := 1
-const DRINK_ROUND_PRICE := 3
+const DRINK_ROUND_PRICE := 5
 const DRINK_ROUND_FROM_MATCH := 3
 const DRINKING_BOOSTER_FROM_MATCH := 4
 const BOOSTERS: Array[Dictionary] = [
@@ -125,11 +125,7 @@ func is_round_of_drinks_available() -> bool:
 	return DialogueManager.upcoming_match() >= DRINK_ROUND_FROM_MATCH
 
 func buy_round_of_drinks() -> bool:
-	if not is_round_of_drinks_available() or not spend(DRINK_ROUND_PRICE):
-		return false
-	for pid in PLAYERS:
-		drink(pid)
-	return true
+	return is_round_of_drinks_available() and spend(DRINK_ROUND_PRICE)
 
 func clear_smoking() -> void:
 	for pid in PLAYERS:

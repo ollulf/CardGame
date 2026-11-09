@@ -23,6 +23,13 @@ const MAX_TIE_DRAWS := 5
 
 const HUMAN_ID := 0
 const PLAYER_NAMES := ["YOU","AI player 1", "AI player 2"]
+const ROUND_ORDER_LINES := {
+	0: "A *round of drinks* from *YOU*? Cheers, everybody drinks!",
+	1: "Bartender, a *round* for the whole table! Everybody drinks!",
+	2: "This *round* is on me! Bottoms up, all of you!",
+}
+const ROUND_SERVE_STAGGER := 0.25
+const ROUND_SERVE_TIME := 1.6
 
 const MOVIE_WINDOW_POSITION := Vector2i(-10000, -10000)
 const DECK_PILE_GROUP := "deck_piles"
@@ -154,6 +161,28 @@ func run_cue(cue: String) -> void:
 			elif not words.is_empty() and DialogueManager.PAY_CUES.has(words[0]):
 				var amount := words[1].to_int() if words.size() > 1 else Missions.prize_money(DialogueManager.upcoming_match())
 				await _pay_prize(DialogueManager.PAY_CUES[words[0]], amount)
+
+func serve_round_of_drinks(buyer: int) -> void:
+	var speaker := buyer if buyer != HUMAN_ID else 1
+	DialogueManager.say(speaker, ROUND_ORDER_LINES[buyer])
+	var glass = get_tree().get_first_node_in_group(DrinkGlass.GROUP)
+	var servings: Array = []
+	for seat in PlayerDataManager.PLAYERS:
+		if seat == HUMAN_ID:
+			if glass:
+				glass.drink_round()
+			else:
+				PlayerDataManager.drink(seat)
+		else:
+			var ai: AIPlayer = ai_player_1 if seat == 1 else ai_player_2
+			if ai is AIPlayer:
+				servings.append(ai)
+			else:
+				PlayerDataManager.drink(seat)
+	for ai in servings:
+		await get_tree().create_timer(ROUND_SERVE_STAGGER, false).timeout
+		ai.drink(true)
+	await get_tree().create_timer(ROUND_SERVE_TIME, false).timeout
 
 func _pay_prize(seat: int, amount: int) -> void:
 	var pot = get_tree().get_first_node_in_group(PRIZE_POT_GROUP)

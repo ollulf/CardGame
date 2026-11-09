@@ -16,6 +16,7 @@ class_name AIPlayer
 @export var auto_drink: bool = true
 @export_range(0.0, 1.0) var drink_chance: float = 0.15
 @export var drink_offset := Vector2(150.0, -40.0)
+@export_range(0.0, 1.0) var order_round_chance: float = 0.6
 
 const DRINK_PIXEL_SCALE := 3.0
 const DRINK_FADE_TIME := 0.3
@@ -24,12 +25,14 @@ const DRINK_LEFT_IN_GLASS := 0.35
 
 var card_visuals : Array[CardVisual] = []
 var _smoke_visuals: Array[AiSmoke] = []
+var _ordered_this_round := false
 
 func _ready() -> void:
 	super._ready()
 
 	GameManager.request_play_card.connect(_on_request_play_card)
 	GameManager.turn_started.connect(_on_turn_started)
+	GameManager.round_started.connect(_on_round_started)
 
 	GameManager.register(self)
 
@@ -48,8 +51,8 @@ func smoke(cigarettes: int = 1) -> void:
 	CardManager.update_cards(cigarettes, player_id)
 
 
-func drink() -> void:
-	if not Missions.can_drink(player_id):
+func drink(on_the_house := false) -> void:
+	if not on_the_house and not Missions.can_drink(player_id):
 		return
 	var side := 1.0 if player_id == 1 else -1.0
 	var art := DrinkArt.new()
@@ -61,7 +64,10 @@ func drink() -> void:
 	var appear := art.create_tween()
 	appear.tween_property(art, "modulate:a", 1.0, DRINK_FADE_TIME)
 	await appear.finished
-	art.sipped.connect(func(): PlayerDataManager.take_drink(player_id), CONNECT_ONE_SHOT)
+	if on_the_house:
+		art.sipped.connect(PlayerDataManager.drink.bind(player_id), CONNECT_ONE_SHOT)
+	else:
+		art.sipped.connect(func(): PlayerDataManager.take_drink(player_id), CONNECT_ONE_SHOT)
 	await art.play_sip(DRINK_LEFT_IN_GLASS, side)
 	var fade := art.create_tween()
 	fade.tween_interval(DRINK_LINGER_TIME)
@@ -69,15 +75,40 @@ func drink() -> void:
 	fade.tween_callback(art.queue_free)
 
 
+func order_round_of_drinks() -> void:
+	if not Missions.spend_budget(player_id, PlayerDataManager.DRINK_ROUND_PRICE):
+		return
+	_ordered_this_round = true
+	await GameManager.serve_round_of_drinks(player_id)
+
+
+func _alk_cards_in_hand() -> int:
+	var alk_cards := 0
+	for card in hand.cards:
+		if card.suit == Card.Suit.ALK:
+			alk_cards += 1
+	return alk_cards
+
+
+func _wants_to_order_round() -> bool:
+	if not auto_drink or TutorialScript.is_scripted() or hand == null:
+		return false
+	if not PlayerDataManager.is_round_of_drinks_available() or _ordered_this_round:
+		return false
+	if Missions.budget_left(player_id) < PlayerDataManager.DRINK_ROUND_PRICE:
+		return false
+	var alk_cards := _alk_cards_in_hand()
+	if alk_cards == 0 or alk_cards < hand.cards.size() - alk_cards:
+		return false
+	return not Missions.can_drink(player_id) or randf() < order_round_chance
+
+
 func _wants_to_drink() -> bool:
 	if not auto_drink or TutorialScript.is_scripted():
 		return false
 	if not Missions.can_drink(player_id) or hand == null:
 		return false
-	var alk_cards := 0
-	for card in hand.cards:
-		if card.suit == Card.Suit.ALK:
-			alk_cards += 1
+	var alk_cards := _alk_cards_in_hand()
 	if alk_cards == 0:
 		return false
 	return alk_cards >= hand.cards.size() - alk_cards or randf() < drink_chance
@@ -116,6 +147,10 @@ func _on_turn_started(_turn_index: int, _starting_player_id: int) -> void:
 	pass
 
 
+func _on_round_started() -> void:
+	_ordered_this_round = false
+
+
 func _on_request_play_card(requested_player_id: int) -> void:
 	if requested_player_id != player_id:
 		return
@@ -129,7 +164,11 @@ func _on_request_play_card(requested_player_id: int) -> void:
 		await smoke(planned_cigarettes)
 	elif _wants_to_smoke():
 		smoke()
-	if _wants_to_drink():
+	if _wants_to_order_round():
+		await order_round_of_drinks()
+		if token != GameManager.round_token:
+			return
+	elif _wants_to_drink():
 		await drink()
 		if token != GameManager.round_token:
 			return
