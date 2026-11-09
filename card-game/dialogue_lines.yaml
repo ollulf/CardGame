@@ -31,7 +31,7 @@ match: 1
 			1: This was the first turn. Since I was the *winner* I will play the next *first card.*
 			1: After we played *5* turns, the players with the *least* won *turns* loses the round.
 			wait_for_cards_played: 1
-			1: Since, I played *hearts* now, and its *trump* everybody who has trump, has to *play trump* now too.
+			1: Since, I played *hearts* now, and it's *trump* everybody who has trump, has to *play trump* now too.
 			wait_for_cards_played: 1
 			2: I don't have *hearts*, so I have to play something different.
 
@@ -103,19 +103,19 @@ match: 2
 	dialogues:
 		when: match_start
 		lines:
-			2: Alright, lets spice it up and play with some *money*!
-			1: Sounds good! Since I lost last round I have to put in the *price money*.
+			2: Alright, let's spice it up and play with some *money*!
+			1: Sounds good! Since I lost last round I have to put in the *prize money*.
 			cue: ai_1_pays
-			1: The *price money* is *split* between the two *winners*.
-			2: And the *new looser* has to *pay* for the next round.
-			1: Let's hope its not me again...
+			1: The *prize money* is *split* between the two *winners*.
+			2: And the *new loser* has to *pay* for the next round.
+			1: Let's hope it's not me again...
 			wait_for_cards_played: 1
 			1: Ahh *YOU* ...
 			cue: give_player_cigs 3
 			1: Have some of my *cigarettes*. You can smoke them whenever you want.
-			1: I hope you already added *smokeing cards* to your *deck*.
+			1: I hope you already added *smoking cards* to your *deck*.
 			2: I hope not...
-			2: Thats going to make it harder for us, to win.
+			2: That's going to make it harder for us, to win.
 			1: Oh, and one more thing: from now on our *decks* also have *0s* in them.
 			2: Don't laugh at them. A *0* is not as *worthless* as it looks...
 			1: Shh, don't spoil it! *YOU* will see.
@@ -131,7 +131,7 @@ match: 2
 		lines:
 			cue: unlock_cig_automat
 			Bar: Jo guys, the cigarette machine works again, in case somebody needs more.
-			1: Awesome, I ran out of cigarettes. Lets me quickly buy some.
+			1: Awesome, I ran out of cigarettes. Let me quickly buy some.
 			cue: ai_1_buys_cigarettes
 
 		when: zero_beats_nine
