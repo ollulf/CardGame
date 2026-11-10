@@ -4,11 +4,7 @@ class_name Bierdeckel
 const PIXEL_SCALE := 3.0
 const RADIUS := 7.5
 const RADIUS_PX := RADIUS * PIXEL_SCALE
-const OUTLINE_COLOR := Color("4a2e1c")
-const BASE_COLOR := Color("efe2c4")
-const SHADE_COLOR := Color("d6c39c")
-const PRINT_COLOR := Color("b8322a")
-const PRINT_DARK_COLOR := Color("8c2420")
+const TEXTURE := preload("res://sprites/Bierdeckel.png")
 const FLY_TIME := 0.55
 const FLY_ARC := 70.0
 const FLY_SPIN := TAU
@@ -20,23 +16,7 @@ func _init() -> void:
 
 
 func _draw() -> void:
-	var r := int(ceil(RADIUS))
-	for y in range(-r, r):
-		for x in range(-r, r):
-			var c := Vector2(x + 0.5, y + 0.5)
-			var d := c.length()
-			if d > RADIUS:
-				continue
-			var color := BASE_COLOR
-			if d > RADIUS - 1.0:
-				color = OUTLINE_COLOR
-			elif d > RADIUS - 2.5 and d <= RADIUS - 1.5:
-				color = PRINT_COLOR
-			elif d <= 1.6 or (absf(c.x) < 1.0 and absf(c.y) < 3.2) or (absf(c.y) < 1.0 and absf(c.x) < 3.2):
-				color = PRINT_DARK_COLOR if c.x + c.y > 0.0 else PRINT_COLOR
-			elif c.x + c.y > RADIUS * 0.9:
-				color = SHADE_COLOR
-			draw_rect(Rect2(x, y, 1, 1), color)
+	draw_texture_rect(TEXTURE, Rect2(-RADIUS, -RADIUS, RADIUS * 2.0, RADIUS * 2.0), false)
 
 
 static func fly(parent: Node, from: Vector2, to: Vector2, z: int = 20) -> void:
