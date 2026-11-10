@@ -255,10 +255,7 @@ func float_in_from(from: Transform2D) -> void:
 	_tween.tween_property(self, "position", target_position, float_anim_time)
 	_tween.tween_property(self, "rotation", 0.0, float_anim_time)
 	_tween.tween_property(self, "scale", target_scale, float_anim_time)
-	if CardJuice.ENABLED:
-		_tween.chain().tween_property(self, "scale", target_scale * CardJuice.TABLE_LAND_PUNCH, CardJuice.TABLE_LAND_TIME * 0.3)
-		_tween.chain().tween_property(self, "scale", target_scale, CardJuice.TABLE_LAND_TIME * 0.7).set_trans(Tween.TRANS_BACK)
-	_tween.finished.connect(_on_float_finished.bind(target_z))
+	_tween.finished.connect(_on_float_finished.bind(target_z, false))
 
 
 func deal_from(from: Transform2D, reveal: bool) -> void:
@@ -386,14 +383,15 @@ func _deal_step(t: float, start_scale: Vector2, target_scale: Vector2, reveal: b
 	scale = s
 
 
-func _on_float_finished(target_z: int) -> void:
+func _on_float_finished(target_z: int, land_squash: bool = true) -> void:
 	z_index = target_z
 	update_layout()
 	hover_enabled = true
 	if juice_follow:
 		_last_position = position
 		_smooth_rotation = rotation
-		punch(CardJuice.DEAL_LAND_SQUASH)
+		if land_squash:
+			punch(CardJuice.DEAL_LAND_SQUASH)
 	if InteractionManager.hovered_card == self:
 		hover_enter()
 

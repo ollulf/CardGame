@@ -35,8 +35,6 @@ const DENY_WOBBLE_DEG := 7.0
 const DENY_FREQ := 38.0
 const DENY_DECAY := 7.0
 
-const TABLE_LAND_PUNCH := Vector2(1.12, 0.88)
-const TABLE_LAND_TIME := 0.22
 
 const WIN_POP_SCALE := 1.22
 const WIN_SHAKE_PX := 5.0
