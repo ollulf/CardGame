@@ -451,6 +451,7 @@ func retry_match() -> void:
 	start_new_match()
 
 var starting_over := false
+var replaying_finish := false
 
 func start_over() -> void:
 	_intro_done = false
@@ -466,7 +467,9 @@ func resume_run(match_state: Dictionary, game_state: Dictionary, between_matches
 	_match_start_state = match_state
 	if between_matches:
 		new_match_started.emit()
+		replaying_finish = true
 		match_finished.emit(last_match_loosers.duplicate())
+		replaying_finish = false
 	else:
 		start_new_match()
 
@@ -482,7 +485,9 @@ func start_without_tutorial() -> void:
 	new_match_started.emit()
 	DialogueManager.play_match_end()
 	await DialogueManager.wait_until_idle()
+	replaying_finish = true
 	match_finished.emit(last_match_loosers.duplicate())
+	replaying_finish = false
 
 func current_match() -> int:
 	return _match_start_state.get("match", 1)
