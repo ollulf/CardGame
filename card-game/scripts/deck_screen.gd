@@ -63,6 +63,7 @@ func _on_confirm_pressed() -> void:
 	if deck_builder.visible:
 		return
 	hide()
+	GameManager.hint_message.emit("")
 	_arrow_target = null
 	_lower_hand_pointer()
 	InteractionManager.skip_next_double_click()
@@ -148,10 +149,14 @@ func _process(_delta: float) -> void:
 func _refresh_hint() -> void:
 	if _hint_label == null:
 		return
+	GameManager.hint_message.emit("")
 	match _guide_step():
 		GuideStep.BUY:
 			var wallet := _wallet()
 			_show_hint(BAR_HINT, wallet.sprite if wallet != null else null, false)
+			_hint_label.hide()
+			GameManager.hint_message.emit(BAR_HINT)
+			return
 		GuideStep.EDIT:
 			_show_hint(EDIT_HINT, edit_deck_button, true)
 		GuideStep.NEXT:
