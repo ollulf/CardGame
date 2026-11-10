@@ -134,7 +134,10 @@ static func state_from_data(data: Dictionary):
 static func cards_to_data(cards: Array) -> Array:
 	var data: Array = []
 	for card: Card in cards:
-		data.append([card.suit, card.base_rank, card.owner])
+		if card.has_effect():
+			data.append([card.suit, card.base_rank, card.owner, card.effect])
+		else:
+			data.append([card.suit, card.base_rank, card.owner])
 	return data
 
 static func cards_from_data(data):
@@ -147,9 +150,10 @@ static func cards_from_data(data):
 		var suit := _int(entry[0], -1)
 		var rank := _int(entry[1], -1)
 		var owner := _int(entry[2], -1) if entry.size() > 2 else Card.Owner.HUMAN
-		if suit < 0 or suit >= Card.Suit.size() or rank < 0 or rank > 9 or owner < 0 or owner >= Card.Owner.size():
+		var effect := _int(entry[3], -1) if entry.size() > 3 else CardEffect.Id.NONE
+		if suit < 0 or suit >= Card.Suit.size() or rank < 0 or rank > 9 or owner < 0 or owner >= Card.Owner.size() or not CardEffect.is_valid(effect):
 			return null
-		cards.append(Card.new(suit, rank, owner, false))
+		cards.append(Card.new(suit, rank, owner, false, effect))
 	return cards
 
 static func _int(value, fallback: int) -> int:

@@ -51,6 +51,7 @@ func _build() -> void:
 	_add_button(box, "Unlock all UI", unlock_all)
 	_add_button(box, "+%d cigarettes" % CIGARETTE_BONUS, add_cigarettes)
 	_add_button(box, "+%d$" % CASH_BONUS, add_cash)
+	_add_button(box, "Give Draw card", give_effect_card.bind(CardEffect.Id.DRAW))
 	_add_button(box, "Close", close)
 
 
@@ -136,6 +137,15 @@ func add_cigarettes() -> void:
 func add_cash() -> void:
 	GameManager.run_cue("show_purse")
 	PlayerDataManager.add_money(CASH_BONUS)
+
+
+func give_effect_card(effect: CardEffect.Id) -> void:
+	var card := Card.new(randi_range(0, Card.Suit.CLUBS), randi_range(1, 9), Card.Owner.HUMAN, false, effect)
+	var gift: Array[Card] = [card.copy_for(Card.Owner.HUMAN)]
+	PlayerDataManager.add_to_collection(gift)
+	if GameManager.can_skip_round() and CardManager.hand_of(GameManager.HUMAN_ID) != null:
+		CardManager.give_card(GameManager.HUMAN_ID, card)
+	GameManager.message("Debug: got %s" % card.string_info())
 
 
 func _on_new_match_started() -> void:

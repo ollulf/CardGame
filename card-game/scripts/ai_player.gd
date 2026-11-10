@@ -263,6 +263,8 @@ static func card_cost(card: Card) -> float:
 		cost += TRUMP_COST
 	if card.suit == Card.Suit.ALK or card.suit == Card.Suit.SMOKE:
 		cost += SPECIAL_COST
+	if card.has_effect():
+		cost -= CardEffect.ai_discount(card, GameManager.owner_to_id(card.owner))
 	return cost
 
 

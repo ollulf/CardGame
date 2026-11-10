@@ -498,6 +498,8 @@ func _show_card(card: Card) -> void:
 			lines.append("Always trump. Gains +1 rank per cigarette smoked.")
 		Card.Suit.ALK:
 			lines.append("Always trump.")
+	if card.has_effect():
+		lines.append("%s: %s" % [CardEffect.display_name(card.effect), CardEffect.description(card.effect)])
 	var holder := Control.new()
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	holder.custom_minimum_size = CARD_SIZE * PREVIEW_SCALE
@@ -518,7 +520,7 @@ func _show_card(card: Card) -> void:
 func _count_same(cards: Array[Card], card: Card) -> int:
 	var count := 0
 	for other in cards:
-		if other.suit == card.suit and other.base_rank == card.base_rank:
+		if other.suit == card.suit and other.base_rank == card.base_rank and other.effect == card.effect:
 			count += 1
 	return count
 
@@ -528,7 +530,9 @@ func _card_before(a: Card, b: Card) -> bool:
 	var suit_b := SUIT_ORDER.find(b.suit)
 	if suit_a != suit_b:
 		return suit_a < suit_b
-	return a.base_rank < b.base_rank
+	if a.base_rank != b.base_rank:
+		return a.base_rank < b.base_rank
+	return a.effect < b.effect
 
 
 func _suit_texture(suit: Card.Suit) -> Texture2D:

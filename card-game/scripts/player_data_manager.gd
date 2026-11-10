@@ -209,7 +209,7 @@ func init_active_deck(cards: Array[Card]) -> void:
 	if not active_deck.is_empty():
 		return
 	for card in cards:
-		active_deck.append(Card.new(card.suit, card.base_rank, Card.Owner.HUMAN, false))
+		active_deck.append(card.copy_for(Card.Owner.HUMAN))
 	deck_changed.emit()
 
 func move_to_deck(card: Card) -> bool:
@@ -234,7 +234,7 @@ func clear_new_cards() -> void:
 func active_deck_copy() -> Array[Card]:
 	var cards: Array[Card] = []
 	for card in active_deck:
-		cards.append(Card.new(card.suit, card.base_rank, Card.Owner.HUMAN, false))
+		cards.append(card.copy_for(Card.Owner.HUMAN))
 	cards.shuffle()
 	return cards
 

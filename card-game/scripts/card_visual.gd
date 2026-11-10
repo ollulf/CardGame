@@ -10,6 +10,7 @@ const RANK_INCREASED_COLOR := Color(0.4, 1.0, 0.45)
 const RANK_DECREASED_COLOR := Color(1.0, 0.4, 0.4)
 const LOCKED_COLOR := Color(0.5, 0.5, 0.5)
 const CARD_BACK := preload("res://sprites/card_backside.png")
+const CARD_FACE_SIZE := Vector2(60, 90)
 
 # --- Hover FX (driven externally) ---
 @export var hover_scale: float = 1.4
@@ -84,6 +85,23 @@ func update_visuals():
 
 	update_rank_color($RankLabel)
 	update_rank_color($RankLabel2)
+	update_effect_badge()
+
+func update_effect_badge() -> void:
+	var badge := get_node_or_null("EffectBadge") as EffectBadge
+	if not card.has_effect():
+		if badge != null:
+			badge.queue_free()
+		return
+	if badge == null:
+		badge = EffectBadge.create(card.effect)
+		add_child(badge)
+		var back := get_node_or_null("Back")
+		if back != null:
+			move_child(badge, back.get_index())
+	else:
+		badge.set_effect(card.effect)
+	badge.position = ((CARD_FACE_SIZE - badge.size) * 0.5).round()
 
 func update_rank_color(label: Label) -> void:
 	if card.rank > card.base_rank:
