@@ -302,7 +302,7 @@ func _rebuild_collection() -> void:
 			continue
 		var row := HBoxContainer.new()
 		row.add_theme_constant_override("separation", 10)
-		row.custom_minimum_size = Vector2(0, CARD_SIZE.y * COLLECTION_CARD_SCALE + 6)
+		row.custom_minimum_size = Vector2(0, CARD_SIZE.y * COLLECTION_CARD_SCALE + 18)
 		var icon := TextureRect.new()
 		icon.texture = _suit_texture(suit)
 		icon.custom_minimum_size = Vector2(18, 18)
@@ -379,7 +379,7 @@ func _card_cell(card: Card, card_scale: float, is_new: bool) -> Control:
 	visual.position = Vector2.ZERO
 	if is_new:
 		var tag := _badge("NEW", NEW_COLOR, BG_COLOR)
-		tag.position = Vector2(cell.custom_minimum_size.x / 2.0 - 14, cell.custom_minimum_size.y - 10)
+		tag.position = Vector2(cell.custom_minimum_size.x / 2.0 - 14, cell.custom_minimum_size.y + 1)
 		cell.add_child(tag)
 	cell.mouse_entered.connect(_on_cell_hovered.bind(cell, card))
 	cell.mouse_exited.connect(_on_cell_unhovered.bind(cell))
