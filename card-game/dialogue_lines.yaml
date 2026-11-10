@@ -122,15 +122,13 @@ match: 2
 			1: I hope you already added *smoking cards* to your *deck*.
 			2: I hope not...
 			2: That's going to make it harder for us, to win.
-			1: Oh, and one more thing: from now on our *decks* also have *0s* in them.
-			2: Don't laugh at them. A *0* is not as *worthless* as it looks...
-			1: Shh, don't spoil it! *YOU* will see.
 
 		when: zero_played
 		lines:
 			2: There it is, the first *0* of the match!
 			1: Looks harmless, right? Good thing my *9* is safe.
-			2: Hehe, I'm saying nothing.
+			2: Don't laugh at it. A *0* is not as *worthless* as it looks...
+			1: Shh, don't spoil it! *YOU* will see.
 
 		when: round_start
 		round: 2
@@ -153,9 +151,6 @@ match: 3
 		lines:
 			2: Okay, cigarettes are nice, but a bar game needs *drinks*!
 			cue: show_drinks
-			1: From now on there are *drinking cards* in the decks, the ones with the *glass*.
-			2: Just like *smoking cards*, they are *always trump*.
-			2: And we slipped *3 drinking cards* into *YOUR* deck, just for this match.
 			1: Drinks come from the *bar*: a *Round of Drinks* costs *$5*.
 			2: Then *everybody* at the table has to *drink*, whether they like it or not.
 			2: A drink gives *all* your *drinking cards +1*, but *all* your *other cards -1*.
@@ -165,6 +160,8 @@ match: 3
 		when: alk_played
 		lines:
 			1: A *drinking card*! Somebody came thirsty.
+			2: Just like *smoking cards*, they are *always trump*.
+			1: We slipped *3 of them* into *YOUR* deck, just for this match.
 			2: Careful, it's *trump*, and it only gets *stronger* with every *drink*.
 			1: And everything else gets a bit *blurry*, hehe.
 
