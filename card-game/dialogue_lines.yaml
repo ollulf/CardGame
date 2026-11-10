@@ -180,3 +180,10 @@ match: any
 	dialogues:
 		when: match_end
 		lines:
+
+		when: tie_played
+		lines:
+			1: Wait, we both played the same card. Who wins now?
+			2: Easy: when two cards are *equal*, the one played *first* wins.
+			2: So the *first* card on the table keeps the turn.
+			1: Good to know, being *first* has its perks.
