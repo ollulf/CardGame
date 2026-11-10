@@ -30,6 +30,7 @@ func _ready() -> void:
 		sprite.texture = CARD_BACK
 		sprite.scale = Vector2(CARD_SCALE, CARD_SCALE)
 		sprite.position = LAYER_STEP * float(i)
+		TableShadow.add_to(sprite)
 		stack.add_child(sprite)
 		_layers.append(sprite)
 	add_to_group(GameManager.DECK_PILE_GROUP)

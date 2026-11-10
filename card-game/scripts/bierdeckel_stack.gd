@@ -18,6 +18,7 @@ func _ready() -> void:
 		var coaster := Bierdeckel.new()
 		coaster.position = LAYER_STEP * float(i) + Vector2(randf_range(-MAX_JITTER, MAX_JITTER), 0)
 		add_child(coaster)
+		TableShadow.add_to(coaster)
 		_layers.append(coaster)
 	_tooltip = Label.new()
 	_tooltip.z_index = 10

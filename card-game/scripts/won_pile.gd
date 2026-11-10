@@ -29,6 +29,7 @@ func _ready() -> void:
 	for i in MAX_LAYERS:
 		var coaster := Bierdeckel.new()
 		_stack.add_child(coaster)
+		TableShadow.add_to(coaster)
 		_layers.append(coaster)
 		_scatter(i)
 	_badge = Label.new()

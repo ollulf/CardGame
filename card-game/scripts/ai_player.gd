@@ -303,6 +303,7 @@ func render_hand() -> void:
 		var c := preload("res://scenes/Card.tscn").instantiate() as CardVisual
 
 		c.setup(card, not show_hand)
+		c.add_table_shadow()
 		c.hover_enabled = false
 		_make_passive(c)
 
@@ -353,6 +354,7 @@ func deal_card(card: Card, from_center: Vector2, slot: int, slot_count: int) -> 
 	hand.append(card)
 	var c := preload("res://scenes/Card.tscn").instantiate() as CardVisual
 	c.setup(card, true)
+	c.add_table_shadow()
 	_make_passive(c)
 	add_child(c)
 	card_visuals.append(c)

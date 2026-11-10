@@ -43,6 +43,9 @@ func update_layout():
 		return
 	_base_scale = scale
 
+func add_table_shadow() -> void:
+	TableShadow.add_to($Background)
+
 func set_playable(playable: bool) -> void:
 	$PlayableOutline.visible = playable
 
