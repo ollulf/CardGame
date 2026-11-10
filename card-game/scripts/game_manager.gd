@@ -382,7 +382,7 @@ func _wait_for_continue(anchor: Control, winner: Card.Owner) -> void:
 	if not is_instance_valid(anchor):
 		return
 	var arrow := ContinueArrow.new()
-	anchor.add_child(arrow)
+	get_tree().current_scene.add_child(arrow)
 	var rect := anchor.get_global_rect()
 	var center := rect.get_center()
 	var dir := Vector2.DOWN
