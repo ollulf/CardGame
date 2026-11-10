@@ -20,7 +20,7 @@ const SPEAKER_PITCH := {0: 1.0, 1: 0.85, 2: 1.2, 3: 0.7}
 const AUTO_ADVANCE_HOLD := 1.5
 const DIALOGUE_LAYER := 100
 const LINES_PATH := "res://dialogue_lines.yaml"
-const CUES := ["show_deck", "deal_cards", "show_trump", "show_won_turns", "show_one_turns", "show_life_cards", "show_purse", "show_cigs", "ai_one_smokes", "ai_two_smokes", "ai_1_pays", "ai_2_pays", "you_pay", "unlock_cig_automat", "ai_1_buys_cigarettes", "show_drinks"]
+const CUES := ["show_deck", "deal_cards", "show_trump", "show_won_turns", "show_one_turns", "show_life_cards", "show_purse", "show_cigs", "ai_one_smokes", "ai_two_smokes", "ai_1_pays", "ai_2_pays", "you_pay", "unlock_cig_automat", "ai_1_buys_cigarettes", "show_drinks", "show_drink_round"]
 const PAY_CUES := {"you_pay": 0, "ai_1_pays": 1, "ai_2_pays": 2}
 const GIVE_CIGS_CUE := "give_player_cigs"
 
