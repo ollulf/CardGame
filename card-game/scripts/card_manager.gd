@@ -426,6 +426,20 @@ func get_zero_beating_nine() -> Card:
 			return card
 	return null
 
+func turn_won_by_tie() -> bool:
+	var winner := get_turn_winning_card()
+	if winner == null or get_zero_beating_nine() != null:
+		return false
+	for card in played_cards_turn.cards:
+		if card == winner or card.rank != winner.rank:
+			continue
+		if winner.is_trump:
+			if card.is_trump:
+				return true
+		elif not card.is_trump and card.suit == winner.suit:
+			return true
+	return false
+
 func turn_won_by_zero() -> bool:
 	return get_zero_beating_nine() != null
 

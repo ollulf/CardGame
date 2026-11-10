@@ -11,10 +11,10 @@ const RIP_TILT_DEGREES := 14.0
 const RIP_SOUND := preload("res://sounds/booster_rip.wav")
 const LOSS_SCALE := 3.0
 const LOSS_Z_INDEX := 100
-const LOSS_FLY_DURATION := 0.5
-const LOSS_PAUSE_BEFORE_RIP := 0.25
-const LOSS_PAUSE_AFTER_RIP := 0.6
-const LOSS_RETURN_DURATION := 0.6
+const LOSS_FLY_DURATION := 0.9
+const LOSS_PAUSE_BEFORE_RIP := 0.6
+const LOSS_PAUSE_AFTER_RIP := 0.9
+const LOSS_RETURN_DURATION := 1.0
 
 @onready var left_half: Control = %LeftHalf
 @onready var right_half: Control = %RightHalf

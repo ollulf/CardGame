@@ -281,6 +281,8 @@ func flip(index: int) -> void:
 		return
 	flipped[index] = true
 	Sfx.play_card_flip()
+	if _is_rare(cards[index]) or cards[index].suit == CardManager.trump_suit:
+		Sfx.play_booster_cheer()
 	var visual := card_visuals[index]
 	var turn := create_tween()
 	turn.tween_property(visual, "scale:x", 0.0, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
