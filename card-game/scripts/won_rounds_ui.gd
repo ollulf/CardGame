@@ -5,8 +5,16 @@ const PILE_OFFSETS := {
 	Card.Owner.AI_1: Vector2(0, 125),
 	Card.Owner.AI_2: Vector2(0, 125),
 }
+const GRAVEYARD_OFFSETS := {
+	Card.Owner.HUMAN: Vector2(78, -60),
+	Card.Owner.AI_1: Vector2(80, 0),
+	Card.Owner.AI_2: Vector2(-80, 0),
+}
+const STACK_OFFSET_FROM_ASHTRAY := Vector2(84, 4)
 
 var piles: Array[WonPile] = []
+var graveyards: Array[GraveyardPile] = []
+var bierdeckel_stack: BierdeckelStack
 var lifes_revealed := false
 var won_turns_shown := false
 var fade_tween: Tween
@@ -32,6 +40,17 @@ func _create_piles() -> void:
 		pile.position = deck_pile.position + PILE_OFFSETS[deck_pile.deck_owner]
 		deck_pile.get_parent().add_child(pile)
 		piles.append(pile)
+		var graveyard := GraveyardPile.new()
+		graveyard.pile_owner = deck_pile.deck_owner
+		graveyard.position = deck_pile.position + GRAVEYARD_OFFSETS[deck_pile.deck_owner]
+		deck_pile.get_parent().add_child(graveyard)
+		graveyards.append(graveyard)
+		if bierdeckel_stack == null:
+			var table: Node = deck_pile.get_parent().get_parent()
+			var tray := table.get_node_or_null("AshTray") as Node2D
+			bierdeckel_stack = BierdeckelStack.new()
+			bierdeckel_stack.position = (tray.position if tray != null else Vector2(386, 50)) + STACK_OFFSET_FROM_ASHTRAY
+			table.add_child(bierdeckel_stack)
 	set_won_turns_alpha(1.0 if won_turns_shown else 0.0)
 
 func on_round_started():
@@ -85,6 +104,8 @@ func on_new_match_started():
 		fade_tween.kill()
 	set_won_turns_alpha(0.0)
 	won_turns_shown = false
+	for graveyard in graveyards:
+		graveyard.clear()
 
 func show_won_turns():
 	if won_turns_shown:
@@ -97,7 +118,7 @@ func show_won_turns():
 
 func set_won_turns_alpha(alpha: float):
 	for pile in piles:
-		pile.modulate.a = alpha
+		pile.badge_alpha = alpha
 
 func update_round_looser(looser_id : int):
 	var lost_rounds: int = GameManager.id_to_player(looser_id).lost_rounds

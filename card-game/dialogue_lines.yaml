@@ -31,6 +31,8 @@ match: 1
 		lines:
 			cue: show_won_turns
 			1: This was the first turn and I was the *winner*. I will play the next *first card.*
+			1: For winning the turn I get a *Bierdeckel* from the stack next to the *ashtray*.
+			1: The *Bierdeckel* show how many *turns* each of us *won* this round. The played cards go to our *discard piles*.
 			1: After we played *5* turns, the players with the *least* won *turns* loses the round.
 			wait_for_cards_played: 1
 			1: Since, I played *hearts* now, and it's *trump* everybody who has trump, has to *play trump* now too.
