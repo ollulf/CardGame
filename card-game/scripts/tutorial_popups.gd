@@ -23,7 +23,7 @@ const BASIC_TIPS := ["follow", "trump", "bierdeckel", "deck", "lives", "smoke"]
 const TIPS := {
 	"follow": {
 		"title": "Your turn",
-		"text": "Play one card. The [b]highest card[/b] of the [b]first suit played[/b] wins the turn. Follow that suit if you can.",
+		"text": "Play one card. The [b]highest card[/b] of the [b]first suit played[/b] wins the turn. The other players must [b]follow the first suit[/b] if they can.",
 	},
 	"trump": {
 		"title": "Trump",
@@ -140,6 +140,7 @@ func _exit_tree() -> void:
 func _on_request_play_card(player_id: int) -> void:
 	if player_id == GameManager.HUMAN_ID:
 		request("follow", GameManager.human_player)
+		request("trump", _trump_anchor())
 
 func _on_card_played(_player_id: int, card: Card) -> void:
 	if card == null:
@@ -149,8 +150,6 @@ func _on_card_played(_player_id: int, card: Card) -> void:
 		request("smoke", visual, true)
 	elif card.suit == Card.Suit.ALK:
 		request("alk", visual, true)
-	elif card.is_trump and card != CardManager.leading_card:
-		request("trump", visual, true)
 	if card.base_rank == 0:
 		request("zero", visual, true)
 	var tied := _tied_card(card)
@@ -158,7 +157,7 @@ func _on_card_played(_player_id: int, card: Card) -> void:
 		request("tie", _table_visual(tied), true)
 
 func _on_turn_completed(_turn_index: int, winner_id: int) -> void:
-	request("bierdeckel", CardManager.won_pile_of(winner_id as Card.Owner))
+	request("bierdeckel", _won_turns_anchor(winner_id))
 
 func _on_round_started() -> void:
 	if _round_number() > 1:
@@ -182,6 +181,18 @@ func _on_match_lost(looser_id: int) -> void:
 
 func _round_number() -> int:
 	return DialogueManager._round
+
+func _trump_anchor():
+	var display = get_tree().get_first_node_in_group(TrumpDisplay.GROUP)
+	return display.anchor() if display != null else null
+
+func _won_turns_anchor(winner_id: int):
+	var pile := CardManager.won_pile_of(Card.Owner.AI_1)
+	if pile == null or pile.count <= 0:
+		pile = CardManager.won_pile_of(winner_id as Card.Owner)
+	if pile == null:
+		return null
+	return pile.coaster(0)
 
 func _human_deck_pile():
 	for pile in get_tree().get_nodes_in_group(GameManager.DECK_PILE_GROUP):
@@ -212,6 +223,7 @@ func request(key: String, target = null, urgent := false) -> void:
 	if urgent:
 		_pending.push_front([key, target])
 		await get_tree().create_timer(URGENT_DELAY, false).timeout
+		await DialogueManager.wait_until_idle()
 		if _bubble == null:
 			_show_next()
 	else:
@@ -230,6 +242,9 @@ func _schedule() -> void:
 
 func _show_next() -> void:
 	if _pending.is_empty() or _bubble != null:
+		return
+	if DialogueManager.is_open():
+		_show_after_dialogue()
 		return
 	var entry: Array = _pending.pop_front()
 	var tip_data: Dictionary = TIPS[entry[0]]
@@ -264,6 +279,11 @@ func _show_next() -> void:
 		await get_tree().create_timer(AUTO_HOLD, true).timeout
 		if _bubble == bubble:
 			_dismiss()
+
+func _show_after_dialogue() -> void:
+	await DialogueManager.wait_until_idle()
+	if _bubble == null:
+		_show_next()
 
 func _process(_delta: float) -> void:
 	if _bubble != null and _bubble.modulate.a > 0.0:
@@ -420,7 +440,7 @@ func _button() -> Button:
 	var button := Button.new()
 	button.text = "Got it"
 	button.focus_mode = Control.FOCUS_NONE
-	button.size_flags_horizontal = Control.SIZE_SHRINK_END
+	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	if InteractionManager.is_phone:
 		button.custom_minimum_size = Vector2(120, 44)
 	button.pressed.connect(_dismiss)
