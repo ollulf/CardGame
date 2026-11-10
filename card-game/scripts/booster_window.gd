@@ -8,6 +8,7 @@ enum State { HIDDEN, CLOSED, OPENING, REVEAL, COLLECTING }
 const CARD_SCENE := preload("res://scenes/Card.tscn")
 const RIP_SOUND := preload("res://sounds/booster_rip.wav")
 const MAX_ROW_CARDS := 5
+const COLLECT_DELAY := 2.0
 const NORMAL_SUITS: Array[Card.Suit] = [Card.Suit.DIAMONDS, Card.Suit.HEARTS, Card.Suit.SPADES, Card.Suit.CLUBS]
 const MIN_RANK := 1
 const MAX_RANK := 9
@@ -281,7 +282,7 @@ func flip(index: int) -> void:
 		return
 	flipped[index] = true
 	Sfx.play_card_flip()
-	if _is_rare(cards[index]) or cards[index].suit == CardManager.trump_suit:
+	if _is_rare(cards[index]):
 		Sfx.play_booster_cheer()
 	var visual := card_visuals[index]
 	var turn := create_tween()
@@ -380,7 +381,7 @@ func _sparks_effect(visual: CardVisual, card: Card) -> void:
 
 
 func _collect() -> void:
-	await get_tree().create_timer(0.8, true, false, true).timeout
+	await get_tree().create_timer(COLLECT_DELAY, true, false, true).timeout
 	var target := _collection_button.position + _collection_button.size / 2.0 - CARD_SIZE / 2.0
 	var fly := create_tween()
 	fly.set_parallel(true)
