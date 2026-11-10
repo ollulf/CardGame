@@ -23,6 +23,10 @@ const WIN_CARD_PITCH_VARIATION := 0.04
 const DIALOGUE_NEXT_SOUND := preload("res://sounds/dialogue_next.mp3")
 const DIALOGUE_NEXT_DB := -10.0
 const DIALOGUE_NEXT_PITCH_VARIATION := 0.04
+const BIERDECKEL_MOVE_SOUND := preload("res://sounds/bierdeckel_move.wav")
+const BIERDECKEL_MOVE_DB := -6.0
+const BIERDECKEL_MOVE_PITCH_VARIATION := 0.06
+const BIERDECKEL_MOVE_INTERVAL_MSEC := 90
 
 const AMBIENT_SOUND := preload("res://sounds/bar_ambient.mp3")
 const AMBIENT_VOLUME_DB := -24.0
@@ -43,6 +47,7 @@ var _last_played: AudioStreamPlayer
 var card_move_count := 0
 var _last_card_move_msec := -1000
 var _last_hover_msec := -1000
+var _last_bierdeckel_msec := -1000
 var _music: AudioStreamPlayer
 var _music_tween: Tween
 var _players: Array[AudioStreamPlayer] = []
@@ -76,6 +81,13 @@ func play_card_move(delay: float = 0.0) -> void:
 	_last_card_move_msec = now
 	card_move_count += 1
 	play(CARD_DRAW_SOUND, CARD_MOVE_PITCH_VARIATION, CARD_MOVE_VOLUME_DB)
+
+func play_bierdeckel_move() -> void:
+	var now := Time.get_ticks_msec()
+	if now - _last_bierdeckel_msec < BIERDECKEL_MOVE_INTERVAL_MSEC:
+		return
+	_last_bierdeckel_msec = now
+	play(BIERDECKEL_MOVE_SOUND, BIERDECKEL_MOVE_PITCH_VARIATION, BIERDECKEL_MOVE_DB)
 
 func play_hover_card() -> void:
 	var now := Time.get_ticks_msec()
