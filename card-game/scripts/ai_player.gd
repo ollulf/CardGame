@@ -277,12 +277,13 @@ static func trick_winner(table: Array) -> Card:
 			best = card
 	if best == null:
 		best = table[0]
+		var lead: int = -1 if best.is_colorless() else best.suit
 		for card in table:
-			if card.suit == table[0].suit and card.rank > best.rank:
+			if card.matches_suit(lead) and card.rank > best.rank:
 				best = card
 	if best.rank >= CardManager.ZERO_BEATS_RANK:
 		for card in table:
-			if card.rank == 0 and card.suit == best.suit:
+			if card.rank == 0 and card != best and (card.suit == best.suit or card.is_colorless()) and card.is_trump == best.is_trump:
 				return card
 	return best
 

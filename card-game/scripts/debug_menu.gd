@@ -53,6 +53,8 @@ func _build() -> void:
 	_add_button(box, "+%d cigarettes" % CIGARETTE_BONUS, add_cigarettes)
 	_add_button(box, "+%d$" % CASH_BONUS, add_cash)
 	_add_button(box, "Give Draw card", give_effect_card.bind(CardEffect.Id.DRAW))
+	_add_button(box, "Open stamp shop", open_stamp_shop)
+	_add_button(box, "Give random stamp", give_random_stamp)
 	_matches_label = Label.new()
 	box.add_child(_matches_label)
 	var matches_row := HBoxContainer.new()
@@ -153,6 +155,35 @@ func give_effect_card(effect: CardEffect.Id) -> void:
 	if GameManager.can_skip_round() and CardManager.hand_of(GameManager.HUMAN_ID) != null:
 		CardManager.give_card(GameManager.HUMAN_ID, card)
 	GameManager.message("Debug: got %s" % card.string_info())
+
+
+func open_stamp_shop() -> void:
+	var bar := _bar_screen()
+	if bar == null:
+		return
+	close()
+	if not bar.visible:
+		await bar.open()
+	if bar.visible:
+		bar.open_stamp_shop()
+
+
+func give_random_stamp() -> void:
+	var cards := PlayerDataManager.stampable_cards()
+	if cards.is_empty():
+		GameManager.message("Debug: no card can take a stamp")
+		return
+	var stamp := CardStamp.random_id()
+	var card: Card = cards.pick_random()
+	PlayerDataManager.apply_stamp(card, stamp)
+	GameManager.message("Debug: %s stamp on %s %d" % [CardStamp.display_name(stamp), Card.Suit.keys()[card.suit].capitalize(), card.printed_rank])
+
+
+func _bar_screen() -> BarScreen:
+	for node in get_tree().root.find_children("*", "CanvasLayer", true, false):
+		if node is BarScreen:
+			return node
+	return null
 
 
 func _on_new_match_started() -> void:

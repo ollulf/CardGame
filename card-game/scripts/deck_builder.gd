@@ -497,11 +497,13 @@ func _show_card(card: Card) -> void:
 	var lines: Array[String] = ["%s %d" % [SUIT_NAMES[card.suit], card.base_rank]]
 	match card.suit:
 		Card.Suit.SMOKE:
-			lines.append("Always trump. Gains +1 rank per cigarette smoked.")
+			lines.append(("Never trump (colorless). " if card.is_colorless() else "Always trump. ") + "Gains +1 rank per cigarette smoked.")
 		Card.Suit.ALK:
-			lines.append("Always trump.")
+			lines.append("Never trump (colorless)." if card.is_colorless() else "Always trump.")
 	if card.has_effect():
 		lines.append("%s: %s" % [CardEffect.display_name(card.effect), CardEffect.description(card.effect)])
+	if card.has_stamp():
+		lines.append("%s stamp: %s" % [CardStamp.display_name(card.stamp), CardStamp.description(card.stamp)])
 	var holder := Control.new()
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	holder.custom_minimum_size = CARD_SIZE * PREVIEW_SCALE
@@ -522,7 +524,7 @@ func _show_card(card: Card) -> void:
 func _count_same(cards: Array[Card], card: Card) -> int:
 	var count := 0
 	for other in cards:
-		if other.suit == card.suit and other.base_rank == card.base_rank and other.effect == card.effect:
+		if other.suit == card.suit and other.base_rank == card.base_rank and other.effect == card.effect and other.stamp == card.stamp:
 			count += 1
 	return count
 
@@ -534,7 +536,9 @@ func _card_before(a: Card, b: Card) -> bool:
 		return suit_a < suit_b
 	if a.base_rank != b.base_rank:
 		return a.base_rank < b.base_rank
-	return a.effect < b.effect
+	if a.effect != b.effect:
+		return a.effect < b.effect
+	return a.stamp < b.stamp
 
 
 func _suit_texture(suit: Card.Suit) -> Texture2D:

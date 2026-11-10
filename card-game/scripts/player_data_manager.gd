@@ -8,6 +8,8 @@ signal collection_changed
 signal deck_changed
 signal buttons_unlock_changed
 signal cig_machine_changed(unlocked: bool)
+signal stamp_offers_changed
+signal stamp_applied(card: Card)
 
 var booster_collected := false
 var deck_edited := false
@@ -65,6 +67,8 @@ var smoke_unlocked := false
 var collection: Array[Card] = []
 var active_deck: Array[Card] = []
 var new_cards: Array[Card] = []
+var stamp_offers: Array[int] = []
+var stamp_offers_match := 0
 
 func _ready() -> void:
 	GameManager.round_finished.connect(_on_round_finished)
@@ -238,8 +242,63 @@ func active_deck_copy() -> Array[Card]:
 	cards.shuffle()
 	return cards
 
+func get_stamp_offers() -> Array[int]:
+	var match_number := DialogueManager.upcoming_match()
+	if stamp_offers_match != match_number:
+		stamp_offers_match = match_number
+		stamp_offers.clear()
+		for i in CardStamp.OFFERS_PER_MATCH:
+			stamp_offers.append(CardStamp.random_id())
+		stamp_offers_changed.emit()
+	return stamp_offers
+
+func buy_stamp(index: int) -> int:
+	var offers := get_stamp_offers()
+	if index < 0 or index >= offers.size() or not has_stampable_card():
+		return CardStamp.Id.NONE
+	var stamp := offers[index]
+	if not spend(CardStamp.price(stamp)):
+		return CardStamp.Id.NONE
+	offers.remove_at(index)
+	stamp_offers_changed.emit()
+	return stamp
+
+func stampable_cards() -> Array[Card]:
+	var cards: Array[Card] = []
+	for card in active_deck + collection:
+		if CardStamp.can_stamp(card):
+			cards.append(card)
+	return cards
+
+func has_stampable_card() -> bool:
+	return not stampable_cards().is_empty()
+
+func apply_stamp(card: Card, stamp: int) -> bool:
+	if not CardStamp.can_stamp(card) or stamp == CardStamp.Id.NONE:
+		return false
+	var in_deck := active_deck.has(card)
+	var list := active_deck if in_deck else collection
+	var index := list.find(card)
+	if index < 0:
+		return false
+	var stamped := card.copy_for(card.owner)
+	stamped.set_stamp(stamp)
+	list[index] = stamped
+	var new_index := new_cards.find(card)
+	if new_index >= 0:
+		new_cards[new_index] = stamped
+	print("Stamp applied: ", stamped.string_info())
+	stamp_applied.emit(stamped)
+	if in_deck:
+		deck_changed.emit()
+	else:
+		collection_changed.emit()
+	return true
+
 func capture_state() -> Dictionary:
 	return {
+		"stamp_offers": stamp_offers.duplicate(),
+		"stamp_offers_match": stamp_offers_match,
 		"money": money,
 		"starting_money_granted": starting_money_granted,
 		"cig_machine_unlocked": cig_machine_unlocked,
@@ -258,6 +317,9 @@ func restore_state(state: Dictionary) -> void:
 	active_deck.assign(state.get("active_deck", []))
 	_top_up_active_deck()
 	new_cards.assign(state.get("new_cards", []))
+	stamp_offers.assign(state.get("stamp_offers", []))
+	stamp_offers_match = state.get("stamp_offers_match", 0)
+	stamp_offers_changed.emit()
 	clear_smoking()
 	clear_drinking()
 	smoke_unlocked_changed.emit()

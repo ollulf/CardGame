@@ -112,6 +112,15 @@ static func state_from_data(data: Dictionary):
 		if cards == null:
 			return null
 		state[key] = cards
+	var offers: Array[int] = []
+	var raw_offers = data.get("stamp_offers", [])
+	if raw_offers is Array:
+		for id in raw_offers:
+			var stamp := _int(id, -1)
+			if stamp > 0 and CardStamp.is_valid(stamp):
+				offers.append(stamp)
+	state["stamp_offers"] = offers
+	state["stamp_offers_match"] = _int(data.get("stamp_offers_match"), 0)
 	var tutorial = data.get("tutorial", {})
 	if not tutorial is Dictionary:
 		tutorial = {}
@@ -134,10 +143,12 @@ static func state_from_data(data: Dictionary):
 static func cards_to_data(cards: Array) -> Array:
 	var data: Array = []
 	for card: Card in cards:
-		if card.has_effect():
-			data.append([card.suit, card.base_rank, card.owner, card.effect])
+		if card.has_stamp():
+			data.append([card.suit, card.printed_rank, card.owner, card.effect, card.stamp])
+		elif card.has_effect():
+			data.append([card.suit, card.printed_rank, card.owner, card.effect])
 		else:
-			data.append([card.suit, card.base_rank, card.owner])
+			data.append([card.suit, card.printed_rank, card.owner])
 	return data
 
 static func cards_from_data(data):
@@ -151,9 +162,10 @@ static func cards_from_data(data):
 		var rank := _int(entry[1], -1)
 		var owner := _int(entry[2], -1) if entry.size() > 2 else Card.Owner.HUMAN
 		var effect := _int(entry[3], -1) if entry.size() > 3 else CardEffect.Id.NONE
-		if suit < 0 or suit >= Card.Suit.size() or rank < 0 or rank > 9 or owner < 0 or owner >= Card.Owner.size() or not CardEffect.is_valid(effect):
+		var stamp := _int(entry[4], -1) if entry.size() > 4 else CardStamp.Id.NONE
+		if suit < 0 or suit >= Card.Suit.size() or rank < 0 or rank > 9 or owner < 0 or owner >= Card.Owner.size() or not CardEffect.is_valid(effect) or not CardStamp.is_valid(stamp):
 			return null
-		cards.append(Card.new(suit, rank, owner, false, effect))
+		cards.append(Card.new(suit, rank, owner, false, effect, stamp))
 	return cards
 
 static func _int(value, fallback: int) -> int:

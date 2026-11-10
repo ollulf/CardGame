@@ -74,6 +74,7 @@ func _discard_leftover_hands(_loosers) -> void:
 			_fly_card_to_deck(card, home)
 		if deck != null:
 			deck.cards.shuffle()
+			deck.move_draw_first_to_top()
 			print("Leftover cards shuffled into deck: owner ", pair[2], " returned ", returned.size(), " deck ", before, " -> ", deck.cards.size())
 
 func _fly_card_to_deck(card: Card, home: Vector2) -> void:
@@ -157,6 +158,7 @@ func load_player_decks():
 	else:
 		player_cards = _mission_cards(match_number, 0, Card.Owner.HUMAN)
 	player_deck = Deck.new(player_cards)
+	player_deck.move_draw_first_to_top()
 	AI_1_deck = Deck.new(_mission_cards(match_number, 1, Card.Owner.AI_1))
 	AI_2_deck = Deck.new(_mission_cards(match_number, 2, Card.Owner.AI_2))
 	print("Decks generated")
@@ -179,7 +181,7 @@ func _mission_cards(match_number: int, seat: int, owner: Card.Owner) -> Array[Ca
 func _raise_low_ranks(cards: Array[Card], min_rank: int) -> Array[Card]:
 	var result: Array[Card] = []
 	for card in cards:
-		if card.base_rank < min_rank:
+		if card.base_rank < min_rank and not card.has_stamp():
 			result.append(Card.new(card.suit, randi_range(min_rank, 9), card.owner, false, card.effect))
 		else:
 			result.append(card)
@@ -191,7 +193,7 @@ func _lock_suits(cards: Array[Card], match_number: int) -> Array[Card]:
 	var result: Array[Card] = []
 	for card in cards:
 		if card.suit == Card.Suit.ALK:
-			result.append(Card.new(randi_range(0, Card.Suit.CLUBS), card.base_rank, card.owner, false, card.effect))
+			result.append(Card.new(randi_range(0, Card.Suit.CLUBS), card.printed_rank, card.owner, false, card.effect, card.stamp))
 		else:
 			result.append(card)
 	return result
@@ -257,11 +259,19 @@ func _place_scripted_cards(deck: Deck, seat: int, owner: Card.Owner) -> void:
 func is_legal_play(hand: Hand, card: Card) -> bool:
 	if not hand.contains(card):
 		return false
-	if leading_card == null:
+	if leading_card == null or card.is_colorless():
 		return true
 	if leading_card.is_trump:
 		return card.is_trump or not hand.has_trump_card()
-	return card.suit == leading_card.suit or not hand.contains_card_of_suit(leading_card.suit)
+	var lead := lead_suit()
+	if lead < 0:
+		return true
+	return card.suit == lead or not hand.contains_card_of_suit(lead)
+
+func lead_suit() -> int:
+	if leading_card == null or leading_card.is_colorless():
+		return -1
+	return leading_card.suit
 
 func generate_cards(amount: int, owner : Card.Owner, min_rank: int = 0) -> Array[Card]:
 	var cards: Array[Card] = []
@@ -450,7 +460,7 @@ func get_normal_winning_card() -> Card:
 	var highest_trump = played_cards_turn.get_highest_trump_card()
 	if highest_trump != null:
 		return highest_trump
-	return played_cards_turn.get_highest_card_of_suit(leading_card.suit)
+	return played_cards_turn.get_highest_card_of_suit(lead_suit())
 
 func highlight_turn_winner() -> CardVisual:
 	var winning_card := get_turn_winning_card()
@@ -476,9 +486,14 @@ func get_zero_beating_nine() -> Card:
 	if best == null or best.rank < ZERO_BEATS_RANK:
 		return null
 	for card in played_cards_turn.cards:
-		if card.rank == 0 and card.suit == best.suit:
+		if card.rank == 0 and card != best and _same_color(card, best):
 			return card
 	return null
+
+func _same_color(card: Card, best: Card) -> bool:
+	if best.is_trump:
+		return card.is_trump and card.suit == best.suit
+	return not card.is_trump and card.matches_suit(lead_suit())
 
 func turn_won_by_tie() -> bool:
 	var winner := get_turn_winning_card()
@@ -490,7 +505,7 @@ func turn_won_by_tie() -> bool:
 		if winner.is_trump:
 			if card.is_trump:
 				return true
-		elif not card.is_trump and card.suit == winner.suit:
+		elif not card.is_trump and card.matches_suit(lead_suit()):
 			return true
 	return false
 
@@ -686,7 +701,7 @@ func set_table_root(node: Control) -> void:
 	table_root = node
 
 func get_highest_lead_card() -> Card:
-	return played_cards_turn.get_highest_card_of_suit(leading_card.suit)
+	return played_cards_turn.get_highest_card_of_suit(lead_suit())
 
 func get_highest_trump_card() -> Card:
 	return played_cards_turn.get_highest_trump_card()

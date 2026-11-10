@@ -75,7 +75,7 @@ func _process(_delta: float) -> void:
 		if _box != null:
 			_clear()
 		return
-	var key := str(_target.card.rank, _target.card.buff_parts, _target.card.effect)
+	var key := str(_target.card.rank, _target.card.buff_parts, _target.card.effect, _target.card.stamp)
 	if key != _key:
 		_key = key
 		_rebuild()
@@ -87,7 +87,7 @@ func _should_show() -> bool:
 		return false
 	if _target.face_down or _target.dragging or not _target.is_visible_in_tree():
 		return false
-	return not _target.card.buff_parts.is_empty() or _target.card.has_effect()
+	return not _target.card.buff_parts.is_empty() or _target.card.has_effect() or _target.card.has_stamp()
 
 
 func _clear() -> void:
@@ -145,7 +145,21 @@ func _build_pill(card: Card) -> Control:
 		lines.add_child(_buff_row(card))
 	if card.has_effect():
 		lines.add_child(effect_row(card.effect, _font(14)))
+	if card.has_stamp():
+		lines.add_child(stamp_row(card.stamp, _font(14)))
 	return pill
+
+
+static func stamp_row(stamp: int, font_size: int) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_theme_constant_override("separation", 6)
+	var badge := StampBadge.create(stamp)
+	badge.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(badge)
+	row.add_child(_label(CardStamp.display_name(stamp) + " stamp:", CardStamp.color(stamp).lightened(0.3), font_size))
+	row.add_child(_label(CardStamp.description(stamp), Color.WHITE, font_size))
+	return row
 
 
 static func effect_row(effect: int, font_size: int) -> HBoxContainer:

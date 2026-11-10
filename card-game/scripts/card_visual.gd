@@ -9,6 +9,7 @@ var dragging: bool = false
 const RANK_INCREASED_COLOR := Color(0.4, 1.0, 0.45)
 const RANK_DECREASED_COLOR := Color(1.0, 0.4, 0.4)
 const LOCKED_COLOR := Color(0.5, 0.5, 0.5)
+const COLORLESS_SUIT_TINT := Color(0.35, 0.35, 0.38, 0.75)
 const CARD_BACK := preload("res://sprites/card_backside.png")
 const CARD_FACE_SIZE := Vector2(60, 90)
 const SHINE_SHADER := preload("res://shaders/card_shine.gdshader")
@@ -112,6 +113,7 @@ func update_visuals():
 	update_rank_color($RankLabel)
 	update_rank_color($RankLabel2)
 	update_effect_badge()
+	update_stamp_badge()
 	_pop_rank_change()
 	_refresh_shine()
 
@@ -129,6 +131,25 @@ func update_effect_badge() -> void:
 			move_child(badge, back.get_index())
 	else:
 		badge.set_effect(card.effect)
+	badge.position = ((CARD_FACE_SIZE - badge.size) * 0.5).round()
+
+func update_stamp_badge() -> void:
+	var tint := COLORLESS_SUIT_TINT if card.is_colorless() else Color.WHITE
+	$SuitIcon.modulate = tint
+	$SuitIcon2.modulate = tint
+	var badge := get_node_or_null("StampBadge") as StampBadge
+	if not card.has_stamp():
+		if badge != null:
+			badge.queue_free()
+		return
+	if badge == null:
+		badge = StampBadge.create(card.stamp)
+		add_child(badge)
+		var back := get_node_or_null("Back")
+		if back != null:
+			move_child(badge, back.get_index())
+	else:
+		badge.set_stamp(card.stamp)
 	badge.position = ((CARD_FACE_SIZE - badge.size) * 0.5).round()
 
 func update_rank_color(label: Label) -> void:
