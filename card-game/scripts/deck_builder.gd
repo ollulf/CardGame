@@ -37,9 +37,28 @@ const ACCENT_COLOR := Color("ffcf6e")
 const NEW_COLOR := Color("7ed2a0")
 const WARN_COLOR := Color("e5735e")
 
+const SUIT_COLORS := {
+	Card.Suit.HEARTS: Color("ff6f91"),
+	Card.Suit.DIAMONDS: Color("ffa36e"),
+	Card.Suit.SPADES: Color("e8e4f4"),
+	Card.Suit.CLUBS: Color("9a94b8"),
+	Card.Suit.ALK: Color("3fc1c0"),
+	Card.Suit.SMOKE: Color("f2b33d"),
+}
+const STATS_CONCEPT_NAMES := ["Chips + histogram", "Stats panel", "In-row counts"]
+
 const LEFT_RECT := Rect2(16, 16, 210, 616)
 const RIGHT_RECT := Rect2(236, 16, 900, 616)
 
+enum StatsConcept { CHIPS, PANEL, INLINE }
+
+static var stats_concept := StatsConcept.CHIPS
+
+var _deck_box: Panel
+var _suit_chips: HBoxContainer
+var _histogram: Control
+var _fill_pips: Control
+var _stats_panel: VBoxContainer
 var _deck_row: Control
 var _deck_counter: Label
 var _rows: VBoxContainer
@@ -59,6 +78,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	mouse_filter = Control.MOUSE_FILTER_STOP
+	add_to_group("deck_builder")
 	_build()
 	PlayerDataManager.deck_changed.connect(_queue_rebuild)
 	PlayerDataManager.collection_changed.connect(_queue_rebuild)
@@ -71,6 +91,15 @@ func open() -> void:
 	_rebuild()
 	_show_card(null)
 	show()
+
+
+static func cycle_stats_concept() -> void:
+	stats_concept = ((stats_concept + 1) % StatsConcept.size()) as StatsConcept
+
+
+func refresh_concept() -> void:
+	if visible:
+		_rebuild()
 
 
 func try_close() -> bool:
@@ -116,6 +145,11 @@ func _build() -> void:
 	_stats.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_stats.custom_minimum_size = Vector2(info.size.x, 0)
 	info.add_child(_stats)
+	_stats_panel = VBoxContainer.new()
+	_stats_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_stats_panel.custom_minimum_size = Vector2(info.size.x, 0)
+	_stats_panel.add_theme_constant_override("separation", 6)
+	info.add_child(_stats_panel)
 
 	_close_button = Button.new()
 	_close_button.focus_mode = Control.FOCUS_NONE
@@ -127,6 +161,7 @@ func _build() -> void:
 
 	var deck_height := CARD_SIZE.y * DECK_CARD_SCALE + 48
 	var deck_box := _panel(Rect2(RIGHT_RECT.position, Vector2(RIGHT_RECT.size.x, deck_height)))
+	_deck_box = deck_box
 	var deck_head := HBoxContainer.new()
 	deck_head.position = Vector2(12, 6)
 	deck_head.add_theme_constant_override("separation", 10)
@@ -134,6 +169,20 @@ func _build() -> void:
 	deck_head.add_child(_label("Your deck", 16, FG_COLOR))
 	_deck_counter = _label("", 14, WARN_COLOR)
 	deck_head.add_child(_deck_counter)
+	_suit_chips = HBoxContainer.new()
+	_suit_chips.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_suit_chips.add_theme_constant_override("separation", 6)
+	deck_head.add_child(_suit_chips)
+	_histogram = Control.new()
+	_histogram.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_histogram.size = Vector2(10 * 20, 30)
+	_histogram.position = Vector2(RIGHT_RECT.size.x - 12 - _histogram.size.x, 2)
+	deck_box.add_child(_histogram)
+	_fill_pips = Control.new()
+	_fill_pips.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_fill_pips.size = Vector2(Missions.DECK_SIZE * 15, 22)
+	_fill_pips.position = Vector2(RIGHT_RECT.size.x - 12 - _fill_pips.size.x, 6)
+	deck_box.add_child(_fill_pips)
 	_deck_row = Control.new()
 	_deck_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_deck_row.position = Vector2(12, 34)
@@ -199,6 +248,7 @@ func _rebuild() -> void:
 	_rebuild_deck()
 	_rebuild_collection()
 	_update_stats()
+	_rebuild_concept_views()
 	_hide_flight_targets()
 
 
@@ -311,8 +361,11 @@ func _rebuild_collection() -> void:
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		row.add_child(icon)
 		var cards := owned.filter(func(c: Card) -> bool: return c.suit == suit)
+		if stats_concept == StatsConcept.INLINE:
+			row.add_child(_row_header(suit, icon, cards.size()))
+		else:
+			row.add_child(icon)
 		if cards.is_empty():
 			row.add_child(_label("none", 12, MUTED_COLOR))
 		else:
@@ -323,10 +376,15 @@ func _rebuild_collection() -> void:
 			strip.custom_minimum_size = Vector2(0, CARD_SIZE.y * COLLECTION_CARD_SCALE)
 			strip.set_meta("gap", COLLECTION_CARD_GAP)
 			strip.resized.connect(_layout_strip.bind(strip))
-			for card in cards:
-				var cell := _card_cell(card, COLLECTION_CARD_SCALE, PlayerDataManager.new_cards.has(card))
+			for group in _group_cards(cards):
+				var card: Card = group[0]
+				var is_new: bool = group.any(func(c: Card) -> bool: return PlayerDataManager.new_cards.has(c))
+				var cell := _card_cell(card, COLLECTION_CARD_SCALE, is_new)
+				if group.size() > 1:
+					_add_stack_depth(cell, group.size())
 				cell.gui_input.connect(_on_collection_cell_input.bind(card, cell))
-				_stack_cells[card] = cell
+				for member in group:
+					_stack_cells[member] = cell
 				strip.add_child(cell)
 			row.add_child(strip)
 		_rows.add_child(row)
@@ -494,19 +552,14 @@ func _count_same(cards: Array[Card], card: Card) -> int:
 
 func _update_stats() -> void:
 	var deck := PlayerDataManager.active_deck
+	_stats.visible = stats_concept != StatsConcept.PANEL
 	var lines: Array[String] = ["Deck stats"]
 	var rank_sum := 0
 	var specials := 0
-	for suit in SUIT_ORDER:
-		var count := 0
-		for card in deck:
-			if card.suit == suit:
-				count += 1
-		lines.append("%s: %d" % [SUIT_NAMES[suit], count])
-		if suit == Card.Suit.ALK or suit == Card.Suit.SMOKE:
-			specials += count
 	for card in deck:
 		rank_sum += card.base_rank
+		if _is_special(card):
+			specials += 1
 	lines.append("Special cards: %d" % specials)
 	if not deck.is_empty():
 		lines.append("Average rank: %.1f" % (float(rank_sum) / deck.size()))
@@ -524,3 +577,273 @@ func _card_before(a: Card, b: Card) -> bool:
 
 func _suit_texture(suit: Card.Suit) -> Texture2D:
 	return SUIT_TEXTURES.get(suit)
+
+
+func _is_special(card: Card) -> bool:
+	return card.suit == Card.Suit.ALK or card.suit == Card.Suit.SMOKE
+
+
+func _suit_color(suit: Card.Suit) -> Color:
+	return SUIT_COLORS.get(suit, MUTED_COLOR)
+
+
+func _suit_counts(cards: Array[Card]) -> Dictionary:
+	var counts := {}
+	for suit in SUIT_ORDER:
+		counts[suit] = 0
+	for card in cards:
+		counts[card.suit] += 1
+	return counts
+
+
+func _rank_counts(cards: Array[Card]) -> Array[int]:
+	var counts: Array[int] = []
+	counts.resize(10)
+	counts.fill(0)
+	for card in cards:
+		counts[clampi(card.base_rank, 0, 9)] += 1
+	return counts
+
+
+func _visible_suits() -> Array[Card.Suit]:
+	var suits: Array[Card.Suit] = []
+	for suit in SUIT_ORDER:
+		if (suit == Card.Suit.ALK or suit == Card.Suit.SMOKE) and not _owns_suit(suit):
+			continue
+		suits.append(suit)
+	return suits
+
+
+func _rect(parent: Control, rect: Rect2, color: Color) -> ColorRect:
+	var shape := ColorRect.new()
+	shape.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	shape.position = rect.position
+	shape.size = rect.size
+	shape.color = color
+	parent.add_child(shape)
+	return shape
+
+
+func _suit_icon(suit: Card.Suit, icon_size: float) -> TextureRect:
+	var icon := TextureRect.new()
+	icon.texture = _suit_texture(suit)
+	icon.custom_minimum_size = Vector2(icon_size, icon_size)
+	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	icon.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	return icon
+
+
+func _clear(node: Node) -> void:
+	for child in node.get_children():
+		node.remove_child(child)
+		child.queue_free()
+
+
+func _rebuild_concept_views() -> void:
+	_suit_chips.visible = stats_concept == StatsConcept.CHIPS
+	_histogram.visible = stats_concept == StatsConcept.CHIPS
+	_fill_pips.visible = stats_concept == StatsConcept.INLINE
+	_stats_panel.visible = stats_concept == StatsConcept.PANEL
+	_clear(_suit_chips)
+	_clear(_histogram)
+	_clear(_fill_pips)
+	_clear(_stats_panel)
+	match stats_concept:
+		StatsConcept.CHIPS:
+			_fill_chips()
+			_draw_histogram(_histogram, _rank_counts(PlayerDataManager.active_deck), 16.0, false)
+		StatsConcept.PANEL:
+			_fill_stats_panel()
+		StatsConcept.INLINE:
+			_fill_pips_bar()
+
+
+func _fill_chips() -> void:
+	var counts := _suit_counts(PlayerDataManager.active_deck)
+	for suit in _visible_suits():
+		var count: int = counts[suit]
+		var color := _suit_color(suit)
+		var chip := PanelContainer.new()
+		chip.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(color, 0.18 if count > 0 else 0.05)
+		style.border_color = Color(color, 0.9 if count > 0 else 0.3)
+		style.set_border_width_all(1)
+		style.set_corner_radius_all(8)
+		style.content_margin_left = 5
+		style.content_margin_right = 7
+		chip.add_theme_stylebox_override("panel", style)
+		var box := HBoxContainer.new()
+		box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		box.add_theme_constant_override("separation", 4)
+		chip.add_child(box)
+		box.add_child(_suit_icon(suit, 14))
+		box.add_child(_label(str(count), 13, FG_COLOR if count > 0 else Color(MUTED_COLOR, 0.5)))
+		_suit_chips.add_child(chip)
+
+
+func _draw_histogram(target: Control, counts: Array[int], bar_area: float, show_counts: bool) -> void:
+	var top := 14.0 if show_counts else 0.0
+	var slot := target.size.x / counts.size()
+	var highest := maxi(counts.max(), 1)
+	for rank in counts.size():
+		var x := slot * rank + 2
+		var width := slot - 4
+		_rect(target, Rect2(x, top, width, bar_area), Color(LINE_COLOR, 0.25))
+		var height := bar_area * counts[rank] / highest
+		if counts[rank] > 0:
+			_rect(target, Rect2(x, top + bar_area - height, width, height), ACCENT_COLOR)
+		if show_counts and counts[rank] > 0:
+			var count_label := _label(str(counts[rank]), 10, FG_COLOR)
+			count_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			count_label.size = Vector2(slot, 12)
+			count_label.position = Vector2(slot * rank, top + bar_area - height - 14)
+			target.add_child(count_label)
+		var rank_label := _label(str(rank), 10, MUTED_COLOR)
+		rank_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		rank_label.size = Vector2(slot, 12)
+		rank_label.position = Vector2(slot * rank, top + bar_area)
+		target.add_child(rank_label)
+
+
+func _fill_pips_bar() -> void:
+	var deck := PlayerDataManager.active_deck.duplicate()
+	deck.sort_custom(_card_before)
+	var step := _fill_pips.size.x / Missions.DECK_SIZE
+	for i in Missions.DECK_SIZE:
+		var rect := Rect2(step * i + 1, 0, step - 3, _fill_pips.size.y)
+		if i < deck.size():
+			_rect(_fill_pips, rect, _suit_color(deck[i].suit))
+		else:
+			var slot := Panel.new()
+			slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			slot.position = rect.position
+			slot.size = rect.size
+			var style := _box(Color(0, 0, 0, 0), WARN_COLOR)
+			style.set_border_width_all(1)
+			slot.add_theme_stylebox_override("panel", style)
+			_fill_pips.add_child(slot)
+
+
+func _fill_stats_panel() -> void:
+	var deck := PlayerDataManager.active_deck.duplicate()
+	deck.sort_custom(_card_before)
+	var width := _stats_panel.custom_minimum_size.x
+	_stats_panel.add_child(_label("Deck stats", 14, FG_COLOR))
+	var counts := _suit_counts(deck)
+	var bar := Control.new()
+	bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	bar.custom_minimum_size = Vector2(width, 12)
+	_rect(bar, Rect2(0, 0, width, 12), Color(LINE_COLOR, 0.25))
+	var x := 0.0
+	for suit in SUIT_ORDER:
+		var part: float = width * counts[suit] / Missions.DECK_SIZE
+		if part > 0:
+			_rect(bar, Rect2(x, 0, maxf(part - 1, 1), 12), _suit_color(suit))
+		x += part
+	_stats_panel.add_child(bar)
+	var legend := GridContainer.new()
+	legend.columns = 3
+	legend.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	legend.add_theme_constant_override("h_separation", 8)
+	for suit in _visible_suits():
+		var line := HBoxContainer.new()
+		line.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		line.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		line.add_theme_constant_override("separation", 4)
+		line.add_child(_suit_icon(suit, 14))
+		line.add_child(_label(str(counts[suit]), 14, _suit_color(suit) if counts[suit] > 0 else Color(MUTED_COLOR, 0.5)))
+		legend.add_child(line)
+	_stats_panel.add_child(legend)
+	_stats_panel.add_child(_label("Ranks", 12, MUTED_COLOR))
+	var histogram := Control.new()
+	histogram.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	histogram.custom_minimum_size = Vector2(width, 50)
+	histogram.size = histogram.custom_minimum_size
+	_draw_histogram(histogram, _rank_counts(deck), 24.0, true)
+	_stats_panel.add_child(histogram)
+	var grid := GridContainer.new()
+	grid.columns = 2
+	grid.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	grid.add_theme_constant_override("h_separation", 10)
+	grid.add_theme_constant_override("v_separation", 2)
+	var rank_sum := 0
+	var specials := 0
+	var highest := -1
+	var lowest := 99
+	for card in deck:
+		rank_sum += card.base_rank
+		highest = maxi(highest, card.base_rank)
+		lowest = mini(lowest, card.base_rank)
+		if _is_special(card):
+			specials += 1
+	var duplicates := 0
+	for group in _group_cards(deck, true):
+		duplicates += group.size() - 1
+	var empty := deck.is_empty()
+	var rows := [
+		["Average rank", "-" if empty else "%.1f" % (float(rank_sum) / deck.size())],
+		["Lowest - highest", "-" if empty else "%d - %d" % [lowest, highest]],
+		["Always trump", str(specials)],
+		["Duplicates", str(duplicates)],
+		["Cards owned", str(deck.size() + PlayerDataManager.collection.size())],
+	]
+	for entry in rows:
+		var key := _label(entry[0], 12, MUTED_COLOR)
+		key.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		grid.add_child(key)
+		grid.add_child(_label(entry[1], 13, FG_COLOR))
+	_stats_panel.add_child(grid)
+
+
+func _row_header(suit: Card.Suit, icon: TextureRect, collection_count: int) -> Control:
+	var in_deck := 0
+	for card in PlayerDataManager.active_deck:
+		if card.suit == suit:
+			in_deck += 1
+	var header := VBoxContainer.new()
+	header.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	header.custom_minimum_size = Vector2(40, 0)
+	header.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	header.add_theme_constant_override("separation", 0)
+	icon.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	header.add_child(icon)
+	var deck_label := _label(str(in_deck), 16, _suit_color(suit) if in_deck > 0 else Color(MUTED_COLOR, 0.5))
+	deck_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	header.add_child(deck_label)
+	var owned_label := _label("of %d" % (in_deck + collection_count), 10, MUTED_COLOR)
+	owned_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	header.add_child(owned_label)
+	return header
+
+
+func _group_cards(cards: Array, always := false) -> Array:
+	var stack := always or stats_concept == StatsConcept.INLINE
+	var groups := []
+	for card in cards:
+		if stack and not groups.is_empty() and groups.back()[0].suit == card.suit and groups.back()[0].base_rank == card.base_rank:
+			groups.back().append(card)
+		else:
+			groups.append([card])
+	return groups
+
+
+func _add_stack_depth(cell: Control, count: int) -> void:
+	var card_size := cell.custom_minimum_size
+	for depth in range(mini(count - 1, 2), 0, -1):
+		var back := Panel.new()
+		back.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		back.size = card_size
+		back.position = Vector2(depth * 2, -depth * 3)
+		var style := _box(PANEL_COLOR_2, LINE_COLOR)
+		style.set_border_width_all(1)
+		back.add_theme_stylebox_override("panel", style)
+		cell.add_child(back)
+		cell.move_child(back, 0)
+	var badge := _badge("x%d" % count, ACCENT_COLOR, BG_COLOR)
+	badge.position = Vector2(card_size.x - 8, -12)
+	badge.z_index = 2
+	cell.add_child(badge)

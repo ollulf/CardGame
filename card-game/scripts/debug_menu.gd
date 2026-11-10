@@ -16,6 +16,7 @@ var unlocked := false
 var _panel: PanelContainer
 var _skip_buttons: Array[Button] = []
 var _tutorial_button: Button
+var _deck_stats_button: Button
 var _pointer_parent: Node
 var _pointer_index := 0
 var _was_blocked := false
@@ -51,6 +52,8 @@ func _build() -> void:
 	_add_button(box, "Unlock all UI", unlock_all)
 	_add_button(box, "+%d cigarettes" % CIGARETTE_BONUS, add_cigarettes)
 	_add_button(box, "+%d$" % CASH_BONUS, add_cash)
+	_deck_stats_button = _add_button(box, "", cycle_deck_stats)
+	_update_deck_stats_button()
 	_add_button(box, "Close", close)
 
 
@@ -136,6 +139,18 @@ func add_cigarettes() -> void:
 func add_cash() -> void:
 	GameManager.run_cue("show_purse")
 	PlayerDataManager.add_money(CASH_BONUS)
+
+
+func cycle_deck_stats() -> void:
+	DeckBuilder.cycle_stats_concept()
+	_update_deck_stats_button()
+	for builder in get_tree().get_nodes_in_group("deck_builder"):
+		builder.refresh_concept()
+
+
+func _update_deck_stats_button() -> void:
+	var concept: int = DeckBuilder.stats_concept
+	_deck_stats_button.text = "Deck stats: %d %s" % [concept + 1, DeckBuilder.STATS_CONCEPT_NAMES[concept]]
 
 
 func _on_new_match_started() -> void:
