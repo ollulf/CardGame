@@ -16,6 +16,8 @@ const PANEL_RECT := Rect2(176, 124, 800, 400)
 const PACK_TEXTURE := preload("res://sprites/booster_pack.png")
 const SHINE_SHADER := preload("res://shaders/booster_shine.gdshader")
 const SHADING_MAP := preload("res://sprites/booster_pack_map.png")
+const FLIP_FX_SHADER := preload("res://shaders/booster_flip_fx.gdshader")
+const CARD_MASK := preload("res://sprites/card_Background.png")
 const PACK_SCALE := 2
 const FLAP_PIXELS := 8
 const LOGO_PADDING := 12
@@ -24,6 +26,7 @@ const CARD_SIZE := Vector2(60, 90)
 const CARD_SCALE := 1.5
 const CARD_GAP := 16.0
 const ROW_LEFT := 350.0
+const FLIP_FX_TIME := 0.35
 
 var state: State = State.HIDDEN
 var cards: Array[Card] = []
@@ -282,12 +285,96 @@ func flip(index: int) -> void:
 	var turn := create_tween()
 	turn.tween_property(visual, "scale:x", 0.0, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	turn.tween_callback(func() -> void:
-		visual.show_front())
+		visual.show_front()
+		_play_flip_effect(visual, cards[index]))
 	turn.tween_property(visual, "scale:x", CARD_SCALE, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	if not flipped.has(false):
 		state = State.COLLECTING
 		await turn.finished
 		_collect()
+
+
+func _play_flip_effect(visual: CardVisual, card: Card) -> void:
+	_flash_effect(visual)
+	_sparks_effect(visual, card)
+
+
+func _flip_overlay(visual: CardVisual) -> ShaderMaterial:
+	var fx := ShaderMaterial.new()
+	fx.shader = FLIP_FX_SHADER
+	var overlay := TextureRect.new()
+	overlay.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	overlay.texture = CARD_MASK
+	overlay.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	overlay.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	overlay.stretch_mode = TextureRect.STRETCH_SCALE
+	overlay.size = CARD_SIZE
+	overlay.material = fx
+	visual.add_child(overlay)
+	get_tree().create_timer(FLIP_FX_TIME + 0.05, true, false, true).timeout.connect(overlay.queue_free)
+	return fx
+
+
+func _flash_effect(visual: CardVisual) -> void:
+	var fx := _flip_overlay(visual)
+	fx.set_shader_parameter("flash", 0.9)
+	var fade := create_tween()
+	fade.tween_method(func(value: float) -> void:
+		fx.set_shader_parameter("flash", value), 0.9, 0.0, 0.25).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	var punch := create_tween()
+	punch.tween_property(visual, "scale:y", CARD_SCALE * 1.12, 0.08).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	punch.tween_property(visual, "scale:y", CARD_SCALE, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+
+
+func _is_rare(card: Card) -> bool:
+	return card.suit == Card.Suit.SMOKE or card.suit == Card.Suit.ALK
+
+
+func _fx_color(card: Card) -> Color:
+	match card.suit:
+		Card.Suit.SMOKE:
+			return Color(1.0, 0.55, 0.25)
+		Card.Suit.ALK:
+			return Color(0.45, 0.8, 1.0)
+	return Color(1.0, 0.95, 0.8)
+
+
+func _sparks_effect(visual: CardVisual, card: Card) -> void:
+	var rare := _is_rare(card)
+	var color := _fx_color(card)
+	var dot := Image.create(2, 2, false, Image.FORMAT_RGBA8)
+	dot.fill(Color.WHITE)
+	var sparks := CPUParticles2D.new()
+	sparks.texture = ImageTexture.create_from_image(dot)
+	sparks.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	sparks.one_shot = true
+	sparks.explosiveness = 1.0
+	sparks.amount = 28 if rare else 14
+	sparks.lifetime = FLIP_FX_TIME
+	sparks.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+	sparks.emission_rect_extents = CARD_SIZE * CARD_SCALE / 2.0
+	sparks.direction = Vector2.UP
+	sparks.spread = 180.0
+	sparks.gravity = Vector2(0, 240)
+	sparks.initial_velocity_min = 60.0 if rare else 40.0
+	sparks.initial_velocity_max = 150.0 if rare else 90.0
+	sparks.damping_min = 80.0
+	sparks.damping_max = 140.0
+	sparks.scale_amount_min = 1.0
+	sparks.scale_amount_max = 2.0 if rare else 1.5
+	var fade := Gradient.new()
+	fade.set_color(0, color)
+	fade.set_color(1, Color(color, 0.0))
+	sparks.color_ramp = fade
+	sparks.position = visual.position + CARD_SIZE / 2.0
+	sparks.z_index = 2
+	add_child(sparks)
+	sparks.emitting = true
+	sparks.finished.connect(sparks.queue_free)
+	var glow_color := color.lerp(Color.WHITE, 0.5) * 1.4 if rare else Color(1.25, 1.22, 1.15)
+	var glow := create_tween()
+	glow.tween_property(visual, "modulate", Color(glow_color, 1.0), 0.05)
+	glow.tween_property(visual, "modulate", Color.WHITE, 0.25)
 
 
 func _collect() -> void:
