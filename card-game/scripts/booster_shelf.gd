@@ -17,6 +17,7 @@ const SELECTED_COLOR := Color("ffcf6e")
 const DENY_COLOR := Color(1.0, 0.45, 0.4)
 const CONFIRM_TEXT := "Really?"
 const NOT_ENOUGH_MONEY_TEXT := "Not enough money"
+const HINT_TEXT := "Tap a pack, then tap it again to buy it"
 const PACK_COLORS: Array[Color] = [Color(0.8, 0.8, 0.84, 1), Color(0.78, 0.88, 1.0, 1), Color(1.0, 0.86, 0.6, 1), Color(0.72, 1.0, 0.78, 1), Color(1.0, 0.7, 0.42, 1)]
 const PACK_TEXTURE := preload("res://sprites/booster_pack.png")
 const SHINE_SHADER := preload("res://shaders/booster_shine.gdshader")
@@ -29,6 +30,8 @@ var _styles: Array[StyleBoxFlat] = []
 var _confirm_index := -1
 var _deny_tween: Tween
 var _cash_label: Label
+var _hint_label: Label
+var show_hint := false
 
 
 func _ready() -> void:
@@ -68,6 +71,12 @@ func _build() -> void:
 	add_child(_cash_label)
 	PlayerDataManager.money_changed.connect(_on_money_changed)
 	_on_money_changed(PlayerDataManager.money)
+
+	_hint_label = _centered(_label(HINT_TEXT, 15, PRICE_COLOR))
+	_hint_label.position = PANEL_RECT.position + Vector2(0, 390)
+	_hint_label.size = Vector2(PANEL_RECT.size.x, 28)
+	_hint_label.hide()
+	add_child(_hint_label)
 
 	for i in PlayerDataManager.BOOSTERS.size():
 		var entry := _build_entry(PlayerDataManager.BOOSTERS[i], pack_tint(i))
@@ -185,6 +194,7 @@ func _centered(label: Label) -> Label:
 func open() -> void:
 	_cancel_confirm()
 	_layout_entries()
+	_hint_label.visible = show_hint
 	show()
 	_layout_entries.call_deferred()
 
