@@ -235,7 +235,7 @@ func collect_to(gather_center: Vector2, pile_center: Vector2, pile_scale: Vector
 	_tween.tween_callback(queue_free)
 
 
-func show_back() -> void:
+func show_back(show_suit: bool = false) -> void:
 	face_down = true
 	set_winner(false)
 	if has_node("Back"):
@@ -249,6 +249,16 @@ func show_back() -> void:
 	back.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	back.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(back)
+	if show_suit and card != null:
+		var icon := TextureRect.new()
+		icon.name = "BackSuit"
+		icon.texture = suit_to_texture(card)
+		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		icon.set_anchors_and_offsets_preset(Control.PRESET_CENTER)
+		icon.grow_horizontal = Control.GROW_DIRECTION_BOTH
+		icon.grow_vertical = Control.GROW_DIRECTION_BOTH
+		back.add_child(icon)
 
 
 func flip_face_up(duration: float) -> void:

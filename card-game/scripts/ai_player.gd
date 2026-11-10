@@ -308,6 +308,8 @@ func render_hand() -> void:
 		_make_passive(c)
 
 		add_child(c)
+		if not show_hand:
+			c.show_back(true)
 		card_visuals.append(c)
 
 	layout_hand_cards()
@@ -357,6 +359,8 @@ func deal_card(card: Card, from_center: Vector2, slot: int, slot_count: int) -> 
 	c.add_table_shadow()
 	_make_passive(c)
 	add_child(c)
+	if not show_hand:
+		c.show_back(true)
 	card_visuals.append(c)
 	c.position = _slot_position(slot, slot_count) - c.size * 0.5
 	c.z_index = slot
