@@ -398,6 +398,11 @@ func highlight_turn_winner() -> CardVisual:
 		return null
 	for child in table_root.get_children():
 		if child is CardVisual and child.card == winning_card:
+			var others: Array[CardVisual] = []
+			for other in table_root.get_children():
+				if other is CardVisual and other != child:
+					others.append(other)
+			child.z_index = top_z_of(others)
 			child.set_winner(true)
 			Sfx.play_win_card()
 			return child

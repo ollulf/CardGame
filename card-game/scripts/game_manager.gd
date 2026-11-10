@@ -346,7 +346,7 @@ func _finish_turn() -> void:
 
 	message(_message_name(winner) + " won the turn")
 
-	await _wait_for_continue(winner_visual)
+	await _wait_for_continue(winner_visual, winner)
 	if token != round_token:
 		return
 	await CardManager.collect_table(winner)
@@ -369,7 +369,7 @@ func _finish_turn() -> void:
 
 	start_new_turn(owner_to_id(winner))
 
-func _wait_for_continue(anchor: Control) -> void:
+func _wait_for_continue(anchor: Control, winner: Card.Owner) -> void:
 	if Engine.get_write_movie_path() != "" or DisplayServer.get_name() == "headless" or anchor == null:
 		await get_tree().create_timer(TURN_WINNER_SHOW_TIME, false).timeout
 		return
@@ -378,7 +378,16 @@ func _wait_for_continue(anchor: Control) -> void:
 		return
 	var arrow := ContinueArrow.new()
 	anchor.add_child(arrow)
-	arrow.position = Vector2(anchor.size.x * 0.5 - 5.0, anchor.size.y + 8.0)
+	var center := anchor.global_position + anchor.size * 0.5
+	var pile := CardManager.won_pile_of(winner)
+	var dir := Vector2.DOWN
+	if pile != null:
+		var to_pile: Vector2 = pile.global_position - center
+		if to_pile.length() > 1.0:
+			dir = to_pile.normalized()
+	arrow.angle = dir.angle() - PI * 0.5
+	var edge := minf(anchor.size.x * 0.5 / maxf(absf(dir.x), 0.001), anchor.size.y * 0.5 / maxf(absf(dir.y), 0.001)) + 10.0
+	arrow.global_position = center + dir * edge - Vector2(5.0, 3.0)
 	await arrow.clicked
 	arrow.queue_free()
 
