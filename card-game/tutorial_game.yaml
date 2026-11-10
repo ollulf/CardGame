@@ -27,7 +27,9 @@
   round: 1
   trump: SPADES
   starter: 1
+  you: "SPADES 7"
   ai_one: "SPADES 9"
   ai_two: "SPADES 0"
+  you_plays: "SPADES 7"
   ai_one_plays: "SPADES 9"
   ai_two_plays: "SPADES 0"
