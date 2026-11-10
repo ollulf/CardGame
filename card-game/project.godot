@@ -26,6 +26,7 @@ DialogueManager="*res://scripts/dialogue_manager.gd"
 TutorialScript="*res://scripts/tutorial_script.gd"
 Missions="*res://scripts/missions.gd"
 SaveManager="*res://scripts/save_manager.gd"
+SceneTransition="*res://scripts/scene_transition.gd"
 
 [display]
 

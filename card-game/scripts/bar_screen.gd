@@ -52,11 +52,16 @@ func _ready() -> void:
 
 
 func open() -> void:
-	if visible or DialogueManager.is_open() or InteractionManager.is_table_blocked():
+	if visible or SceneTransition.is_running() or DialogueManager.is_open() or InteractionManager.is_table_blocked():
 		return
 
 	InteractionManager.cancel_press()
 	get_tree().paused = true
+	await SceneTransition.play(_show_bar, false, null, self)
+	opened.emit()
+
+
+func _show_bar() -> void:
 	_pointer_parent = pointer.get_parent()
 	_pointer_index = pointer.get_index()
 	pointer.reparent(self)
@@ -66,21 +71,24 @@ func open() -> void:
 	_refresh_drinks_tap()
 	_refresh_stand_pulse()
 	show()
-	opened.emit()
 
 
 func close() -> void:
-	if not visible:
+	if not visible or SceneTransition.is_running():
 		return
 
-	hide()
-	_stop_stand_pulse()
-	pointer.reparent(_pointer_parent)
-	_pointer_parent.move_child(pointer, _pointer_index)
+	await SceneTransition.play(_hide_bar, true, self, null)
 	InteractionManager.skip_next_double_click()
 	get_tree().paused = false
 	closed.emit()
 	_serve_ordered_round()
+
+
+func _hide_bar() -> void:
+	hide()
+	_stop_stand_pulse()
+	pointer.reparent(_pointer_parent)
+	_pointer_parent.move_child(pointer, _pointer_index)
 
 
 func _on_cig_machine_changed(unlocked: bool) -> void:
