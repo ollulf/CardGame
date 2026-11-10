@@ -2,11 +2,12 @@ match: 1
 	dialogues:
 		when: match_start
 		lines:
-			1: Let's play some *cards*, shall we?
-			2: Alright, how did it work again?
+			1: ...
+			1: Well...
+			1: Let's play some *cards*. What do you say *Manfred*?
+			2: Alright *Bernd*, we were out of topics anyways.
 			1: Everybody got their own *deck* with them?
 			cue: show_deck
-			2: Yes! Now, everybody draws *5 cards*, if I remember correctly.
 			cue: deal_cards
 			1: Okay *{player}*, play a card now.
 			wait_for_cards_played: 2
@@ -28,25 +29,20 @@ match: 1
 			cue: show_life_cards
 			2: Well, that makes me the *loser*...
 			2: But since I lost, I will get us a round of *drinks*.
-			1: Awesome idea... 
+			1: Awesome idea *Manfred*... 
 			1: Cheers!
 			2: Cheers.
 			cue: show_drink_round
 			1: Alright, next round!
 
-		when: round_start
-		round: 2
-		lines:
-			1: I think *YOU* got it, right?
-			1: Let's continue!
-
 		when: turn_start
 		round: 2
 		turn: 2
 		lines: 
-			1: *YOU* are doing great!
+			1: *{player}* you are doing great!
 			1: This is *fun*.
-			2: Yeah, I also remember everything and *enjoy* it!
+			2: Shush, *Bernd*! *{player}* is not a child.
+			1: Yes, yes...
 
 		when: turn_start
 		round: 2
