@@ -29,6 +29,7 @@ var _stand_pulse: Tween
 
 func _ready() -> void:
 	hide()
+	$PostFX.hide()
 	back_button.pressed.connect(close)
 	machine.set_label_text("Buy Cigarettes (%d$)" % PlayerDataManager.CIGARETTE_PACK_PRICE)
 	booster_stand.set_label_text("Booster Shelf")
@@ -57,7 +58,7 @@ func open() -> void:
 
 	InteractionManager.cancel_press()
 	get_tree().paused = true
-	await SceneTransition.play(_show_bar, false, null, self)
+	await SceneTransition.play(_show_bar, false)
 	opened.emit()
 
 
@@ -71,13 +72,14 @@ func _show_bar() -> void:
 	_refresh_drinks_tap()
 	_refresh_stand_pulse()
 	show()
+	$PostFX.show()
 
 
 func close() -> void:
 	if not visible or SceneTransition.is_running():
 		return
 
-	await SceneTransition.play(_hide_bar, true, self, null)
+	await SceneTransition.play(_hide_bar, true)
 	InteractionManager.skip_next_double_click()
 	get_tree().paused = false
 	closed.emit()
@@ -86,6 +88,7 @@ func close() -> void:
 
 func _hide_bar() -> void:
 	hide()
+	$PostFX.hide()
 	_stop_stand_pulse()
 	pointer.reparent(_pointer_parent)
 	_pointer_parent.move_child(pointer, _pointer_index)

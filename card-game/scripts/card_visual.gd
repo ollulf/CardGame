@@ -113,6 +113,7 @@ func hover_enter() -> void:
 
 	_hover_active = true
 	z_index = hover_z_index
+	BuffTooltip.show_for(self)
 
 	_kill_tween()
 	_tween = create_tween()
@@ -122,6 +123,7 @@ func hover_enter() -> void:
 
 
 func hover_exit() -> void:
+	BuffTooltip.hide_for(self)
 	if face_down or not hover_enabled:
 		return
 
