@@ -4,6 +4,7 @@ class_name AiSmoke
 signal lit
 signal burned_out
 signal finished
+signal appeared
 
 const BURN_TEXTURES: Array[Texture2D] = [
 	preload("res://sprites/cigarettes/Cigarettes_1.png"),
@@ -27,6 +28,8 @@ const STUB_TIME := 0.6
 const SMOKE_LIFETIME := 2.4
 
 var tilt := 0.0
+var wait_for_lighter := false
+var has_appeared := false
 
 var _holder: Node2D
 var _sprite: Sprite2D
@@ -41,9 +44,10 @@ var _loop_held := false
 var _light_tween: Tween
 
 
-static func spawn(parent: Node, at: Vector2, tilt_radians: float) -> AiSmoke:
+static func spawn(parent: Node, at: Vector2, tilt_radians: float, lit_externally := false) -> AiSmoke:
 	var smoke := AiSmoke.new()
 	smoke.tilt = tilt_radians
+	smoke.wait_for_lighter = lit_externally
 	smoke.position = at
 	smoke.z_index = 50
 	parent.add_child(smoke)
@@ -83,8 +87,11 @@ func play() -> void:
 	appear.tween_property(_holder, "modulate:a", 1.0, APPEAR_TIME)
 	appear.tween_property(_holder, "position", Vector2.ZERO, APPEAR_TIME).from(Vector2(0.0, 18.0)).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_BACK)
 	await appear.finished
+	has_appeared = true
+	appeared.emit()
 
-	ignite()
+	if not wait_for_lighter:
+		ignite()
 	await burned_out
 
 	var stub := create_tween().set_parallel()
@@ -199,6 +206,10 @@ func _puff_loop(run: int) -> void:
 func _process(_delta: float) -> void:
 	if _flame > 0.0 or _ember > 0.0:
 		_glow.queue_redraw()
+
+
+func tip_global_position() -> Vector2:
+	return _holder.get_global_transform() * _tip_local()
 
 
 func _tip_local() -> Vector2:
