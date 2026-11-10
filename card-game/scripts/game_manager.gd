@@ -399,6 +399,20 @@ func resume_run(match_state: Dictionary, game_state: Dictionary, between_matches
 	else:
 		start_new_match()
 
+func start_without_tutorial() -> void:
+	_intro_done = true
+	_game_start_state = _capture_state()
+	PlayerDataManager.grant_starting_money()
+	last_match_loosers.assign([1])
+	var state := _capture_state()
+	state["match"] = 2
+	_restore_state(state)
+	_match_start_state = state
+	new_match_started.emit()
+	DialogueManager.play_match_end()
+	await DialogueManager.wait_until_idle()
+	match_finished.emit(last_match_loosers.duplicate())
+
 func current_match() -> int:
 	return _match_start_state.get("match", 1)
 
