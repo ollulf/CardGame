@@ -48,12 +48,22 @@ var trump_suit : Card.Suit = Card.Suit.SMOKE
 var leading_card : Card
 var first_trump_card : Card
 var last_played_by := {}
+var suit_bonuses := {}
+
+func suit_bonus(player_id: int, suit: Card.Suit) -> int:
+	return suit_bonuses.get(player_id, {}).get(suit, 0)
+
+func add_suit_bonus(player_id: int, suit: Card.Suit, amount: int) -> void:
+	var owned: Dictionary = suit_bonuses.get(player_id, {})
+	owned[suit] = owned.get(suit, 0) + amount
+	suit_bonuses[player_id] = owned
+	apply_buffs(player_id)
 
 func _ready() -> void:
 	PlayerDataManager.stats_changed.connect(apply_buffs)
 	trump_chosen.connect(_on_trump_chosen)
 	GameManager.round_finished.connect(_discard_leftover_hands)
-	GameManager.new_match_started.connect(func(): last_played_by.clear())
+	GameManager.new_match_started.connect(func(): last_played_by.clear(); suit_bonuses.clear())
 
 func _discard_leftover_hands(_loosers) -> void:
 	var pairs := [[player_hand, player_deck, Card.Owner.HUMAN], [AI_1_hand, AI_1_deck, Card.Owner.AI_1], [AI_2_hand, AI_2_deck, Card.Owner.AI_2]]
@@ -141,6 +151,9 @@ func apply_buffs(player_id: int) -> void:
 			if drink_penalty != 0 and target > 0:
 				parts.append({"kind": "drink_penalty", "amount": lowered - target, "count": drink_rounds, "capped": lowered - target != -drink_penalty, "floor": mini(card.base_rank, 1)})
 			target = lowered
+		var suit_extra := suit_bonus(player_id, card.suit)
+		if suit_extra != 0:
+			parts.append({"kind": "suit_up", "amount": suit_extra, "count": suit_extra})
 		target = CardEffect.modify_rank(card, target, player_id)
 		var changed := card.rank != target or card.buff_parts != parts
 		card.buff_parts = parts
