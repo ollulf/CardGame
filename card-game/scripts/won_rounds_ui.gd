@@ -138,7 +138,7 @@ func show_won_turns():
 
 func set_won_turns_alpha(alpha: float):
 	for pile in piles:
-		pile.badge_alpha = alpha
+		pile.modulate.a = alpha
 
 func update_round_looser(looser_id : int):
 	var lost_rounds: int = GameManager.id_to_player(looser_id).lost_rounds
