@@ -16,6 +16,7 @@ var unlocked := false
 var _panel: PanelContainer
 var _skip_buttons: Array[Button] = []
 var _tutorial_button: Button
+var _matches_label: Label
 var _pointer_parent: Node
 var _pointer_index := 0
 var _was_blocked := false
@@ -51,10 +52,16 @@ func _build() -> void:
 	_add_button(box, "Unlock all UI", unlock_all)
 	_add_button(box, "+%d cigarettes" % CIGARETTE_BONUS, add_cigarettes)
 	_add_button(box, "+%d$" % CASH_BONUS, add_cash)
+	_matches_label = Label.new()
+	box.add_child(_matches_label)
+	var matches_row := HBoxContainer.new()
+	box.add_child(matches_row)
+	_add_button(matches_row, "+1 match", func(): Profile.set_matches_played(Profile.matches_played + 1))
+	_add_button(matches_row, "Reset matches", func(): Profile.set_matches_played(0))
 	_add_button(box, "Close", close)
 
 
-func _add_button(box: VBoxContainer, text: String, action: Callable) -> Button:
+func _add_button(box: Container, text: String, action: Callable) -> Button:
 	var button := Button.new()
 	button.text = text
 	button.focus_mode = Control.FOCUS_NONE
@@ -144,6 +151,7 @@ func _on_new_match_started() -> void:
 
 
 func _refresh() -> void:
+	_matches_label.text = "Matches played: %d" % Profile.matches_played
 	var can_skip := GameManager.can_skip_round()
 	for button in _skip_buttons:
 		button.disabled = not can_skip
