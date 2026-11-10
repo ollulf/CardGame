@@ -10,6 +10,7 @@ const RANK_INCREASED_COLOR := Color(0.4, 1.0, 0.45)
 const RANK_DECREASED_COLOR := Color(1.0, 0.4, 0.4)
 const LOCKED_COLOR := Color(0.5, 0.5, 0.5)
 const CARD_BACK := preload("res://sprites/card_backside.png")
+const SHINE_SHADER := preload("res://shaders/card_shine.gdshader")
 
 # --- Hover FX (driven externally) ---
 @export var hover_scale: float = 1.4
@@ -24,15 +25,36 @@ var _base_z: int
 var _tween: Tween
 var _hover_active: bool = false
 
+var juice_follow: bool = false
+var home_position: Vector2 = Vector2.ZERO
+var home_rotation: float = 0.0
+var _drag_target: Vector2 = Vector2.ZERO
+var _last_position: Vector2 = Vector2.ZERO
+var _smooth_rotation: float = 0.0
+var _hover_t: float = 0.0
+var _squash: float = 0.0
+var _squash_velocity: float = 0.0
+var _deny_t: float = -1.0
+var _z_restore_pending: bool = false
+var _phase: float = randf() * TAU
+var _time: float = 0.0
+var _shown_rank: int = -1000
+var _shine: TextureRect
+
+func _ready() -> void:
+	set_process(juice_follow)
+
 func setup(data: Card, _face_down: bool) -> void:
 	card = data
 	face_down = _face_down
 
 	card.values_changed.connect(update_visuals)
 	card.removed.connect(destroy)
+	if not CardManager.trump_chosen.is_connected(_on_trump_chosen):
+		CardManager.trump_chosen.connect(_on_trump_chosen)
 
 	update_layout()
-	
+
 	if not face_down:
 		update_visuals()
 
@@ -41,7 +63,8 @@ func update_layout():
 	if _hover_active:
 		z_index = drag_z_index if dragging else hover_z_index
 		return
-	_base_scale = scale
+	if not juice_follow:
+		_base_scale = scale
 
 func add_table_shadow() -> void:
 	TableShadow.add_to($Background)
@@ -64,10 +87,13 @@ func set_winner(active: bool) -> void:
 		outline.modulate = Color(1.0, 0.85, 0.2)
 		add_child(outline)
 	outline.visible = true
+	var rest := scale
 	var pulse := create_tween()
-	pulse.set_trans(Tween.TRANS_SINE)
-	pulse.tween_property(self, "scale", scale * 1.15, 0.25)
-	pulse.tween_property(self, "scale", scale, 0.25)
+	pulse.tween_property(self, "scale", rest * CardJuice.WIN_POP_SCALE, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	pulse.tween_property(self, "scale", rest, 0.38).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	var center := get_global_transform() * (size * 0.5)
+	CardJuice.sparks(get_parent(), center, CardJuice.WIN_SPARK_COLOR, CardJuice.WIN_SPARKS, size * rest * 0.5)
+	CardJuice.shake(self, CardJuice.WIN_SHAKE_PX, CardJuice.WIN_SHAKE_TIME)
 
 func destroy():
 	queue_free()
@@ -84,6 +110,8 @@ func update_visuals():
 
 	update_rank_color($RankLabel)
 	update_rank_color($RankLabel2)
+	_pop_rank_change()
+	_refresh_shine()
 
 func update_rank_color(label: Label) -> void:
 	if card.rank > card.base_rank:
@@ -93,11 +121,45 @@ func update_rank_color(label: Label) -> void:
 	else:
 		label.remove_theme_color_override("font_color")
 
+func _pop_rank_change() -> void:
+	if _shown_rank != -1000 and _shown_rank != card.rank and is_visible_in_tree():
+		var diff := card.rank - _shown_rank
+		var text := ("+%d" % diff) if diff > 0 else str(diff)
+		var color := RANK_INCREASED_COLOR if diff > 0 else RANK_DECREASED_COLOR
+		CardJuice.number_pop(get_parent(), get_global_transform() * Vector2(size.x * 0.5, 0.0), text, color)
+		punch(CardJuice.RANK_POP_SQUASH)
+	_shown_rank = card.rank
+
+func _on_trump_chosen(_suit: Card.Suit) -> void:
+	_refresh_shine()
+
+func _refresh_shine() -> void:
+	var wanted := CardJuice.ENABLED and card != null and not face_down and card.is_trump
+	if wanted and _shine == null:
+		var shine_material := ShaderMaterial.new()
+		shine_material.shader = SHINE_SHADER
+		shine_material.set_shader_parameter("time_offset", _phase)
+		shine_material.set_shader_parameter("interval", CardJuice.SHINE_INTERVAL)
+		shine_material.set_shader_parameter("sweep_time", CardJuice.SHINE_SWEEP_TIME)
+		shine_material.set_shader_parameter("strength", CardJuice.SHINE_STRENGTH)
+		_shine = TextureRect.new()
+		_shine.name = "Shine"
+		_shine.texture = $Background.texture
+		_shine.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+		_shine.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		_shine.stretch_mode = TextureRect.STRETCH_SCALE
+		_shine.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		_shine.material = shine_material
+		add_child(_shine)
+		_shine.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	if _shine != null:
+		_shine.visible = wanted
+
 func suit_to_texture(card : Card) -> Texture2D:
 	match card.suit:
-		Card.Suit.DIAMONDS: 
+		Card.Suit.DIAMONDS:
 			return preload("res://sprites/suit_Karo.png")
-		Card.Suit.HEARTS: 
+		Card.Suit.HEARTS:
 			return preload("res://sprites/suit_Herz.png")
 		Card.Suit.SPADES:
 			return preload("res://sprites/suit_Pik.png")
@@ -115,8 +177,12 @@ func hover_enter() -> void:
 		return
 
 	_hover_active = true
+	_z_restore_pending = false
 	z_index = hover_z_index
 	BuffTooltip.show_for(self)
+
+	if juice_follow:
+		return
 
 	_kill_tween()
 	_tween = create_tween()
@@ -128,6 +194,11 @@ func hover_enter() -> void:
 func hover_exit() -> void:
 	BuffTooltip.hide_for(self)
 	if face_down or not hover_enabled:
+		return
+
+	if juice_follow:
+		_hover_active = false
+		_z_restore_pending = true
 		return
 
 	_kill_tween()
@@ -148,6 +219,14 @@ func begin_drag() -> void:
 	dragging = true
 	_hover_active = true
 	z_index = drag_z_index
+	_drag_target = position
+	punch(CardJuice.PICKUP_SQUASH)
+
+
+func drag_to(target: Vector2) -> void:
+	_drag_target = target
+	if not juice_follow:
+		position = target
 
 
 func end_drag() -> void:
@@ -176,12 +255,16 @@ func float_in_from(from: Transform2D) -> void:
 	_tween.tween_property(self, "position", target_position, float_anim_time)
 	_tween.tween_property(self, "rotation", 0.0, float_anim_time)
 	_tween.tween_property(self, "scale", target_scale, float_anim_time)
+	if CardJuice.ENABLED:
+		_tween.chain().tween_property(self, "scale", target_scale * CardJuice.TABLE_LAND_PUNCH, CardJuice.TABLE_LAND_TIME * 0.3)
+		_tween.chain().tween_property(self, "scale", target_scale, CardJuice.TABLE_LAND_TIME * 0.7).set_trans(Tween.TRANS_BACK)
 	_tween.finished.connect(_on_float_finished.bind(target_z))
 
 
 func deal_from(from: Transform2D, reveal: bool) -> void:
 	var target_position := position
 	var target_scale := scale
+	var target_rotation := rotation
 	var target_z := z_index
 	var start_scale := from.get_scale()
 
@@ -189,6 +272,8 @@ func deal_from(from: Transform2D, reveal: bool) -> void:
 	z_index = drag_z_index
 	scale = start_scale
 	global_position = from.origin
+	if CardJuice.ENABLED:
+		rotation = target_rotation + deg_to_rad(randf_range(-CardJuice.DEAL_SPIN_DEG, CardJuice.DEAL_SPIN_DEG))
 
 	_kill_tween()
 	_tween = create_tween()
@@ -196,6 +281,7 @@ func deal_from(from: Transform2D, reveal: bool) -> void:
 	_tween.set_trans(Tween.TRANS_CUBIC)
 	_tween.set_ease(Tween.EASE_OUT)
 	_tween.tween_property(self, "position", target_position, deal_anim_time)
+	_tween.tween_property(self, "rotation", target_rotation, deal_anim_time)
 	_tween.tween_method(_deal_step.bind(start_scale, target_scale, reveal), 0.0, 1.0, deal_anim_time)
 	_tween.finished.connect(_on_float_finished.bind(target_z))
 
@@ -238,6 +324,7 @@ func collect_to(gather_center: Vector2, pile_center: Vector2, pile_scale: Vector
 func show_back(show_suit: bool = false) -> void:
 	face_down = true
 	set_winner(false)
+	_refresh_shine()
 	if has_node("Back"):
 		return
 	var back := TextureRect.new()
@@ -303,6 +390,10 @@ func _on_float_finished(target_z: int) -> void:
 	z_index = target_z
 	update_layout()
 	hover_enabled = true
+	if juice_follow:
+		_last_position = position
+		_smooth_rotation = rotation
+		punch(CardJuice.DEAL_LAND_SQUASH)
 	if InteractionManager.hovered_card == self:
 		hover_enter()
 
@@ -311,3 +402,90 @@ func _kill_tween() -> void:
 	if _tween != null and _tween.is_valid():
 		_tween.kill()
 	_tween = null
+
+
+func enable_juice() -> void:
+	if not CardJuice.ENABLED:
+		return
+	juice_follow = true
+	pivot_offset = size * 0.5
+	_base_scale = scale
+	home_position = position
+	_last_position = position
+	_smooth_rotation = rotation
+	set_process(true)
+
+
+func set_home(target: Vector2, target_rotation: float, snap: bool) -> void:
+	home_position = target
+	home_rotation = target_rotation
+	if not juice_follow:
+		if not dragging:
+			position = target
+		return
+	if snap:
+		position = target
+		rotation = target_rotation
+		_last_position = target
+		_smooth_rotation = target_rotation
+
+
+func punch(amount: float) -> void:
+	_squash_velocity += amount
+
+
+func deny() -> void:
+	if not juice_follow:
+		return
+	_deny_t = 0.0
+	punch(CardJuice.PICKUP_SQUASH * 0.5)
+
+
+func _process(delta: float) -> void:
+	_time += delta
+	if _tween != null and _tween.is_valid() and _tween.is_running():
+		_last_position = position
+		_smooth_rotation = rotation
+		return
+
+	var hover_goal := 1.0 if _hover_active else 0.0
+	_hover_t = lerpf(_hover_t, hover_goal, 1.0 - exp(-CardJuice.HOVER_SPEED * delta))
+	if _z_restore_pending and _hover_t < 0.2:
+		_z_restore_pending = false
+		z_index = _base_z
+
+	var calm := 1.0 - _hover_t
+	if dragging:
+		position = position.lerp(_drag_target, 1.0 - exp(-CardJuice.DRAG_FOLLOW_SPEED * delta))
+	else:
+		var bob := roundf(sin(_time * CardJuice.IDLE_BOB_SPEED + _phase) * CardJuice.IDLE_BOB_PX * calm)
+		var goal := home_position + Vector2(0.0, bob - CardJuice.HOVER_LIFT_PX * _hover_t)
+		position = position.lerp(goal, 1.0 - exp(-CardJuice.FOLLOW_SPEED * delta))
+	var velocity := (position - _last_position) / maxf(delta, 0.0001)
+	_last_position = position
+
+	var target_rotation := home_rotation * calm
+	target_rotation += deg_to_rad(CardJuice.IDLE_SWAY_DEG) * sin(_time * CardJuice.IDLE_SWAY_SPEED + _phase * 1.7) * calm
+	var squish := 0.0
+	if dragging:
+		var max_tilt := deg_to_rad(CardJuice.DRAG_TILT_MAX_DEG)
+		target_rotation += clampf(deg_to_rad(velocity.x * CardJuice.DRAG_TILT_PER_SPEED), -max_tilt, max_tilt)
+	elif _hover_active:
+		var local := (get_local_mouse_position() / size - Vector2(0.5, 0.5)).clamp(Vector2(-0.5, -0.5), Vector2(0.5, 0.5)) * 2.0
+		target_rotation += deg_to_rad(CardJuice.HOVER_TILT_DEG) * local.x * _hover_t
+		squish = local.y * CardJuice.HOVER_SQUISH * _hover_t
+	_smooth_rotation = lerp_angle(_smooth_rotation, target_rotation, 1.0 - exp(-CardJuice.ROTATION_SPEED * delta))
+
+	var wobble := 0.0
+	if _deny_t >= 0.0:
+		_deny_t += delta
+		var envelope := exp(-_deny_t * CardJuice.DENY_DECAY)
+		wobble = deg_to_rad(CardJuice.DENY_WOBBLE_DEG) * sin(_deny_t * CardJuice.DENY_FREQ) * envelope
+		if envelope < 0.02:
+			_deny_t = -1.0
+	rotation = _smooth_rotation + wobble
+
+	_squash_velocity += (-CardJuice.SQUASH_STIFFNESS * _squash - CardJuice.SQUASH_DAMPING * _squash_velocity) * delta
+	_squash = clampf(_squash + _squash_velocity * delta, -CardJuice.SQUASH_MAX, CardJuice.SQUASH_MAX)
+	var grow := lerpf(1.0, hover_scale, _hover_t)
+	scale = _base_scale * grow * Vector2(1.0 + _squash - squish, 1.0 - _squash + squish)

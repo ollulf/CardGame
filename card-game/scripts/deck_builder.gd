@@ -429,6 +429,7 @@ func _on_cell_hovered(cell: Control, card: Card) -> void:
 	cell.z_index = 10
 	if not cell.has_meta("flying"):
 		cell.modulate = Color(1.15, 1.1, 0.95)
+		CardJuice.grid_hover(cell, true)
 	_show_card(card)
 
 
@@ -436,6 +437,7 @@ func _on_cell_unhovered(cell: Control) -> void:
 	cell.z_index = 0
 	if not cell.has_meta("flying"):
 		cell.modulate = Color.WHITE
+		CardJuice.grid_hover(cell, false)
 
 
 func _on_deck_cell_input(event: InputEvent, card: Card, cell: Control) -> void:
