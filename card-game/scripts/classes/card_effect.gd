@@ -4,19 +4,26 @@ class_name CardEffect
 enum Id {
 	NONE,
 	DRAW,
+	TRUMP,
 }
+
+const TRUMP_LASTS_WHOLE_MATCH := false
 
 const WORDS := {
 	Id.DRAW: "DRAW",
+	Id.TRUMP: "TRUMP",
 }
 const NAMES := {
 	Id.DRAW: "Draw",
+	Id.TRUMP: "Trump",
 }
 const DESCRIPTIONS := {
 	Id.DRAW: "When played, draw a card from your deck.",
+	Id.TRUMP: "When played, its suit becomes trump until the end of the round (smoke and drink cards are always trump).",
 }
 const COLORS := {
 	Id.DRAW: Color("4fa8e0"),
+	Id.TRUMP: Color("e0a43a"),
 }
 const ICONS := {
 	Id.DRAW: [
@@ -31,9 +38,22 @@ const ICONS := {
 		"#ooooooooo#",
 		".#########.",
 	],
+	Id.TRUMP: [
+		".#########.",
+		"#ooooooooo#",
+		"#ooookoooo#",
+		"#oookkkooo#",
+		"#ookkkkkoo#",
+		"#okkkkkkko#",
+		"#ooookoooo#",
+		"#oookkkooo#",
+		"#ooooooooo#",
+		".#########.",
+	],
 }
 const AI_COST_DISCOUNT := {
 	Id.DRAW: 1.5,
+	Id.TRUMP: 1.0,
 }
 
 
@@ -73,6 +93,8 @@ static func on_played(card: Card, player_id: int) -> void:
 	match card.effect:
 		Id.DRAW:
 			await CardManager.draw_extra_card(player_id)
+		Id.TRUMP:
+			CardManager.change_trump_to(card.suit, TRUMP_LASTS_WHOLE_MATCH)
 
 
 static func modify_rank(_card: Card, rank: int, _player_id: int) -> int:
