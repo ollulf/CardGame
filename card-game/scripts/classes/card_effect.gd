@@ -4,19 +4,24 @@ class_name CardEffect
 enum Id {
 	NONE,
 	DRAW,
+	COPY,
 }
 
 const WORDS := {
 	Id.DRAW: "DRAW",
+	Id.COPY: "COPY",
 }
 const NAMES := {
 	Id.DRAW: "Draw",
+	Id.COPY: "Copy",
 }
 const DESCRIPTIONS := {
 	Id.DRAW: "When played, draw a card from your deck.",
+	Id.COPY: "When played, copies the current rank of the last card you played this match.",
 }
 const COLORS := {
 	Id.DRAW: Color("4fa8e0"),
+	Id.COPY: Color("e0a24f"),
 }
 const ICONS := {
 	Id.DRAW: [
@@ -28,6 +33,17 @@ const ICONS := {
 		"#owwwwokoo#",
 		"#owwwwoooo#",
 		"#owwwwoooo#",
+		"#ooooooooo#",
+		".#########.",
+	],
+	Id.COPY: [
+		".#########.",
+		"#ooooooooo#",
+		"#owwwooooo#",
+		"#owoowwwoo#",
+		"#owoowowoo#",
+		"#owwwwowoo#",
+		"#oooowwwoo#",
 		"#ooooooooo#",
 		".#########.",
 	],
@@ -73,6 +89,12 @@ static func on_played(card: Card, player_id: int) -> void:
 	match card.effect:
 		Id.DRAW:
 			await CardManager.draw_extra_card(player_id)
+		Id.COPY:
+			var last: Card = CardManager.last_played_by.get(player_id)
+			if last != null and last.rank != card.rank:
+				print("Effect copy: player ", player_id, " copies rank ", last.rank, " from ", last.string_info())
+				card.rank = last.rank
+				card.apply_modifiers()
 
 
 static func modify_rank(_card: Card, rank: int, _player_id: int) -> int:
@@ -84,4 +106,7 @@ static func ai_discount(card: Card, player_id: int) -> float:
 		var deck := CardManager.deck_of(player_id)
 		if deck == null or deck.cards.is_empty():
 			return 0.0
+	if card.effect == Id.COPY:
+		var last: Card = CardManager.last_played_by.get(player_id)
+		return float(card.rank - last.rank) if last != null else 0.0
 	return AI_COST_DISCOUNT.get(card.effect, 0.0)
