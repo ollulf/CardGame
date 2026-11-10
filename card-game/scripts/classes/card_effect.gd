@@ -6,27 +6,34 @@ enum Id {
 	DRAW,
 	COPY,
 	SUIT_UP,
+	TRUMP,
 }
+
+const TRUMP_LASTS_WHOLE_MATCH := false
 
 const WORDS := {
 	Id.DRAW: "DRAW",
 	Id.COPY: "COPY",
 	Id.SUIT_UP: "SUITUP",
+	Id.TRUMP: "TRUMP",
 }
 const NAMES := {
 	Id.DRAW: "Draw",
 	Id.COPY: "Copy",
 	Id.SUIT_UP: "Suit +1",
+	Id.TRUMP: "Trump",
 }
 const DESCRIPTIONS := {
 	Id.DRAW: "When played, draw a card from your deck.",
 	Id.COPY: "When played, copies the current rank of the last card you played this match.",
 	Id.SUIT_UP: "When played, all your cards of this card's suit get +1 rank for the rest of the match. Stacks.",
+	Id.TRUMP: "When played, its suit becomes trump until the end of the round (smoke and drink cards are always trump).",
 }
 const COLORS := {
 	Id.DRAW: Color("4fa8e0"),
 	Id.COPY: Color("e0a24f"),
 	Id.SUIT_UP: Color("e0a64f"),
+	Id.TRUMP: Color("e0a43a"),
 }
 const ICONS := {
 	Id.DRAW: [
@@ -64,10 +71,23 @@ const ICONS := {
 		"#ooooooooo#",
 		".#########.",
 	],
+	Id.TRUMP: [
+		".#########.",
+		"#ooooooooo#",
+		"#ooookoooo#",
+		"#oookkkooo#",
+		"#ookkkkkoo#",
+		"#okkkkkkko#",
+		"#ooookoooo#",
+		"#oookkkooo#",
+		"#ooooooooo#",
+		".#########.",
+	],
 }
 const AI_COST_DISCOUNT := {
 	Id.DRAW: 1.5,
 	Id.SUIT_UP: 1.0,
+	Id.TRUMP: 1.0,
 }
 
 
@@ -115,6 +135,8 @@ static func on_played(card: Card, player_id: int) -> void:
 				card.apply_modifiers()
 		Id.SUIT_UP:
 			CardManager.add_suit_bonus(player_id, card.suit, 1)
+		Id.TRUMP:
+			CardManager.change_trump_to(card.suit, TRUMP_LASTS_WHOLE_MATCH)
 
 
 static func modify_rank(card: Card, rank: int, player_id: int) -> int:

@@ -217,6 +217,13 @@ func set_trump_suit(suit: Card.Suit) -> void:
 	print("Trump suit: ", Card.Suit.keys()[trump_suit])
 	trump_chosen.emit(trump_suit)
 
+func change_trump_to(suit: Card.Suit, whole_match: bool) -> void:
+	if suit == Card.Suit.SMOKE or suit == Card.Suit.ALK or suit == trump_suit:
+		return
+	if whole_match:
+		GameManager.match_trump = suit
+	set_trump_suit(suit)
+
 func generate_player_hands():	
 	print("Drawing player hands")
 	_place_scripted_cards(player_deck, 0, Card.Owner.HUMAN)
