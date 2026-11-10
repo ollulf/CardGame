@@ -46,10 +46,10 @@ match: 1
 			2: Well, that makes me the *loser*... I have to rip one of the two *life cards* now.
 			2: If I lose one more time I *lose* the whole *game*.
 			2: But since I lost, I will get us a round of *drinks*.
-			cue: show_drink_round
 			1: Awesome idea... 
 			1: Cheers!
 			2: Cheers.
+			cue: show_drink_round
 			1: Alright, next round!
 
 		when: round_start
@@ -136,8 +136,8 @@ match: 2
 		round: 2
 		lines:
 			cue: unlock_cig_automat
-			Bar: Jo guys, the cigarette machine works again, in case somebody needs more.
-			1: Awesome, I ran out of cigarettes. Let me quickly buy some.
+			Bar: Jo guys, the *cigarette machine* works again, in case somebody needs more.
+			1: Awesome, I ran out of *cigarettes*. Let me quickly buy some.
 			cue: ai_1_buys_cigarettes
 
 		when: zero_beats_nine
