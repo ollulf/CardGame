@@ -21,36 +21,37 @@ atlas = ExtResource("3_suit")
 region = Rect2(4.5, 0, 4.5, 9)
 
 [node name="LifeCard" type="Control"]
-custom_minimum_size = Vector2(40, 60)
+custom_minimum_size = Vector2(60, 90)
 layout_mode = 3
 anchors_preset = 0
-offset_right = 40.0
-offset_bottom = 60.0
+offset_right = 60.0
+offset_bottom = 90.0
 mouse_filter = 2
+pivot_offset = Vector2(30, 45)
 script = ExtResource("1_life")
 
 [node name="LeftHalf" type="Control" parent="."]
 unique_name_in_owner = true
 layout_mode = 0
-offset_right = 20.0
-offset_bottom = 60.0
-pivot_offset = Vector2(20, 60)
+offset_right = 30.0
+offset_bottom = 90.0
+pivot_offset = Vector2(30, 90)
 mouse_filter = 2
 
 [node name="Background" type="TextureRect" parent="LeftHalf"]
 layout_mode = 0
-offset_right = 20.0
-offset_bottom = 60.0
+offset_right = 30.0
+offset_bottom = 90.0
 mouse_filter = 2
 texture = SubResource("AtlasTexture_back_left")
 expand_mode = 1
 
 [node name="Suit" type="TextureRect" parent="LeftHalf"]
 layout_mode = 0
-offset_left = 11.0
-offset_top = 21.0
-offset_right = 20.0
-offset_bottom = 39.0
+offset_left = 16.5
+offset_top = 31.5
+offset_right = 30.0
+offset_bottom = 58.5
 mouse_filter = 2
 texture = SubResource("AtlasTexture_suit_left")
 expand_mode = 1
@@ -58,25 +59,25 @@ expand_mode = 1
 [node name="RightHalf" type="Control" parent="."]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 20.0
-offset_right = 40.0
-offset_bottom = 60.0
-pivot_offset = Vector2(0, 60)
+offset_left = 30.0
+offset_right = 60.0
+offset_bottom = 90.0
+pivot_offset = Vector2(0, 90)
 mouse_filter = 2
 
 [node name="Background" type="TextureRect" parent="RightHalf"]
 layout_mode = 0
-offset_right = 20.0
-offset_bottom = 60.0
+offset_right = 30.0
+offset_bottom = 90.0
 mouse_filter = 2
 texture = SubResource("AtlasTexture_back_right")
 expand_mode = 1
 
 [node name="Suit" type="TextureRect" parent="RightHalf"]
 layout_mode = 0
-offset_right = 9.0
-offset_top = 21.0
-offset_bottom = 39.0
+offset_right = 13.5
+offset_top = 31.5
+offset_bottom = 58.5
 mouse_filter = 2
 texture = SubResource("AtlasTexture_suit_right")
 expand_mode = 1
