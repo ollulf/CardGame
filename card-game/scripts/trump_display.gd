@@ -80,6 +80,7 @@ func _play_reveal() -> void:
 	_holder.scale = Vector2(0.0, 1.0)
 	_holder.modulate.a = 0.0
 	_label.modulate.a = 0.0
+	_card_visual.show_back()
 
 	_tween = create_tween()
 	_tween.set_parallel()
@@ -92,10 +93,15 @@ func _play_reveal() -> void:
 	var spin := create_tween()
 	spin.tween_interval(REVEAL_TIME * 0.4)
 	var shown := int(_final_suit)
+	var front_next := true
 	for half in SPIN_HALF_TIMES:
-		shown = (shown + 1) % 4
 		spin.tween_property(_holder, "scale:x", 0.0, half).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-		spin.tween_callback(_set_face.bind(shown as Card.Suit))
+		if front_next:
+			shown = (shown + 1) % 4
+			spin.tween_callback(_set_face.bind(shown as Card.Suit))
+		else:
+			spin.tween_callback(_card_visual.show_back)
+		front_next = not front_next
 		spin.tween_property(_holder, "scale:x", 1.0, half).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	spin.tween_property(_holder, "scale:x", 0.0, LAND_HALF_TIME).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	spin.tween_callback(_set_face.bind(_final_suit))
@@ -106,7 +112,7 @@ func _set_face(suit: Card.Suit) -> void:
 	if _card_visual == null or _card_visual.card == null:
 		return
 	_card_visual.card.suit = suit
-	_card_visual.update_visuals()
+	_card_visual.show_front()
 
 func _ignore_mouse(node: Node) -> void:
 	if node is Control:
