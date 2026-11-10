@@ -9,6 +9,7 @@ class_name HandVisualisation
 @export var cigarette_slots: Array[Control] = []
 
 const MAX_CIGARETTES := 3
+const TIP_OFFSET := Vector2(19.5, 16.5)
 const PARK_OFFSET := Vector2(270.0, 100.0)
 const PARK_HIT_SIZE := Vector2(150.0, 120.0)
 const PARK_HIT_MARGIN := Vector2(20.0, 20.0)
@@ -33,7 +34,7 @@ func _process(delta: float) -> void:
 	m.y = clampf(m.y, 0.0, vs.y)
 
 	# Convert clamped screen position to WORLD position (camera-safe)
-	var target_pos := get_viewport().get_canvas_transform().affine_inverse() * m
+	var target_pos := get_viewport().get_canvas_transform().affine_inverse() * m - TIP_OFFSET
 
 	# Keep your max-distance leash
 	var diff := target_pos - global_position
