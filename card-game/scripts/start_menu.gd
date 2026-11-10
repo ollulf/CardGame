@@ -104,7 +104,7 @@ func open(save: Dictionary) -> void:
 			_subtitle.text = "Saved at the start of match %d  ·  %d$" % [match_number, state.money]
 		_add_card("Continue", SUIT_HERZ, Choice.CONTINUE, true)
 	else:
-		_subtitle.text = "New here? Start a new game."
+		_subtitle.text = ""
 	var new_card := _new_card("New game", SUIT_KARO, not _has_save)
 	new_card.pressed.connect(_show_modes)
 	if not OS.has_feature("web"):
