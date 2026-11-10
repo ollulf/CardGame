@@ -372,15 +372,16 @@ func get_normal_winning_card() -> Card:
 		return highest_trump
 	return played_cards_turn.get_highest_card_of_suit(leading_card.suit)
 
-func highlight_turn_winner() -> void:
+func highlight_turn_winner() -> CardVisual:
 	var winning_card := get_turn_winning_card()
 	if winning_card == null or table_root == null:
-		return
+		return null
 	for child in table_root.get_children():
 		if child is CardVisual and child.card == winning_card:
 			child.set_winner(true)
 			Sfx.play_win_card()
-			return
+			return child
+	return null
 
 func get_turn_winner() -> Card.Owner:
 	return get_turn_winning_card().owner

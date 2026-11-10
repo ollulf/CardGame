@@ -140,8 +140,11 @@ func _draw() -> void:
 		_draw_indicator()
 
 func _draw_indicator() -> void:
-	var bob := float(int(_indicator_time / INDICATOR_BOB_TIME) % 2) * 2.0
-	var corner := Vector2(size.x - 18.0, size.y - 14.0 + bob)
-	draw_rect(Rect2(corner, Vector2(10, 2)), INDICATOR_COLOR)
-	draw_rect(Rect2(corner + Vector2(2, 2), Vector2(6, 2)), INDICATOR_COLOR)
-	draw_rect(Rect2(corner + Vector2(4, 4), Vector2(2, 2)), INDICATOR_COLOR)
+	SpeechBubble.draw_arrow(self, Vector2(size.x - 18.0, size.y - 14.0), _indicator_time)
+
+static func draw_arrow(canvas: CanvasItem, corner: Vector2, time: float) -> void:
+	var bob := float(int(time / INDICATOR_BOB_TIME) % 2) * 2.0
+	corner.y += bob
+	canvas.draw_rect(Rect2(corner, Vector2(10, 2)), INDICATOR_COLOR)
+	canvas.draw_rect(Rect2(corner + Vector2(2, 2), Vector2(6, 2)), INDICATOR_COLOR)
+	canvas.draw_rect(Rect2(corner + Vector2(4, 4), Vector2(2, 2)), INDICATOR_COLOR)
