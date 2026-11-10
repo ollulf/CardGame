@@ -138,6 +138,8 @@ func run_cue(cue: String) -> void:
 			var cigs_ui = get_tree().get_first_node_in_group("ai_cigarettes_ui")
 			if cigs_ui:
 				cigs_ui.reveal_drinks()
+		"show_drink_round":
+			await _show_drink_round()
 		"unlock_cig_automat":
 			PlayerDataManager.unlock_cig_machine()
 		"ai_1_buys_cigarettes":
@@ -155,6 +157,16 @@ func run_cue(cue: String) -> void:
 			elif not words.is_empty() and DialogueManager.PAY_CUES.has(words[0]):
 				var amount := words[1].to_int() if words.size() > 1 else Missions.prize_money(DialogueManager.upcoming_match())
 				await _pay_prize(DialogueManager.PAY_CUES[words[0]], amount)
+
+func _show_drink_round() -> void:
+	var glass = get_tree().get_first_node_in_group(DrinkGlass.GROUP)
+	if glass:
+		glass.drink_round(true)
+	for ai in [ai_player_1, ai_player_2]:
+		if ai is AIPlayer:
+			await get_tree().create_timer(ROUND_SERVE_STAGGER, false).timeout
+			ai.drink(true)
+	await get_tree().create_timer(ROUND_SERVE_TIME, false).timeout
 
 func serve_round_of_drinks(buyer: int) -> void:
 	var speaker := buyer if buyer != HUMAN_ID else 1

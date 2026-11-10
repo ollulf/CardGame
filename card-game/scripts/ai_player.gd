@@ -68,7 +68,7 @@ func smoke(cigarettes: int = 1) -> void:
 	CardManager.update_cards(cigarettes, player_id)
 
 
-func drink() -> void:
+func drink(show_only := false) -> void:
 	var side := 1.0 if player_id == 1 else -1.0
 	var art := DrinkArt.new()
 	art.scale = Vector2.ONE * DRINK_PIXEL_SCALE
@@ -79,7 +79,8 @@ func drink() -> void:
 	var appear := art.create_tween()
 	appear.tween_property(art, "modulate:a", 1.0, DRINK_FADE_TIME)
 	await appear.finished
-	art.sipped.connect(PlayerDataManager.drink.bind(player_id), CONNECT_ONE_SHOT)
+	if not show_only:
+		art.sipped.connect(PlayerDataManager.drink.bind(player_id), CONNECT_ONE_SHOT)
 	await art.play_sip(DRINK_LEFT_IN_GLASS, side)
 	var fade := art.create_tween()
 	fade.tween_interval(DRINK_LINGER_TIME)

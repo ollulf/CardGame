@@ -21,9 +21,10 @@ func _ready() -> void:
 	visible = false
 
 
-func drink_round() -> void:
+func drink_round(show_only := false) -> void:
 	if _busy:
-		_on_round_sipped()
+		if not show_only:
+			_on_round_sipped()
 		return
 	_busy = true
 	art.fill = 1.0
@@ -34,7 +35,8 @@ func drink_round() -> void:
 	var appear := create_tween()
 	appear.tween_property(self, "modulate:a", 1.0, FADE_TIME)
 	await appear.finished
-	art.sipped.connect(_on_round_sipped, CONNECT_ONE_SHOT)
+	if not show_only:
+		art.sipped.connect(_on_round_sipped, CONNECT_ONE_SHOT)
 	await art.play_sip(ROUND_LEFT_IN_GLASS, 1.0)
 	var fade := create_tween()
 	fade.tween_interval(LINGER_TIME)

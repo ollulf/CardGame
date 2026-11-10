@@ -44,6 +44,7 @@ match: 1
 			2: Well, that makes me the *loser*... I have to rip one of the two *life cards* now.
 			2: If I lose one more time I *lose* the whole *game*.
 			2: But since I lost, I will get us a round of *drinks*.
+			cue: show_drink_round
 			1: Awesome idea... 
 			1: Cheers!
 			2: Cheers.
