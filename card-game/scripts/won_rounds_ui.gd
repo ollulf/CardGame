@@ -12,6 +12,10 @@ var won_turns_shown := false
 var fade_tween: Tween
 var loosers_split := false
 var _life_cue_running := false
+var _loss_busy := 0
+var _loss_generation := 0
+
+signal life_loss_done
 
 func _ready() -> void:
 	visible = true
@@ -47,8 +51,21 @@ func on_round_finished(_looser_id : Array[int]):
 		return
 	if not lifes_revealed and DialogueManager.match_uses_cue("show_life_cards"):
 		return
+	_loss_busy += 1
+	var generation := _loss_generation
 	await reveal_lifes()
-	split_round_loosers()
+	if generation == _loss_generation:
+		await split_round_loosers()
+	_end_loss_busy()
+
+func wait_for_life_loss() -> void:
+	while _loss_busy > 0:
+		await life_loss_done
+
+func _end_loss_busy() -> void:
+	_loss_busy = max(_loss_busy - 1, 0)
+	if _loss_busy == 0:
+		life_loss_done.emit()
 
 func run_cue(cue: String):
 	match cue:
@@ -60,15 +77,18 @@ func run_cue(cue: String):
 			_life_cue_running = true
 			await reveal_lifes()
 			if GameManager.round_over:
-				split_round_loosers()
+				await split_round_loosers()
 			_life_cue_running = false
 
 func split_round_loosers():
 	if loosers_split:
 		return
 	loosers_split = true
-	for i in GameManager.last_round_loosers:
-		update_round_looser(i)
+	var generation := _loss_generation
+	for i in GameManager.last_round_loosers.duplicate():
+		await update_round_looser(i)
+		if generation != _loss_generation:
+			return
 
 func on_next_round_available():
 	await DialogueManager.wait_until_idle()
@@ -102,7 +122,8 @@ func set_won_turns_alpha(alpha: float):
 func update_round_looser(looser_id : int):
 	var lost_rounds: int = GameManager.id_to_player(looser_id).lost_rounds
 	if lost_rounds == 1 or lost_rounds == 2:
-		_life_card(looser_id, lost_rounds).split()
+		var card := _life_card(looser_id, lost_rounds)
+		await card.play_loss(card.get_viewport_rect().size / 2.0)
 
 func sync_lost_lifes(player_id: int) -> void:
 	var lost: int = GameManager.id_to_player(player_id).lost_rounds
@@ -119,6 +140,7 @@ func reset_UI(animate: bool):
 	
 func reset_lifes(keep_visible := false):
 	lifes_revealed = keep_visible
+	_loss_generation += 1
 	for player_id in 3:
 		for life in [1, 2]:
 			var card := _life_card(player_id, life)

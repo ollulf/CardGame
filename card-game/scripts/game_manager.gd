@@ -368,6 +368,12 @@ func _end_round(loosers: Array[int]) -> void:
 
 	round_over = true
 	round_finished.emit(last_round_loosers)
+	var token := round_token
+	var life_ui = get_tree().get_first_node_in_group(WON_ROUNDS_UI_GROUP)
+	if life_ui:
+		await life_ui.wait_for_life_loss()
+	if token != round_token:
+		return
 
 	#Check if somebody lost twice
 	var total_loosers := get_total_loosers()
