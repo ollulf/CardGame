@@ -2,7 +2,7 @@ extends Node2D
 class_name Bierdeckel
 
 const PIXEL_SCALE := 3.0
-const RADIUS := 7.5
+const RADIUS := 12.0
 const RADIUS_PX := RADIUS * PIXEL_SCALE
 const TEXTURE := preload("res://sprites/Bierdeckel.png")
 const FLY_TIME := 0.55

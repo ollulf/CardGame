@@ -10,7 +10,7 @@ const GRAVEYARD_OFFSETS := {
 	Card.Owner.AI_1: Vector2(80, 0),
 	Card.Owner.AI_2: Vector2(-80, 0),
 }
-const STACK_OFFSET_FROM_ASHTRAY := Vector2(84, 4)
+const STACK_OFFSET_FROM_ASHTRAY := Vector2(106, 4)
 
 var piles: Array[WonPile] = []
 var graveyards: Array[GraveyardPile] = []
