@@ -26,6 +26,7 @@ func reset_buttons_unlock() -> void:
 	buttons_unlock_changed.emit()
 
 const PLAYERS: Array[int] = [0, 1, 2]
+const PLAYER_NAME_MAX := 12
 const SMOKE_BONUS_PER_CIGARETTE := 1
 const STARTING_MONEY := 15
 const CIGARETTE_PACK_PRICE := 5
@@ -55,6 +56,7 @@ var drinking_levels := {
 	2: 0
 }
 
+var player_name := ""
 var money := 0
 var starting_money_granted := false
 var cig_machine_unlocked := false
@@ -132,6 +134,14 @@ func _on_round_finished(_loosers) -> void:
 
 func _on_match_over(_arg = null) -> void:
 	clear_drinking()
+
+func set_player_name(value) -> void:
+	player_name = clean_player_name(value)
+
+static func clean_player_name(value) -> String:
+	if not value is String:
+		return ""
+	return value.strip_edges().left(PLAYER_NAME_MAX)
 
 func grant_starting_money() -> void:
 	if starting_money_granted:

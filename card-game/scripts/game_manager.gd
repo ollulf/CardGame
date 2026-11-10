@@ -24,9 +24,9 @@ const TURN_FINISH_DELAY := 1.0
 const MAX_TIE_DRAWS := 5
 
 const HUMAN_ID := 0
-const PLAYER_NAMES := ["YOU","AI player 1", "AI player 2"]
+const PLAYER_NAMES := ["You", "Bernd", "Manfred"]
 const ROUND_ORDER_LINES := {
-	0: "A *round of drinks* from *YOU*? Cheers, everybody drinks!",
+	0: "A *round of drinks* from *{player}*? Cheers, everybody drinks!",
 	1: "Bartender, a *round* for the whole table! Everybody drinks!",
 	2: "This *round* is on me! Bottoms up, all of you!",
 }
@@ -290,6 +290,11 @@ func start_new_match() -> void:
 func _message_name(player_id: int) -> String:
 	return "You" if player_id == HUMAN_ID else str(PLAYER_NAMES[player_id])
 
+func player_name(player_id: int) -> String:
+	if player_id == HUMAN_ID and PlayerDataManager.player_name != "":
+		return PlayerDataManager.player_name
+	return str(PLAYER_NAMES[player_id])
+
 
 func start_new_turn(starting_player_id: int) -> void:
 	current_turn += 1
@@ -299,7 +304,7 @@ func start_new_turn(starting_player_id: int) -> void:
 	play_order = _build_play_order(starting_player_id)
 	current_play_index = 0
 
-	print("Starting Player: " + PLAYER_NAMES[starting_player_id])
+	print("Starting Player: " + player_name(starting_player_id))
 
 	emit_signal("turn_started", current_turn, starting_player_id)
 	

@@ -9,6 +9,12 @@ const MENU_LAYER := 56
 const FADE_TIME := 0.4
 const TITLE_SIZE := 52
 const STRIKE_COLOR := Color(0.86, 0.16, 0.16)
+const NAME_FIELD_SIZE := Vector2(320, 64)
+const NAME_FONT_SIZE := 28
+const NAME_BG_COLOR := Color(0.121569, 0.117647, 0.14902, 1)
+const NAME_BORDER_COLOR := Color(0.239216, 0.219608, 0.329412, 1)
+const NAME_TEXT_COLOR := Color(0.956863, 0.952941, 0.968627, 1)
+const NAME_PLACEHOLDER_COLOR := Color(0.6, 0.58, 0.66, 1)
 const CARD_TILTS := [-4.0, 2.5, -1.5, 3.5]
 const SUIT_HERZ := preload("res://sprites/suit_Herz.png")
 const SUIT_PIK := preload("res://sprites/suit_Pik.png")
@@ -21,6 +27,8 @@ var _subtitle: Label
 var _cards_row: HBoxContainer
 var _cards: Array[MenuCard] = []
 var _content: Control
+var _name_edit: LineEdit
+var _saved_name := ""
 
 func _init() -> void:
 	layer = MENU_LAYER
@@ -88,6 +96,7 @@ func _title_label(text: String) -> Label:
 	return label
 
 func open(save: Dictionary) -> void:
+	_saved_name = str(save.get("player_name", ""))
 	if save.is_empty():
 		_subtitle.text = "New here? The tutorial teaches you the rules."
 		_add_card("Start with tutorial", SUIT_HERZ, Choice.NEW_RUN, true)
@@ -130,6 +139,61 @@ func _disable_cards() -> void:
 
 func _choose(choice: Choice) -> void:
 	_disable_cards()
+	if choice == Choice.CONTINUE:
+		_finish(choice)
+	else:
+		ask_name(choice)
+
+func ask_name(choice: Choice) -> void:
+	for card in _cards:
+		card.queue_free()
+	_cards.clear()
+	_subtitle.text = "What's your name?"
+	_name_edit = LineEdit.new()
+	_name_edit.text = _saved_name
+	_name_edit.placeholder_text = "Your name"
+	_name_edit.max_length = PlayerDataManager.PLAYER_NAME_MAX
+	_name_edit.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_name_edit.custom_minimum_size = NAME_FIELD_SIZE
+	_name_edit.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	_name_edit.virtual_keyboard_enabled = true
+	_name_edit.select_all_on_focus = true
+	_name_edit.context_menu_enabled = false
+	_name_edit.add_theme_font_size_override("font_size", NAME_FONT_SIZE)
+	_name_edit.add_theme_color_override("font_color", NAME_TEXT_COLOR)
+	_name_edit.add_theme_color_override("font_uneditable_color", NAME_TEXT_COLOR)
+	_name_edit.add_theme_color_override("font_placeholder_color", NAME_PLACEHOLDER_COLOR)
+	_name_edit.add_theme_color_override("caret_color", NAME_TEXT_COLOR)
+	_name_edit.add_theme_stylebox_override("normal", _name_style(NAME_BORDER_COLOR))
+	_name_edit.add_theme_stylebox_override("focus", _name_style(MenuCard.PRIMARY_COLOR))
+	_name_edit.add_theme_stylebox_override("read_only", _name_style(NAME_BORDER_COLOR))
+	_name_edit.text_submitted.connect(func(_text: String) -> void: _confirm_name(choice))
+	_cards_row.add_child(_name_edit)
+	var confirm := _new_card("Let's play", SUIT_HERZ, true)
+	confirm.pressed.connect(_confirm_name.bind(choice))
+	_name_edit.grab_focus.call_deferred()
+
+func _name_style(border: Color) -> StyleBoxFlat:
+	var style := StyleBoxFlat.new()
+	style.bg_color = NAME_BG_COLOR
+	style.border_color = border
+	style.set_border_width_all(4)
+	style.content_margin_left = 16.0
+	style.content_margin_right = 16.0
+	style.content_margin_top = 10.0
+	style.content_margin_bottom = 10.0
+	return style
+
+func _confirm_name(choice: Choice) -> void:
+	if not is_instance_valid(_name_edit) or not _name_edit.editable:
+		return
+	_name_edit.editable = false
+	_name_edit.release_focus()
+	PlayerDataManager.set_player_name(_name_edit.text)
+	_disable_cards()
+	_finish(choice)
+
+func _finish(choice: Choice) -> void:
 	_lower_hand_pointer()
 	InteractionManager.skip_next_double_click()
 	chosen.emit(choice)

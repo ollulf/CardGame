@@ -8,7 +8,7 @@ match: 1
 			cue: show_deck
 			2: Yes! Now, everybody draws *5 cards*, if I remember correctly.
 			cue: deal_cards
-			1: Okay *YOU*, play a card now.
+			1: Okay *{player}*, play a card now.
 			1: Your goal is to have the *highest card*, after everybody played *one card*.
 			wait_for_cards_played: 1
 			1: I have to *follow* your *played suit* if I have a card on my hand with that *suit.*
@@ -116,7 +116,7 @@ match: 2
 			1: Let's hope it's not me again...
 			2: And remember, a *new match* means a *new trump*.
 			wait_for_cards_played: 1
-			1: Ahh *YOU* ...
+			1: Ahh *{player}* ...
 			cue: give_player_cigs 3
 			1: Have some of my *cigarettes*. You can smoke them whenever you want.
 			1: I hope you already added *smoking cards* to your *deck*.

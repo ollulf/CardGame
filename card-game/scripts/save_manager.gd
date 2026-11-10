@@ -39,11 +39,13 @@ func load_save() -> Dictionary:
 		"between_matches": data.get("between_matches") == true,
 		"booster_collected": data.get("booster_collected") == true,
 		"deck_edited": data.get("deck_edited") == true,
+		"player_name": PlayerDataManager.clean_player_name(data.get("player_name")),
 	}
 
 func continue_run(save: Dictionary) -> void:
 	PlayerDataManager.booster_collected = save.booster_collected
 	PlayerDataManager.deck_edited = save.deck_edited
+	PlayerDataManager.set_player_name(save.player_name)
 	PlayerDataManager.buttons_unlock_changed.emit()
 	GameManager.resume_run(save.state, save.game_start, save.between_matches)
 
@@ -56,6 +58,7 @@ func write_save(state: Dictionary, game_start: Dictionary, between_matches: bool
 		"between_matches": between_matches,
 		"booster_collected": PlayerDataManager.booster_collected,
 		"deck_edited": PlayerDataManager.deck_edited,
+		"player_name": PlayerDataManager.player_name,
 		"state": state_to_data(state),
 		"game_start": state_to_data(game_start),
 	}

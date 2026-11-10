@@ -27,7 +27,7 @@ const TIE_TAG_FADE_TIME := 0.2
 const TIE_TAG_FONT_SIZE := 18
 const TIE_LOSER_TAG_COLOR := Color(0.85, 0.15, 0.15)
 const TIE_OWNER_COLORS := {0: Color(0.3, 0.7, 1.0), 1: Color(1.0, 0.55, 0.2), 2: Color(0.75, 0.45, 1.0)}
-const TIE_NAMES := ["YOU", "AI 1", "AI 2"]
+const HUMAN_TIE_NAME := "YOU"
 
 var table_root: Control
 
@@ -514,7 +514,7 @@ func show_tie_break(draws: Dictionary, losers: Array[int]) -> void:
 			continue
 		if losers.has(id):
 			visual.shake_and_dim(TIE_LOSER_COLOR)
-			_mark_tie_tag(tags[id], _tie_name(id) + (" tie again" if losers.size() > 1 else (" lose!" if id == 0 else " loses!")), TIE_LOSER_TAG_COLOR)
+			_mark_tie_tag(tags[id], _tie_name(id) + (" tie again" if losers.size() > 1 else (" lose!" if _tie_name(id) == HUMAN_TIE_NAME else " loses!")), TIE_LOSER_TAG_COLOR)
 		else:
 			_mark_tie_tag(tags[id], _tie_name(id) + " safe", TIE_OWNER_COLORS.get(id, Color.WHITE).darkened(0.35))
 	await get_tree().create_timer(TIE_RESULT_TIME, false).timeout
@@ -547,7 +547,9 @@ func _add_owner_outline(visual: CardVisual, color: Color) -> void:
 	visual.add_child(outline)
 
 func _tie_name(player_id: int) -> String:
-	return str(TIE_NAMES[player_id])
+	if player_id == GameManager.HUMAN_ID and PlayerDataManager.player_name == "":
+		return HUMAN_TIE_NAME
+	return GameManager.player_name(player_id)
 
 func _make_tie_tag(player_id: int, top_center: Vector2) -> PanelContainer:
 	var tag := PanelContainer.new()
