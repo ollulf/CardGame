@@ -193,7 +193,7 @@ func add_to_collection(cards: Array[Card]) -> void:
 	collection_changed.emit()
 
 func has_active_deck() -> bool:
-	return active_deck.size() == Missions.DECK_SIZE
+	return active_deck.size() >= Missions.DECK_MIN and active_deck.size() <= Missions.DECK_MAX
 
 func init_active_deck(cards: Array[Card]) -> void:
 	if not active_deck.is_empty():
@@ -203,7 +203,7 @@ func init_active_deck(cards: Array[Card]) -> void:
 	deck_changed.emit()
 
 func move_to_deck(card: Card) -> bool:
-	if active_deck.size() >= Missions.DECK_SIZE or not collection.has(card):
+	if active_deck.size() >= Missions.DECK_MAX or not collection.has(card):
 		return false
 	collection.erase(card)
 	active_deck.append(card)
@@ -255,6 +255,6 @@ func restore_state(state: Dictionary) -> void:
 	deck_changed.emit()
 
 func _top_up_active_deck() -> void:
-	if active_deck.is_empty() or active_deck.size() >= Missions.DECK_SIZE:
+	if active_deck.is_empty() or active_deck.size() >= Missions.DECK_MIN:
 		return
-	active_deck.append_array(CardManager.generate_cards(Missions.DECK_SIZE - active_deck.size(), Card.Owner.HUMAN, 1))
+	active_deck.append_array(CardManager.generate_cards(Missions.DECK_MIN - active_deck.size(), Card.Owner.HUMAN, 1))
