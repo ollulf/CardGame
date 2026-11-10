@@ -13,6 +13,12 @@ const HOVER_CARD_INTERVAL_MSEC := 50
 const CARD_FLIP_SOUND := preload("res://sounds/card_played.wav")
 const CARD_FLIP_DB := 0.0
 const CARD_FLIP_PITCH_VARIATION := 0.1
+const BOOSTER_CHEER_SOUNDS := [
+	preload("res://sounds/booster_cheer_aww.wav"),
+	preload("res://sounds/booster_cheer_haha.wav"),
+	preload("res://sounds/booster_cheer_oooh.wav"),
+]
+const BOOSTER_CHEER_DB := -4.0
 const TYPE_SOUND := preload("res://sounds/type_sound.wav")
 const TYPE_SOUND_DB := -14.0
 const TYPE_PITCH_VARIATION := 0.06
@@ -44,6 +50,7 @@ const MUSIC_SILENT_DB := -60.0
 const MUSIC_FADE_TIME := 3.0
 
 var _last_played: AudioStreamPlayer
+var _cheer_player: AudioStreamPlayer
 var card_move_count := 0
 var _last_card_move_msec := -1000
 var _last_hover_msec := -1000
@@ -213,6 +220,12 @@ func play_win_card() -> void:
 
 func play_card_flip() -> void:
 	play(CARD_FLIP_SOUND, CARD_FLIP_PITCH_VARIATION, CARD_FLIP_DB)
+
+func play_booster_cheer() -> void:
+	if _cheer_player != null and _cheer_player.playing:
+		return
+	play(BOOSTER_CHEER_SOUNDS.pick_random(), 0.03, BOOSTER_CHEER_DB)
+	_cheer_player = _last_played
 
 func play_button() -> void:
 	play(BUTTON_SOUND, 0.05)
