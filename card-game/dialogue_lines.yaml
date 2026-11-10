@@ -125,9 +125,9 @@ match: 2
 
 		when: zero_played
 		lines:
-			2: There it is, the first *0* of the match! From now on our *decks* have *0s* in them.
-			1: Don't laugh at it. A *0* is not as *worthless* as it looks...
-			2: Looks harmless, right? Hehe, I'm saying nothing.
+			2: Right, from this match on our decks have *0s* in them. Remember, a *0* beats a *9* of the *same suit*.
+			1: I know, I know. That's why I keep my *9s* away from it.
+			2: Hehe, then you'd better watch your *9s*.
 
 		when: round_start
 		round: 2
@@ -139,10 +139,10 @@ match: 2
 
 		when: zero_beats_nine
 		lines:
-			1: Wait what? A *0* just took the turn from a *9*?
-			2: Hehe, yes! A *0* beats a *9 or higher*, but only of the *same suit*.
-			2: So only a *trump 0* beats a *trump 9*, and a *hearts 0* cannot beat a *smoking 9*.
-			1: So the tiny ones are dangerous... I should keep mine for the big ones.
+			1: Ugh, I knew it. A *0* beats a *9* of the *same suit*, and I fell for it.
+			2: Hehe, exactly! A *trump 0* beats a *trump 9*, but a *hearts 0* cannot beat a *smoking 9*.
+			2: And a drink can't make a *0*, so keep that in mind too.
+			1: Fine, fine. Next time I'll keep my *0s* for the big ones.
 
 match: 3
 	dialogues:
