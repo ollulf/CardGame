@@ -3,7 +3,7 @@ class_name HumanPlayer
 
 # Layout
 @export var card_space: float = 400
-@export var MAX_GAP := 40.0
+@export var MAX_GAP := 58.0
 
 @export var bottom_margin: float = 150
 
