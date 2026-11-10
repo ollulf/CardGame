@@ -67,15 +67,26 @@ func apply_buffs(player_id: int) -> void:
 	var smoke_bonus := PlayerDataManager.get_smoking(player_id)
 	var drink_penalty := PlayerDataManager.get_drink_penalty(player_id)
 	var drink_bonus := PlayerDataManager.get_drink_bonus(player_id)
+	var cigarettes := smoke_bonus / maxi(PlayerDataManager.SMOKE_BONUS_PER_CIGARETTE, 1)
+	var drink_rounds := PlayerDataManager.get_drinking(player_id)
 	for card in hand.cards:
+		var parts: Array[Dictionary] = []
 		var target := card.base_rank
-		if card.suit == Card.Suit.SMOKE:
+		if card.suit == Card.Suit.SMOKE and smoke_bonus != 0:
 			target += smoke_bonus
+			parts.append({"kind": "smoke", "amount": smoke_bonus, "count": cigarettes})
 		if card.suit == Card.Suit.ALK:
 			target += drink_bonus
+			if drink_bonus != 0:
+				parts.append({"kind": "drink_bonus", "amount": drink_bonus, "count": drink_rounds})
 		else:
-			target = maxi(target - drink_penalty, mini(card.base_rank, 1))
-		if card.rank != target:
+			var lowered := maxi(target - drink_penalty, mini(card.base_rank, 1))
+			if drink_penalty != 0 and target > 0:
+				parts.append({"kind": "drink_penalty", "amount": lowered - target, "count": drink_rounds, "capped": lowered - target != -drink_penalty, "floor": mini(card.base_rank, 1)})
+			target = lowered
+		var changed := card.rank != target or card.buff_parts != parts
+		card.buff_parts = parts
+		if changed:
 			card.rank = target
 			card.apply_modifiers()
 

@@ -8,6 +8,7 @@ var is_trump : bool:
 var is_played : bool
 var rank : int
 var base_rank : int
+var buff_parts : Array[Dictionary] = []
 var owner : Owner = Owner.NONE
 
 
