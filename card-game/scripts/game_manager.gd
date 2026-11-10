@@ -315,11 +315,11 @@ func _finish_turn() -> void:
 		return
 
 	var winner : Card.Owner = CardManager.get_turn_winner()
-	CardManager.highlight_turn_winner()
+	var winner_visual := CardManager.highlight_turn_winner()
 
 	message(_message_name(winner) + " won the turn")
 
-	await get_tree().create_timer(TURN_WINNER_SHOW_TIME, false).timeout
+	await _wait_for_continue(winner_visual)
 	if token != round_token:
 		return
 	await CardManager.collect_table(winner)
@@ -341,6 +341,19 @@ func _finish_turn() -> void:
 		return
 
 	start_new_turn(owner_to_id(winner))
+
+func _wait_for_continue(anchor: Control) -> void:
+	if Engine.get_write_movie_path() != "" or DisplayServer.get_name() == "headless" or anchor == null:
+		await get_tree().create_timer(TURN_WINNER_SHOW_TIME, false).timeout
+		return
+	await DialogueManager.wait_until_idle()
+	if not is_instance_valid(anchor):
+		return
+	var arrow := ContinueArrow.new()
+	anchor.add_child(arrow)
+	arrow.position = anchor.size - Vector2(24.0, 22.0)
+	await arrow.clicked
+	arrow.queue_free()
 
 func _end_round(loosers: Array[int]) -> void:
 	last_round_loosers = loosers
