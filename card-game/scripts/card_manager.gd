@@ -9,6 +9,7 @@ const PLAY_ZONE_SIZE := Vector2(660, 400)
 const HAND_SIZE := 5
 const DEAL_INTERVAL := 0.12
 const DEAL_SETTLE_TIME := 0.45
+const RETURN_FLY_TIME := 0.4
 const CLEAR_TIME := 0.45
 const CLEAR_STAGGER := 0.08
 const COLLECT_GATHER_TIME := 0.25
@@ -55,9 +56,49 @@ func _ready() -> void:
 	GameManager.new_match_started.connect(func(): last_played_by.clear())
 
 func _discard_leftover_hands(_loosers) -> void:
-	for hand in [player_hand, AI_1_hand, AI_2_hand]:
-		if hand != null and not hand.is_empty():
-			hand.empty()
+	var pairs := [[player_hand, player_deck, Card.Owner.HUMAN], [AI_1_hand, AI_1_deck, Card.Owner.AI_1], [AI_2_hand, AI_2_deck, Card.Owner.AI_2]]
+	for pair in pairs:
+		var hand: Hand = pair[0]
+		var deck: Deck = pair[1]
+		if hand == null or hand.is_empty():
+			continue
+		var before := 0 if deck == null else deck.cards.size()
+		var returned := hand.cards.duplicate()
+		hand.cards.clear()
+		var home := _deck_pile_center(pair[2], table_root) if table_root != null else Vector2.ZERO
+		for card: Card in returned:
+			card.rank = card.base_rank
+			card.buff_parts = []
+			if deck != null:
+				deck.cards.append(card)
+			_fly_card_to_deck(card, home)
+		if deck != null:
+			deck.cards.shuffle()
+			print("Leftover cards shuffled into deck: owner ", pair[2], " returned ", returned.size(), " deck ", before, " -> ", deck.cards.size())
+
+func _fly_card_to_deck(card: Card, home: Vector2) -> void:
+	var visual := _find_visual(get_tree().root, card)
+	if visual == null:
+		card.remove()
+		return
+	if card.removed.is_connected(visual.destroy):
+		card.removed.disconnect(visual.destroy)
+	visual.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	visual.z_index = 40
+	var tween := visual.create_tween().set_parallel().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tween.tween_property(visual, "global_position", home - visual.size * 0.5, RETURN_FLY_TIME)
+	tween.tween_property(visual, "scale", Vector2.ONE * 0.5, RETURN_FLY_TIME)
+	tween.chain().tween_callback(visual.queue_free)
+	Sfx.play_card_move()
+
+func _find_visual(node: Node, card: Card) -> CardVisual:
+	if node is CardVisual and node.card == card:
+		return node
+	for child in node.get_children():
+		var found := _find_visual(child, card)
+		if found != null:
+			return found
+	return null
 
 static func entry_effect(entry: Array) -> CardEffect.Id:
 	return entry[2] if entry.size() > 2 else CardEffect.Id.NONE
