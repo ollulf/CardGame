@@ -61,9 +61,12 @@ func smoke(cigarettes: int = 1) -> void:
 	_smoke_visuals.assign(_smoke_visuals.filter(func(v): return is_instance_valid(v) and not v.is_queued_for_deletion()))
 	var slot := _free_smoke_slot()
 	var at := Vector2((smoke_offset.x + smoke_stack_step.x * slot) * side, smoke_offset.y + smoke_stack_step.y * slot)
-	var visual := AiSmoke.spawn(self, at, 0.5 * side)
+	var lighter := Lighter.find_in(get_tree())
+	var visual := AiSmoke.spawn(self, at, 0.5 * side, lighter != null)
 	visual.set_meta("slot", slot)
 	_smoke_visuals.append(visual)
+	if lighter != null:
+		lighter.light_cigarette(visual, side)
 	await visual.lit
 	CardManager.update_cards(cigarettes, player_id)
 
