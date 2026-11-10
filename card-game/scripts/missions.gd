@@ -9,10 +9,9 @@ const DECK_SIZE := 21
 const DECK_KEYS := ["you_deck", "ai_one_deck", "ai_two_deck"]
 const CIGARETTE_KEYS := {1: "ai_one_cigarettes", 2: "ai_two_cigarettes"}
 const BUDGET_KEYS := {1: "ai_one_budget", 2: "ai_two_budget"}
-const BONUS_CARDS_KEY := "you_bonus_cards"
-const CARD_LIST_KEYS := ["you_deck", "ai_one_deck", "ai_two_deck", "you_bonus_cards"]
+const CARD_LIST_KEYS := ["you_deck", "ai_one_deck", "ai_two_deck"]
 const PRIZE_KEY := "prize_money"
-const ALLOWED_KEYS := ["match", "you_deck", "ai_one_deck", "ai_two_deck", "ai_one_cigarettes", "ai_two_cigarettes", "ai_one_budget", "ai_two_budget", "you_bonus_cards", "prize_money"]
+const ALLOWED_KEYS := ["match", "you_deck", "ai_one_deck", "ai_two_deck", "ai_one_cigarettes", "ai_two_cigarettes", "ai_one_budget", "ai_two_budget", "prize_money"]
 const SUIT_CODES := {
 	"H": Card.Suit.HEARTS,
 	"D": Card.Suit.DIAMONDS,
@@ -70,9 +69,6 @@ func use_cigarette(seat: int) -> void:
 func add_cigarettes(seat: int, amount: int) -> void:
 	_cigarettes_added[seat] = _cigarettes_added.get(seat, 0) + amount
 	cigarettes_changed.emit(seat)
-
-func bonus_cards(match_number: int) -> Array:
-	return _lookup(match_number, BONUS_CARDS_KEY, [])
 
 func budget(match_number: int, seat: int) -> int:
 	if not BUDGET_KEYS.has(seat):

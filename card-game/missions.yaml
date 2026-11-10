@@ -26,8 +26,6 @@ match: 3
 	ai_one_cigarettes: 0
 	ai_two_cigarettes: 1
 	ai_one_budget: 5
-	you_bonus_cards:
-		AL: 5,6,7
 	ai_one_deck:
 		H: 9,8,6,4
 		S: 9,7,6,4,2
