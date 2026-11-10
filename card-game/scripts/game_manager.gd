@@ -387,9 +387,9 @@ func _wait_for_continue(anchor: Control, winner: Card.Owner) -> void:
 	var center := anchor.global_position + anchor.size * 0.5
 	var dir := Vector2.DOWN
 	if winner == Card.Owner.AI_1:
-		dir = Vector2.RIGHT
-	elif winner == Card.Owner.AI_2:
 		dir = Vector2.LEFT
+	elif winner == Card.Owner.AI_2:
+		dir = Vector2.RIGHT
 	arrow.angle = dir.angle() - PI * 0.5
 	var edge := minf(anchor.size.x * 0.5 / maxf(absf(dir.x), 0.001), anchor.size.y * 0.5 / maxf(absf(dir.y), 0.001)) + 10.0
 	arrow.global_position = center + dir * edge - Vector2(5.0, 3.0)
