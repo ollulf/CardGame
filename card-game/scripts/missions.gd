@@ -6,6 +6,8 @@ signal budget_changed(seat: int)
 const MISSIONS_PATH := "res://missions.yaml"
 const ANY := 0
 const DECK_SIZE := 21
+const DECK_MIN := 21
+const DECK_MAX := 31
 const DECK_KEYS := ["you_deck", "ai_one_deck", "ai_two_deck"]
 const CIGARETTE_KEYS := {1: "ai_one_cigarettes", 2: "ai_two_cigarettes"}
 const BUDGET_KEYS := {1: "ai_one_budget", 2: "ai_two_budget"}

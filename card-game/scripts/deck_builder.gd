@@ -325,7 +325,7 @@ func _rebuild_deck() -> void:
 		cell.gui_input.connect(_on_deck_cell_input.bind(card, cell))
 		_deck_cells[card] = cell
 		_deck_row.add_child(cell)
-	for i in Missions.DECK_SIZE - deck.size():
+	for i in Missions.DECK_MIN - deck.size():
 		var slot := Panel.new()
 		slot.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		slot.custom_minimum_size = CARD_SIZE * DECK_CARD_SCALE
@@ -335,11 +335,11 @@ func _rebuild_deck() -> void:
 		_deck_row.add_child(slot)
 	_layout_strip(_deck_row)
 	var count := deck.size()
-	_deck_counter.text = "%d / %d" % [count, Missions.DECK_SIZE]
-	var full := count == Missions.DECK_SIZE
-	_deck_counter.add_theme_color_override("font_color", NEW_COLOR if full else WARN_COLOR)
-	_close_button.disabled = not full
-	_close_button.text = "Close" if full else "Close  (%d missing)" % (Missions.DECK_SIZE - count)
+	_deck_counter.text = "%d / %d  (min %d)" % [count, Missions.DECK_MAX, Missions.DECK_MIN]
+	var enough := count >= Missions.DECK_MIN
+	_deck_counter.add_theme_color_override("font_color", NEW_COLOR if enough else WARN_COLOR)
+	_close_button.disabled = not enough
+	_close_button.text = "Close" if enough else "Close  (%d missing)" % (Missions.DECK_MIN - count)
 
 
 func _rebuild_collection() -> void:

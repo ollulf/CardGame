@@ -16,12 +16,18 @@ const COLLECT_FLIP_TIME := 0.15
 const COLLECT_FLY_TIME := 0.45
 const ZERO_BEATS_RANK := 9
 const TIE_CARD_SCALE := 1.5
-const TIE_CARD_SPACING := 120.0
+const TIE_CARD_SPACING := 140.0
 const TIE_FLY_TIME := 0.4
 const TIE_FLIP_TIME := 0.3
 const TIE_REVEAL_PAUSE := 0.35
-const TIE_RESULT_TIME := 0.8
+const TIE_RESULT_TIME := 1.4
 const TIE_LOSER_COLOR := Color(0.55, 0.55, 0.55, 0.8)
+const TIE_TAG_GAP := 18.0
+const TIE_TAG_FADE_TIME := 0.2
+const TIE_TAG_FONT_SIZE := 18
+const TIE_LOSER_TAG_COLOR := Color(0.85, 0.15, 0.15)
+const TIE_OWNER_COLORS := {0: Color(0.3, 0.7, 1.0), 1: Color(1.0, 0.55, 0.2), 2: Color(0.75, 0.45, 1.0)}
+const TIE_NAMES := ["YOU", "AI 1", "AI 2"]
 
 var table_root: Control
 
@@ -426,6 +432,20 @@ func get_zero_beating_nine() -> Card:
 			return card
 	return null
 
+func turn_won_by_tie() -> bool:
+	var winner := get_turn_winning_card()
+	if winner == null or get_zero_beating_nine() != null:
+		return false
+	for card in played_cards_turn.cards:
+		if card == winner or card.rank != winner.rank:
+			continue
+		if winner.is_trump:
+			if card.is_trump:
+				return true
+		elif not card.is_trump and card.suit == winner.suit:
+			return true
+	return false
+
 func turn_won_by_zero() -> bool:
 	return get_zero_beating_nine() != null
 
@@ -460,7 +480,9 @@ func show_tie_break(draws: Dictionary, losers: Array[int]) -> void:
 	var ids: Array = draws.keys()
 	var visuals := {}
 	var homes := {}
+	var tags := {}
 	if table_root != null:
+		ids.sort_custom(func(a, b): return _deck_pile_center(a as Card.Owner, table_root).x < _deck_pile_center(b as Card.Owner, table_root).x)
 		var center := _get_table_center_world()
 		for i in ids.size():
 			var id: int = ids[i]
@@ -475,6 +497,7 @@ func show_tie_break(draws: Dictionary, losers: Array[int]) -> void:
 			table_root.add_child(visual)
 			visual.show_back()
 			visual.pivot_offset = visual.size * 0.5
+			_add_owner_outline(visual, TIE_OWNER_COLORS.get(id, Color.WHITE))
 			var home := _deck_pile_center(id as Card.Owner, table_root)
 			homes[id] = home
 			visual.global_position = home - visual.size * 0.5
@@ -483,6 +506,7 @@ func show_tie_break(draws: Dictionary, losers: Array[int]) -> void:
 			tween.tween_property(visual, "global_position", target - visual.size * 0.5, TIE_FLY_TIME)
 			tween.tween_property(visual, "scale", Vector2.ONE * TIE_CARD_SCALE, TIE_FLY_TIME)
 			visuals[id] = visual
+			tags[id] = _make_tie_tag(id, target + Vector2(0.0, visual.size.y * TIE_CARD_SCALE * 0.5 + TIE_TAG_GAP))
 			Sfx.play_card_move()
 	if visuals.is_empty():
 		for id in ids:
@@ -490,16 +514,27 @@ func show_tie_break(draws: Dictionary, losers: Array[int]) -> void:
 		return
 	await get_tree().create_timer(TIE_FLY_TIME, false).timeout
 	for id in visuals:
-		visuals[id].flip_face_up(TIE_FLIP_TIME)
+		if is_instance_valid(visuals[id]):
+			visuals[id].flip_face_up(TIE_FLIP_TIME)
+		if is_instance_valid(tags[id]):
+			tags[id].create_tween().tween_property(tags[id], "modulate:a", 1.0, TIE_TAG_FADE_TIME)
 	await get_tree().create_timer(TIE_FLIP_TIME + TIE_REVEAL_PAUSE, false).timeout
 	for id in visuals:
 		var visual: CardVisual = visuals[id]
+		if not is_instance_valid(visual):
+			continue
 		if losers.has(id):
 			visual.shake_and_dim(TIE_LOSER_COLOR)
+			_mark_tie_tag(tags[id], _tie_name(id) + (" tie again" if losers.size() > 1 else (" lose!" if id == 0 else " loses!")), TIE_LOSER_TAG_COLOR)
 		else:
-			visual.set_winner(true)
+			_mark_tie_tag(tags[id], _tie_name(id) + " safe", TIE_OWNER_COLORS.get(id, Color.WHITE).darkened(0.35))
 	await get_tree().create_timer(TIE_RESULT_TIME, false).timeout
 	for id in visuals:
+		var tag = tags[id]
+		if is_instance_valid(tag):
+			var fade: Tween = tag.create_tween()
+			fade.tween_property(tag, "modulate:a", 0.0, TIE_TAG_FADE_TIME)
+			fade.tween_callback(tag.queue_free)
 		var visual: CardVisual = visuals[id]
 		if not is_instance_valid(visual):
 			continue
@@ -512,6 +547,57 @@ func show_tie_break(draws: Dictionary, losers: Array[int]) -> void:
 	await get_tree().create_timer(TIE_FLY_TIME, false).timeout
 	for id in ids:
 		return_tie_card(id, draws[id])
+
+func _add_owner_outline(visual: CardVisual, color: Color) -> void:
+	var outline: Control = visual.get_node("PlayableOutline").duplicate()
+	outline.name = "OwnerOutline"
+	var material: ShaderMaterial = outline.material.duplicate()
+	material.set_shader_parameter("outline_color", color)
+	outline.material = material
+	outline.visible = true
+	visual.add_child(outline)
+
+func _tie_name(player_id: int) -> String:
+	return str(TIE_NAMES[player_id])
+
+func _make_tie_tag(player_id: int, top_center: Vector2) -> PanelContainer:
+	var tag := PanelContainer.new()
+	tag.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	tag.z_index = 41
+	tag.modulate.a = 0.0
+	var style := StyleBoxFlat.new()
+	style.bg_color = TIE_OWNER_COLORS.get(player_id, Color.WHITE).darkened(0.35)
+	style.set_corner_radius_all(6)
+	style.content_margin_left = 8.0
+	style.content_margin_right = 8.0
+	style.content_margin_top = 2.0
+	style.content_margin_bottom = 2.0
+	tag.add_theme_stylebox_override("panel", style)
+	var label := Label.new()
+	label.text = _tie_name(player_id)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", TIE_TAG_FONT_SIZE)
+	label.add_theme_color_override("font_color", Color.WHITE)
+	tag.add_child(label)
+	table_root.add_child(tag)
+	tag.reset_size()
+	tag.global_position = top_center - Vector2(tag.size.x * 0.5, 0.0)
+	return tag
+
+func _mark_tie_tag(tag: PanelContainer, text: String, color: Color) -> void:
+	if not is_instance_valid(tag):
+		return
+	var style: StyleBoxFlat = tag.get_theme_stylebox("panel")
+	style.bg_color = color
+	var label: Label = tag.get_child(0)
+	label.text = text
+	var center_x := tag.global_position.x + tag.size.x * 0.5
+	tag.reset_size()
+	tag.global_position.x = center_x - tag.size.x * 0.5
+	tag.pivot_offset = tag.size * 0.5
+	var pulse := tag.create_tween().set_trans(Tween.TRANS_SINE)
+	pulse.tween_property(tag, "scale", Vector2.ONE * 1.2, 0.15)
+	pulse.tween_property(tag, "scale", Vector2.ONE, 0.15)
 
 # - - - HELPER - - -
 

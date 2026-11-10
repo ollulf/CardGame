@@ -122,15 +122,12 @@ match: 2
 			1: I hope you already added *smoking cards* to your *deck*.
 			2: I hope not...
 			2: That's going to make it harder for us, to win.
-			1: Oh, and one more thing: from now on our *decks* also have *0s* in them.
-			2: Don't laugh at them. A *0* is not as *worthless* as it looks...
-			1: Shh, don't spoil it! *YOU* will see.
 
 		when: zero_played
 		lines:
-			2: There it is, the first *0* of the match!
-			1: Looks harmless, right? Good thing my *9* is safe.
-			2: Hehe, I'm saying nothing.
+			2: See that *0*? Those are in our decks now. A *0* beats a *9* of the *same suit*.
+			1: I know, I know. That's why I keep my *9s* away from it.
+			2: Hehe, then you'd better watch your *9s*.
 
 		when: round_start
 		round: 2
@@ -142,10 +139,10 @@ match: 2
 
 		when: zero_beats_nine
 		lines:
-			1: Wait what? A *0* just took the turn from a *9*?
-			2: Hehe, yes! A *0* beats a *9 or higher*, but only of the *same suit*.
-			2: So only a *trump 0* beats a *trump 9*, and a *hearts 0* cannot beat a *smoking 9*.
-			1: So the tiny ones are dangerous... I should keep mine for the big ones.
+			1: Ugh, I knew it. A *0* beats a *9* of the *same suit*, and I fell for it.
+			2: Hehe, exactly! A *trump 0* beats a *trump 9*, but a *hearts 0* cannot beat a *smoking 9*.
+			2: And a drink can't make a *0*, so keep that in mind too.
+			1: Fine, fine. Next time I'll keep my *0s* for the big ones.
 
 match: 3
 	dialogues:
@@ -153,9 +150,6 @@ match: 3
 		lines:
 			2: Okay, cigarettes are nice, but a bar game needs *drinks*!
 			cue: show_drinks
-			1: From now on there are *drinking cards* in the decks, the ones with the *glass*.
-			2: Just like *smoking cards*, they are *always trump*.
-			2: And we slipped *3 drinking cards* into *YOUR* deck, just for this match.
 			1: Drinks come from the *bar*: a *Round of Drinks* costs *$5*.
 			2: Then *everybody* at the table has to *drink*, whether they like it or not.
 			2: A drink gives *all* your *drinking cards +1*, but *all* your *other cards -1*.
@@ -165,8 +159,9 @@ match: 3
 		when: alk_played
 		lines:
 			1: A *drinking card*! Somebody came thirsty.
+			2: Just like *smoking cards*, they are *always trump*.
+			1: We slipped *3 of them* into *YOUR* deck, just for this match.
 			2: Careful, it's *trump*, and it only gets *stronger* with every *drink*.
-			1: And everything else gets a bit *blurry*, hehe.
 
 		when: match_end
 		lines:
@@ -180,3 +175,18 @@ match: any
 	dialogues:
 		when: match_end
 		lines:
+
+		when: tie_played
+		lines:
+			1: Wait, we both played the same card. Who wins now?
+			2: Easy: when two cards are *equal*, the one played *first* wins.
+			2: So the *first* card on the table keeps the turn.
+			1: Good to know, being *first* has its perks.
+
+		when: round_tie
+		lines:
+			1: Hold on, there is a *tie* for the *fewest won turns*. Who loses the round now?
+			2: Then it is a *tie-break*: every tied player draws the *top card* of their *deck*.
+			2: The *lowest number* loses the round. *Suit* and *trump* do not matter here.
+			1: And if those are *equal* too, we just draw again.
+			2: Watch the *name tags*, they show whose card is whose.

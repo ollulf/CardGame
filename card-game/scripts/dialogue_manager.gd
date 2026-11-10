@@ -6,8 +6,9 @@ signal closed
 const SPEECH_BUBBLE := preload("res://scenes/speech_bubble.tscn")
 const SEAT_COUNT := 3
 const SEAT_OFFSETS := [Vector2(-276, -18), Vector2(66, 0), Vector2(-66, 0)]
-const TRIGGERS := ["match_start", "round_start", "turn_start", "turn_end", "round_end", "match_end", "zero_beats_nine", "zero_played", "alk_played"]
-const ONCE_PER_MATCH_TRIGGERS := ["zero_beats_nine", "zero_played", "alk_played"]
+const TRIGGERS := ["match_start", "round_start", "turn_start", "turn_end", "round_end", "match_end", "zero_beats_nine", "zero_played", "alk_played", "tie_played", "round_tie"]
+const ONCE_PER_MATCH_TRIGGERS := ["zero_beats_nine", "zero_played", "alk_played", "tie_played"]
+const ONCE_PER_RUN_TRIGGERS := ["round_tie"]
 const ROUND_TRIGGERS := ["round_start", "turn_start", "turn_end", "round_end"]
 const TURN_TRIGGERS := ["turn_start", "turn_end"]
 const TRIGGER_ALIASES := {"start": "match_start", "end": "match_end"}
@@ -39,6 +40,7 @@ var _match := 0
 var _round := 0
 var _silent := false
 var _fired_this_match: Array[String] = []
+var _fired_this_run: Array[String] = []
 
 func _ready() -> void:
 	var layer := CanvasLayer.new()
@@ -141,10 +143,16 @@ func clear_waiting() -> void:
 func play_match_end() -> void:
 	_fire("match_end")
 
+func play_round_tie() -> void:
+	if _match_running:
+		_fire("round_tie", _round)
+
 func rewind_to_match(match_number: int) -> void:
 	_match = maxi(0, match_number - 1)
 	_match_running = false
 	_round = 0
+	if match_number <= 1:
+		_fired_this_run.clear()
 
 func _input(event: InputEvent) -> void:
 	if not is_open() or not event is InputEventMouse or InteractionManager.is_table_blocked():
@@ -271,6 +279,8 @@ func _on_turn_completed(turn_index: int, _winner_id: int) -> void:
 	_fire("turn_end", _round, turn_index)
 	if CardManager.turn_won_by_zero():
 		_fire("zero_beats_nine")
+	if CardManager.turn_won_by_tie():
+		_fire("tie_played")
 
 func _on_round_finished(_loosers) -> void:
 	if not GameManager.get_total_loosers().is_empty():
@@ -289,6 +299,10 @@ func _fire(trigger: String, round_number := ANY, turn_number := ANY) -> void:
 		if trigger in _fired_this_match:
 			return
 		_fired_this_match.append(trigger)
+	if trigger in ONCE_PER_RUN_TRIGGERS:
+		if trigger in _fired_this_run:
+			return
+		_fired_this_run.append(trigger)
 	for entry in lines:
 		if entry.when != trigger or not _matches(entry.match_number, _match):
 			continue
