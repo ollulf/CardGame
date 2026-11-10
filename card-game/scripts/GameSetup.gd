@@ -26,9 +26,11 @@ func _ready() -> void:
 		StartMenu.Choice.CONTINUE:
 			SaveManager.continue_run(save)
 		StartMenu.Choice.SKIP_TUTORIAL:
+			TutorialPopups.skip_basics()
 			SaveManager.delete_save()
 			GameManager.start_without_tutorial()
 		_:
+			TutorialPopups.reset_run()
 			SaveManager.delete_save()
 			GameManager.start_round(0)
 

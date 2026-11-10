@@ -67,6 +67,7 @@ func update_label():
 
 func add_cigarettes(n: int) -> void:
 	cig_amount += n
+	TutorialPopups.tip("cigs", self)
 
 
 func _refresh_visibility(had: bool) -> void:

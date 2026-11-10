@@ -9,21 +9,9 @@ match: 1
 			2: Yes! Now, everybody draws *5 cards*, if I remember correctly.
 			cue: deal_cards
 			1: Okay *{player}*, play a card now.
-			1: Your goal is to have the *highest card*, after everybody played *one card*.
-			wait_for_cards_played: 1
-			1: I have to *follow* your *played suit* if I have a card on my hand with that *suit.*
-			1: If I don't have it, my other cards of a *different suit* are *worthless*.
-			1: That means the *highest* card of the *first played suit* wins the turn.
-			2: ... unless ...
-			2: Unless it's of the *trump color*, that is *always higher*, right?
-			1: But the *trump* is picked *at random* for every match and stays the same for the whole match.
-			1: Yes.
-			1: But in that case, the *highest trump* card *wins*.
-			wait_for_cards_played: 1
+			wait_for_cards_played: 2
 			1: Nobody can beat my *hearts 9*.
-			1: Since *hearts* is *trump* for this match, it's the *highest*.
 			2: Yeah, I cannot beat that...
-			2: And if I have the *first played suit*, I have to play that.
 
 		when: turn_end
 		round: 1
@@ -31,20 +19,14 @@ match: 1
 		lines:
 			cue: show_won_turns
 			1: This was the first turn and I was the *winner*. I will play the next *first card.*
-			1: For winning the turn I get a *Bierdeckel* from the stack next to the *ashtray*.
-			1: The *Bierdeckel* show how many *turns* each of us *won* this round. The played cards go to our *discard piles*.
-			1: After we played *5* turns, the players with the *least* won *turns* loses the round.
-			wait_for_cards_played: 1
-			1: Since, I played *hearts* now, and it's *trump* everybody who has trump, has to *play trump* now too.
-			wait_for_cards_played: 1
-			2: I don't have *hearts*, so I have to play something different.
+			wait_for_cards_played: 2
+			2: No *hearts* for me... again.
 
 		when: round_end
 		round: 1
 		lines:
 			cue: show_life_cards
-			2: Well, that makes me the *loser*... I have to rip one of the two *life cards* now.
-			2: If I lose one more time I *lose* the whole *game*.
+			2: Well, that makes me the *loser*...
 			2: But since I lost, I will get us a round of *drinks*.
 			1: Awesome idea... 
 			1: Cheers!
@@ -55,9 +37,6 @@ match: 1
 		when: round_start
 		round: 2
 		lines:
-			2: Ahh, important to say is that the *cards* from the *last round* stay out of the game.
-			2: We will draw *5 new cards* from our *deck*.
-			2: We will get all of them back *after* the game.
 			1: I think *YOU* got it, right?
 			1: Let's continue!
 
@@ -86,8 +65,6 @@ match: 1
 		lines:
 			wait_for_cards_played: 2
 			2: Finally I am drawing my *smoking* cards.
-			2: It basically is *always* a *trump* card.
-			1: But if *YOU* would play a *higher hearts* trump card now, *YOU* would win this turn.
 
 		when: turn_start
 		round: 3
@@ -95,14 +72,13 @@ match: 1
 		lines:
 			1: Well, beat *this*!
 			wait_for_cards_played: 1
-			2: I will, by *smoking a cigarette*, which makes *only* my *cigarette cards stronger* for every cigarette smoked this round.
+			2: I will, by *smoking a cigarette*!
 
 		when: match_end
 		lines:
 			cue: show_purse
 			1: Well, this was the first match and I lost...
-			2: Let's count this as the *trial round*, but *YOU* can *buy* yourself a *booster*.
-			2: With them you can *upgrade your deck* to keep up with us, hehe
+			2: Let's count this as the *trial round*, hehe.
 
 match: 2
 	dialogues:
@@ -111,21 +87,18 @@ match: 2
 			2: Alright, let's spice it up and play with some *money*!
 			1: Sounds good! Since I lost last round I have to put in the *prize money*.
 			cue: ai_1_pays
-			1: The *prize money* is *split* between the two *winners*.
-			2: And the *new loser* has to *pay* for the next round.
 			1: Let's hope it's not me again...
-			2: And remember, a *new match* means a *new trump*.
 			wait_for_cards_played: 1
 			1: Ahh *{player}* ...
 			cue: give_player_cigs 3
-			1: Have some of my *cigarettes*. You can smoke them whenever you want.
+			1: Have some of my *cigarettes*.
 			1: I hope you already added *smoking cards* to your *deck*.
 			2: I hope not...
 			2: That's going to make it harder for us, to win.
 
 		when: zero_played
 		lines:
-			2: See that *0*? Those are in our decks now. A *0* beats a *9* of the *same suit*.
+			2: See that *0*? Those are in our decks now.
 			1: I know, I know. That's why I keep my *9s* away from it.
 			2: Hehe, then you'd better watch your *9s*.
 
@@ -139,9 +112,7 @@ match: 2
 
 		when: zero_beats_nine
 		lines:
-			1: Ugh, I knew it. A *0* beats a *9* of the *same suit*, and I fell for it.
-			2: Hehe, exactly! A *trump 0* beats a *trump 9*, but a *hearts 0* cannot beat a *smoking 9*.
-			2: And a drink can't make a *0*, so keep that in mind too.
+			1: Ugh, I knew it, and I still fell for it.
 			1: Fine, fine. Next time I'll keep my *0s* for the big ones.
 
 match: 3
@@ -150,24 +121,16 @@ match: 3
 		lines:
 			2: Okay, cigarettes are nice, but a bar game needs *drinks*!
 			cue: show_drinks
-			1: Drinks come from the *bar*: a *Round of Drinks* costs *$5*.
-			2: Then *everybody* at the table has to *drink*, whether they like it or not.
-			2: A drink gives *all* your *drinking cards +1*, but *all* your *other cards -1*.
-			1: And it lasts the *whole match*, not just the round. Two rounds, it stacks!
-			2: The *$* next to us is our money. So watch out, *we* can order rounds too!
+			2: So watch out, *we* can order rounds too!
 
 		when: alk_played
 		lines:
 			1: A *drinking card*! Somebody came thirsty.
-			2: Just like *smoking cards*, they are *always trump*.
-			2: Careful, it's *trump*, and it only gets *stronger* with every *drink*.
 
 		when: match_end
 		lines:
 			1: Phew, my *hearts 7* looked like a *5* after those drinks.
 			2: If *YOU* like drinking, check the shop next time. There is a *Drinking Booster* with *drinking cards*.
-			1: And remember the *Round of Drinks*: *everybody* drinks...
-			2: ...including the ones without drinking cards. Hehe.
 
 match: any
 	dialogues:
@@ -177,14 +140,9 @@ match: any
 		when: tie_played
 		lines:
 			1: Wait, we both played the same card. Who wins now?
-			2: Easy: when two cards are *equal*, the one played *first* wins.
-			2: So the *first* card on the table keeps the turn.
-			1: Good to know, being *first* has its perks.
+			2: Hehe, being *first* has its perks.
 
 		when: round_tie
 		lines:
 			1: Hold on, there is a *tie* for the *fewest won turns*. Who loses the round now?
-			2: Then it is a *tie-break*: every tied player draws the *top card* of their *deck*.
-			2: The *lowest number* loses the round. *Suit* and *trump* do not matter here.
-			1: And if those are *equal* too, we just draw again.
-			2: Watch the *name tags*, they show whose card is whose.
+			2: Tie-break! Let's *draw*.

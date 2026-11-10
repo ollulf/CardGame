@@ -591,7 +591,9 @@ func resolve_tie(loosers: Array[int]) -> Array[int]:
 	if loosers.size() > 1 and _any_deck_has_cards(loosers):
 		message("Tie! Drawing...")
 		DialogueManager.play_round_tie()
+		TutorialPopups.tip("tiebreak")
 		await DialogueManager.wait_until_idle()
+		await TutorialPopups.wait_idle()
 		if token != round_token:
 			return loosers
 	while loosers.size() > 1 and attempts < MAX_TIE_DRAWS:

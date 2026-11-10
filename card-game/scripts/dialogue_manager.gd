@@ -89,10 +89,6 @@ func _enqueue(player_id: int, text: String, cue: String) -> void:
 		return
 	if PlayerDataManager.cig_machine_unlocked and cue == "unlock_cig_automat":
 		return
-	if TutorialPopups.cuts_line(text):
-		if cue == "":
-			return
-		player_id = NO_SEAT
 	var was_open := is_open()
 	_queue.append([player_id, text.replace("{player}", GameManager.player_name(GameManager.HUMAN_ID)), cue])
 	if not was_open:

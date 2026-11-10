@@ -84,6 +84,7 @@ func open() -> void:
 	_rebuild()
 	_show_card(null)
 	show()
+	TutorialPopups.tip("deck_size", _deck_counter)
 
 
 func try_close() -> bool:
