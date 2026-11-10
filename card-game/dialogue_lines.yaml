@@ -125,7 +125,7 @@ match: 2
 
 		when: zero_played
 		lines:
-			2: There's the first *0* of the match. Remember, a *0* beats a *9* of the *same suit*.
+			2: Right, from this match on our decks have *0s* in them. Remember, a *0* beats a *9* of the *same suit*.
 			1: I know, I know. That's why I keep my *9s* away from it.
 			2: Hehe, then you'd better watch your *9s*.
 
