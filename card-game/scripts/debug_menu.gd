@@ -16,6 +16,7 @@ var unlocked := false
 var _panel: PanelContainer
 var _skip_buttons: Array[Button] = []
 var _tutorial_button: Button
+var _popups_button: Button
 var _pointer_parent: Node
 var _pointer_index := 0
 var _was_blocked := false
@@ -48,6 +49,7 @@ func _build() -> void:
 		var button := _add_button(box, "Skip round: %s loses" % GameManager.PLAYER_NAMES[looser_id], skip_round.bind(looser_id))
 		_skip_buttons.append(button)
 	_tutorial_button = _add_button(box, "Skip tutorial", skip_tutorial)
+	_popups_button = _add_button(box, "", cycle_tutorial_popups)
 	_add_button(box, "Unlock all UI", unlock_all)
 	_add_button(box, "+%d cigarettes" % CIGARETTE_BONUS, add_cigarettes)
 	_add_button(box, "+%d$" % CASH_BONUS, add_cash)
@@ -119,6 +121,11 @@ func skip_tutorial() -> void:
 	GameManager.skip_tutorial(UNLOCK_CUES)
 
 
+func cycle_tutorial_popups() -> void:
+	TutorialPopups.next_mode()
+	_refresh()
+
+
 func unlock_all() -> void:
 	unlocked = true
 	PlayerDataManager.mark_booster_collected()
@@ -149,6 +156,7 @@ func _refresh() -> void:
 		button.disabled = not can_skip
 	_tutorial_button.visible = DialogueManager.upcoming_match() == 1
 	_tutorial_button.disabled = not GameManager.can_skip_tutorial()
+	_popups_button.text = "Tutorial popups: %s" % TutorialPopups.mode_name()
 
 
 func _lift_pointer() -> void:

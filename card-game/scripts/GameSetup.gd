@@ -8,6 +8,7 @@ func _ready() -> void:
 	var rules := RulesCard.new()
 	add_child(rules)
 	rules.attach_button(self)
+	add_child(TutorialPopups.new())
 	
 	await CardManager.load_player_decks()
 	
