@@ -405,6 +405,9 @@ func _end_round(loosers: Array[int]) -> void:
 	#Check if somebody lost twice
 	var total_loosers := get_total_loosers()
 	for total_looser in total_loosers:
+		await _show_match_loser(total_looser)
+		if token != round_token:
+			return
 		match_lost.emit(total_looser)
 
 	await DialogueManager.wait_until_idle()
@@ -421,6 +424,13 @@ func _end_round(loosers: Array[int]) -> void:
 			run_won.emit()
 		else:
 			match_finished.emit(total_loosers)
+
+func _show_match_loser(looser_id: int) -> void:
+	var life_ui = get_tree().get_first_node_in_group(WON_ROUNDS_UI_GROUP)
+	var seat = life_ui.get_node_or_null("Player_%d" % looser_id) if life_ui else null
+	if seat == null:
+		return
+	await MatchLoserBanner.show_for(life_ui, looser_id, seat)
 
 func retry_match() -> void:
 	_restore_state(_match_start_state)
