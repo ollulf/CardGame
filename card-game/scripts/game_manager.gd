@@ -378,7 +378,7 @@ func _wait_for_continue(anchor: Control) -> void:
 		return
 	var arrow := ContinueArrow.new()
 	anchor.add_child(arrow)
-	arrow.position = anchor.size - Vector2(24.0, 22.0)
+	arrow.position = Vector2(anchor.size.x * 0.5 - 5.0, anchor.size.y + 8.0)
 	await arrow.clicked
 	arrow.queue_free()
 
