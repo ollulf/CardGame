@@ -44,6 +44,7 @@ static func fly(parent: Node, from: Vector2, to: Vector2, z: int = 20) -> void:
 	coaster.z_index = z
 	parent.add_child(coaster)
 	coaster.global_position = from
+	Sfx.play_bierdeckel_move()
 	var tween := coaster.create_tween()
 	tween.tween_method(coaster._fly_step.bind(from, to), 0.0, 1.0, FLY_TIME).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	await tween.finished

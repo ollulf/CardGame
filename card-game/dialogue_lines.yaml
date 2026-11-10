@@ -122,9 +122,6 @@ match: 2
 			1: I hope you already added *smoking cards* to your *deck*.
 			2: I hope not...
 			2: That's going to make it harder for us, to win.
-			1: Oh, and one more thing: from now on our *decks* also have *0s* in them.
-			2: Don't laugh at them. A *0* is not as *worthless* as it looks...
-			1: Shh, don't spoil it! *YOU* will see.
 
 		when: zero_played
 		lines:
