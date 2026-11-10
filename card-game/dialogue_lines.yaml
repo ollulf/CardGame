@@ -122,15 +122,12 @@ match: 2
 			1: I hope you already added *smoking cards* to your *deck*.
 			2: I hope not...
 			2: That's going to make it harder for us, to win.
-			1: Oh, and one more thing: from now on our *decks* also have *0s* in them.
-			2: Don't laugh at them. A *0* is not as *worthless* as it looks...
-			1: Shh, don't spoil it! *YOU* will see.
 
 		when: zero_played
 		lines:
-			2: There it is, the first *0* of the match!
-			1: Looks harmless, right? Good thing my *9* is safe.
-			2: Hehe, I'm saying nothing.
+			2: There it is, the first *0* of the match! From now on our *decks* have *0s* in them.
+			1: Don't laugh at it. A *0* is not as *worthless* as it looks...
+			2: Looks harmless, right? Hehe, I'm saying nothing.
 
 		when: round_start
 		round: 2
