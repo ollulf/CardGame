@@ -37,7 +37,12 @@ static func hide_for(card_visual: CardVisual) -> void:
 
 
 static func part_icon(part: Dictionary) -> Texture2D:
-	return SMOKE_ICON if part.get("kind") == "smoke" else ALK_ICON
+	match part.get("kind"):
+		"smoke":
+			return SMOKE_ICON
+		"suit_up":
+			return null
+	return ALK_ICON
 
 
 static func signed(amount: int) -> String:

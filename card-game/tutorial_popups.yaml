@@ -1,0 +1,78 @@
+id: button
+	when: label of the button on every pop-up
+	text: Got it
+
+id: follow
+	when: your turn to play (first turn)
+	title: Your turn
+	text: Play one card. The [b]highest card[/b] of the [b]first suit played[/b] wins the turn. The other players must [b]follow the first suit[/b] if they can.
+
+id: trump
+	when: right after "follow", points at the trump card
+	title: Trump
+	text: [b]Trump[/b] beats every other suit. It is shown at the top and picked [b]at random[/b] each match.
+
+id: bierdeckel
+	when: after the first turn is won
+	title: Won turns
+	text: Each won turn gives a [b]Bierdeckel[/b]. After [b]5 turns[/b], the fewest loses the round.
+
+id: deck
+	when: a new round deals new cards
+	title: New round
+	text: Each round you draw [b]5 new cards[/b] from your deck. Played cards stay out until the match ends.
+
+id: lives
+	when: a round is lost
+	title: Lost a round
+	text: The loser rips a [b]life card[/b]. Lose [b]2 rounds[/b] and you are out of the match.
+
+id: smoke
+	when: first smoking card is played
+	title: Smoking cards
+	text: [b]Smoking cards[/b] are always trump. Each cigarette smoked gives them [b]+1[/b] this round.
+
+id: zero
+	when: a 0 is in play
+	title: Zero
+	text: A [b]0[/b] beats a [b]9[/b] of the [b]same suit[/b], but never a 9 of another suit.
+
+id: tie
+	when: two equal cards are played
+	title: Equal cards
+	text: When two cards are [b]equal[/b], the one played [b]first[/b] wins.
+
+id: tiebreak
+	when: players tie for fewest turns
+	title: Tie-break
+	text: Tied for fewest turns? Each tied player draws a card. The [b]lowest number[/b] loses; suit and trump don't count.
+
+id: prize
+	when: the match ends and the prize is paid
+	title: Prize money
+	text: The last loser pays the [b]prize[/b]. The [b]two winners[/b] of this match split it.
+
+id: cigs
+	when: cigarettes become available
+	title: Cigarettes
+	text: Tap your [b]pack[/b] to take a cigarette, then the [b]lighter[/b] to smoke it. Smoking cards get [b]+1[/b] per cigarette this round.
+
+id: wallet
+	when: you first earn money
+	title: Your money
+	text: Winners share the [b]prize money[/b]. Spend it at the [b]bar[/b] on [b]boosters[/b] with new cards.
+
+id: deck_size
+	when: in the deck editor ({min} and {max} are the deck size limits)
+	title: Your deck
+	text: A deck needs [b]{min} to {max} cards[/b]. Click cards to move them in or out.
+
+id: drinks
+	when: first visit to the bar
+	title: Round of drinks
+	text: At the bar a [b]Round of Drinks[/b] costs [b]$5[/b]. Everyone drinks: drinking cards [b]+1[/b], all others [b]-1[/b] for the match.
+
+id: alk
+	when: first drinking card is played
+	title: Drinking cards
+	text: [b]Drinking cards[/b] are always trump and get [b]+1[/b] for every drink.
