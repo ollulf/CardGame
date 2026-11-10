@@ -98,6 +98,7 @@ func render_hand():
 		var c := preload("res://scenes/Card.tscn").instantiate() as CardVisual
 		
 		c.setup(card, false)
+		c.add_table_shadow()
 		
 		add_child(c)
 		card_visuals.append(c)
@@ -149,6 +150,7 @@ func deal_card(card: Card, from_center: Vector2, slot: int, slot_count: int) -> 
 	hand.append(card)
 	var c := preload("res://scenes/Card.tscn").instantiate() as CardVisual
 	c.setup(card, true)
+	c.add_table_shadow()
 	add_child(c)
 	card_visuals.append(c)
 	c.position = _slot_position(slot, slot_count)

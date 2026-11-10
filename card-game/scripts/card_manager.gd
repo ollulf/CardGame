@@ -265,6 +265,7 @@ func render_played_card(card : Card, from: Transform2D) -> void:
 	
 	var card_visual := preload("res://scenes/Card.tscn").instantiate() as CardVisual
 	card_visual.setup(card, false)
+	card_visual.add_table_shadow()
 	
 	table_root.add_child(card_visual)
 
@@ -473,6 +474,7 @@ func show_tie_break(draws: Dictionary, losers: Array[int]) -> void:
 				continue
 			var visual := preload("res://scenes/Card.tscn").instantiate() as CardVisual
 			visual.setup(card, true)
+			visual.add_table_shadow()
 			visual.hover_enabled = false
 			visual.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			visual.z_index = 40

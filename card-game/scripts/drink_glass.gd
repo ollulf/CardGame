@@ -18,6 +18,7 @@ func _ready() -> void:
 	art.scale = Vector2.ONE * PIXEL_SCALE
 	art.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	add_child(art)
+	TableShadow.add_to(art, [&"fill"])
 	visible = false
 
 

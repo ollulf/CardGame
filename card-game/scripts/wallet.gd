@@ -20,6 +20,7 @@ var _hidden_by_cue: bool = false
 
 func _ready() -> void:
 	_base_position = sprite.position
+	TableShadow.add_to(sprite)
 	_label_base_position = bar_label.position
 	_money_base_position = money_label.position
 	PlayerDataManager.money_changed.connect(_on_money_changed)

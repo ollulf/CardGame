@@ -77,6 +77,7 @@ func _drop_coin(start: Vector2, slot: int, delay: float) -> Tween:
 	coin.global_position = start
 	coin.modulate.a = 0.0
 	add_child(coin)
+	TableShadow.add_to(coin)
 	_coins.append(coin)
 	var target := _slot_position(slot)
 	var from := coin.position

@@ -28,6 +28,7 @@ func _ready() -> void:
 			sprite.rotation = randf_range(-MAX_TILT, MAX_TILT)
 			sprite.position = LAYER_STEP * float(i) + Vector2(randf_range(-MAX_JITTER, MAX_JITTER), 0)
 		add_child(sprite)
+		TableShadow.add_to(sprite)
 		_layers.append(sprite)
 	_tooltip = Label.new()
 	_tooltip.z_index = 10
