@@ -4,7 +4,6 @@ class_name BoosterWindow
 signal finished
 
 enum State { HIDDEN, CLOSED, OPENING, REVEAL, COLLECTING }
-enum FlipEffect { FLASH, SPARKS, SHINE }
 
 const CARD_SCENE := preload("res://scenes/Card.tscn")
 const RIP_SOUND := preload("res://sounds/booster_rip.wav")
@@ -28,8 +27,6 @@ const CARD_SCALE := 1.5
 const CARD_GAP := 16.0
 const ROW_LEFT := 350.0
 const FLIP_FX_TIME := 0.35
-
-@export var flip_effect: FlipEffect = FlipEffect.FLASH
 
 var state: State = State.HIDDEN
 var cards: Array[Card] = []
@@ -298,13 +295,8 @@ func flip(index: int) -> void:
 
 
 func _play_flip_effect(visual: CardVisual, card: Card) -> void:
-	match flip_effect:
-		FlipEffect.FLASH:
-			_flash_effect(visual)
-		FlipEffect.SPARKS:
-			_sparks_effect(visual, card)
-		FlipEffect.SHINE:
-			_shine_effect(visual, card)
+	_flash_effect(visual)
+	_sparks_effect(visual, card)
 
 
 func _flip_overlay(visual: CardVisual) -> ShaderMaterial:
@@ -383,14 +375,6 @@ func _sparks_effect(visual: CardVisual, card: Card) -> void:
 	var glow := create_tween()
 	glow.tween_property(visual, "modulate", Color(glow_color, 1.0), 0.05)
 	glow.tween_property(visual, "modulate", Color.WHITE, 0.25)
-
-
-func _shine_effect(visual: CardVisual, card: Card) -> void:
-	var fx := _flip_overlay(visual)
-	fx.set_shader_parameter("tint", _fx_color(card))
-	var sweep := create_tween()
-	sweep.tween_method(func(value: float) -> void:
-		fx.set_shader_parameter("sweep", value), 0.0, 1.0, FLIP_FX_TIME).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
 func _collect() -> void:
