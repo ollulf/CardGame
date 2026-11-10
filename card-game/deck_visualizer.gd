@@ -265,13 +265,6 @@ func _card_cell(card: Card, used: bool, is_trump: bool, in_hand: bool = false) -
 	var cell := Control.new()
 	cell.custom_minimum_size = DeckBuilder.CARD_SIZE * CARD_SCALE
 	cell.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	var face := Panel.new()
-	face.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	face.size = cell.custom_minimum_size
-	var face_style := _box(DeckBuilder.PANEL_COLOR_2, DeckBuilder.ACCENT_COLOR if is_trump else DeckBuilder.LINE_COLOR)
-	face_style.set_border_width_all(1)
-	face.add_theme_stylebox_override("panel", face_style)
-	cell.add_child(face)
 	var visual: CardVisual = CARD_SCENE.instantiate()
 	_ignore_mouse(visual)
 	visual.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
@@ -282,6 +275,13 @@ func _card_cell(card: Card, used: bool, is_trump: bool, in_hand: bool = false) -
 	visual.setup(card, false)
 	visual.scale = Vector2.ONE * CARD_SCALE
 	visual.position = Vector2.ZERO
+	var face := Panel.new()
+	face.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	face.size = cell.custom_minimum_size
+	var face_style := _box(Color(0, 0, 0, 0), DeckBuilder.ACCENT_COLOR if is_trump else DeckBuilder.LINE_COLOR)
+	face_style.set_border_width_all(1)
+	face.add_theme_stylebox_override("panel", face_style)
+	cell.add_child(face)
 	if in_hand:
 		var glow := _box(Color(0, 0, 0, 0), Color("#ffcf6e"))
 		glow.set_border_width_all(3)

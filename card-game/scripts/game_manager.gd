@@ -378,7 +378,7 @@ func _wait_for_continue(anchor: Control) -> void:
 		return
 	var arrow := ContinueArrow.new()
 	anchor.add_child(arrow)
-	arrow.position = anchor.size - Vector2(24.0, 22.0)
+	arrow.position = Vector2(anchor.size.x * 0.5 - 5.0, anchor.size.y + 8.0)
 	await arrow.clicked
 	arrow.queue_free()
 
@@ -563,6 +563,12 @@ func get_round_looser() -> Array[int]:
 func resolve_tie(loosers: Array[int]) -> Array[int]:
 	var token := round_token
 	var attempts := 0
+	if loosers.size() > 1 and _any_deck_has_cards(loosers):
+		message("Tie! Drawing...")
+		DialogueManager.play_round_tie()
+		await DialogueManager.wait_until_idle()
+		if token != round_token:
+			return loosers
 	while loosers.size() > 1 and attempts < MAX_TIE_DRAWS:
 		attempts += 1
 		var draws := {}
@@ -585,6 +591,13 @@ func resolve_tie(loosers: Array[int]) -> Array[int]:
 			return next
 		loosers = next
 	return loosers
+
+func _any_deck_has_cards(ids: Array[int]) -> bool:
+	for id in ids:
+		var deck := CardManager.deck_of(id)
+		if deck != null and not deck.cards.is_empty():
+			return true
+	return false
 
 func tie_rank(card: Card) -> int:
 	return 0 if card == null else card.base_rank

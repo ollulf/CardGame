@@ -7,7 +7,6 @@ signal closed
 const NOT_ENOUGH_MONEY_TEXT := "Not enough money"
 const WAIT_TEXT := "Wait..."
 const ROUND_ORDERED_TEXT := "Round ordered!"
-const PULSE_COLOR := Color(1.35, 1.25, 0.85, 1)
 
 @export var pointer: Control
 
@@ -24,7 +23,7 @@ var booster_window: BoosterWindow
 var _cash_tween: Tween
 var _machine_busy := false
 var _round_ordered := false
-var _stand_pulse: Tween
+var _stand_arrow: GuideArrow
 
 
 func _ready() -> void:
@@ -38,6 +37,8 @@ func _ready() -> void:
 	drinks_tap.clicked.connect(_on_drinks_tap_clicked)
 	machine.clicked.connect(_on_machine_clicked)
 	booster_stand.clicked.connect(_on_booster_stand_clicked)
+	_stand_arrow = GuideArrow.new()
+	add_child(_stand_arrow)
 	booster_shelf = BoosterShelf.new()
 	add_child(booster_shelf)
 	booster_shelf.denied.connect(_flash_cash.bind(Color(1.0, 0.35, 0.3)))
@@ -70,7 +71,6 @@ func _show_bar() -> void:
 	pointer.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_DISABLED
 	_refresh_cash()
 	_refresh_drinks_tap()
-	_refresh_stand_pulse()
 	show()
 	$PostFX.show()
 
@@ -89,7 +89,6 @@ func close() -> void:
 func _hide_bar() -> void:
 	hide()
 	$PostFX.hide()
-	_stop_stand_pulse()
 	pointer.reparent(_pointer_parent)
 	_pointer_parent.move_child(pointer, _pointer_index)
 
@@ -138,8 +137,7 @@ func _serve_ordered_round() -> void:
 
 
 func _on_booster_stand_clicked() -> void:
-	booster_shelf.show_hint = _guide_suggests_booster()
-	_stop_stand_pulse()
+	booster_shelf.show_hint = _guide_wants_booster()
 	booster_shelf.open()
 
 
@@ -149,25 +147,14 @@ func _on_booster_window_finished() -> void:
 		booster_shelf.open()
 
 
-func _guide_suggests_booster() -> bool:
+func _guide_wants_booster() -> bool:
 	var guide := get_tree().get_first_node_in_group("deck_screen")
-	return guide != null and guide.suggests_booster()
+	return guide != null and guide.guide_wants_booster()
 
 
-func _refresh_stand_pulse() -> void:
-	_stop_stand_pulse()
-	if not _guide_suggests_booster():
-		return
-	_stand_pulse = create_tween().set_loops()
-	_stand_pulse.tween_property(booster_stand.sprite, "self_modulate", PULSE_COLOR, 0.6).set_trans(Tween.TRANS_SINE)
-	_stand_pulse.tween_property(booster_stand.sprite, "self_modulate", Color.WHITE, 0.6).set_trans(Tween.TRANS_SINE)
-
-
-func _stop_stand_pulse() -> void:
-	if _stand_pulse:
-		_stand_pulse.kill()
-		_stand_pulse = null
-	booster_stand.sprite.self_modulate = Color.WHITE
+func _process(_delta: float) -> void:
+	var wants_stand := visible and not booster_shelf.visible and not booster_window.visible and _guide_wants_booster()
+	_stand_arrow.target = booster_stand.sprite if wants_stand else null
 
 
 func _refresh_cash() -> void:

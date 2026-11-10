@@ -13,6 +13,12 @@ const HOVER_CARD_INTERVAL_MSEC := 50
 const CARD_FLIP_SOUND := preload("res://sounds/card_played.wav")
 const CARD_FLIP_DB := 0.0
 const CARD_FLIP_PITCH_VARIATION := 0.1
+const BOOSTER_CHEER_SOUNDS := [
+	preload("res://sounds/booster_cheer_aww.wav"),
+	preload("res://sounds/booster_cheer_haha.wav"),
+	preload("res://sounds/booster_cheer_oooh.wav"),
+]
+const BOOSTER_CHEER_DB := -4.0
 const TYPE_SOUND := preload("res://sounds/type_sound.wav")
 const TYPE_SOUND_DB := -14.0
 const TYPE_PITCH_VARIATION := 0.06
@@ -23,6 +29,10 @@ const WIN_CARD_PITCH_VARIATION := 0.04
 const DIALOGUE_NEXT_SOUND := preload("res://sounds/dialogue_next.mp3")
 const DIALOGUE_NEXT_DB := -10.0
 const DIALOGUE_NEXT_PITCH_VARIATION := 0.04
+const BIERDECKEL_MOVE_SOUND := preload("res://sounds/bierdeckel_move.wav")
+const BIERDECKEL_MOVE_DB := -6.0
+const BIERDECKEL_MOVE_PITCH_VARIATION := 0.06
+const BIERDECKEL_MOVE_INTERVAL_MSEC := 90
 
 const AMBIENT_SOUND := preload("res://sounds/bar_ambient.mp3")
 const AMBIENT_VOLUME_DB := -24.0
@@ -40,9 +50,11 @@ const MUSIC_SILENT_DB := -60.0
 const MUSIC_FADE_TIME := 3.0
 
 var _last_played: AudioStreamPlayer
+var _cheer_player: AudioStreamPlayer
 var card_move_count := 0
 var _last_card_move_msec := -1000
 var _last_hover_msec := -1000
+var _last_bierdeckel_msec := -1000
 var _music: AudioStreamPlayer
 var _music_tween: Tween
 var _players: Array[AudioStreamPlayer] = []
@@ -76,6 +88,13 @@ func play_card_move(delay: float = 0.0) -> void:
 	_last_card_move_msec = now
 	card_move_count += 1
 	play(CARD_DRAW_SOUND, CARD_MOVE_PITCH_VARIATION, CARD_MOVE_VOLUME_DB)
+
+func play_bierdeckel_move() -> void:
+	var now := Time.get_ticks_msec()
+	if now - _last_bierdeckel_msec < BIERDECKEL_MOVE_INTERVAL_MSEC:
+		return
+	_last_bierdeckel_msec = now
+	play(BIERDECKEL_MOVE_SOUND, BIERDECKEL_MOVE_PITCH_VARIATION, BIERDECKEL_MOVE_DB)
 
 func play_hover_card() -> void:
 	var now := Time.get_ticks_msec()
@@ -201,6 +220,12 @@ func play_win_card() -> void:
 
 func play_card_flip() -> void:
 	play(CARD_FLIP_SOUND, CARD_FLIP_PITCH_VARIATION, CARD_FLIP_DB)
+
+func play_booster_cheer() -> void:
+	if _cheer_player != null and _cheer_player.playing:
+		return
+	play(BOOSTER_CHEER_SOUNDS.pick_random(), 0.03, BOOSTER_CHEER_DB)
+	_cheer_player = _last_played
 
 func play_button() -> void:
 	play(BUTTON_SOUND, 0.05)
