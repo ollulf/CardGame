@@ -110,6 +110,8 @@ func skip_round(looser_id: int) -> void:
 	_refresh()
 
 
+
+
 func skip_tutorial() -> void:
 	if not GameManager.can_skip_tutorial():
 		return
