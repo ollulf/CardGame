@@ -12,6 +12,7 @@ const TEXT_WIDTH := 360.0
 const BOX_CENTER_Y_OFFSET := 113.0
 
 var _panel: PanelContainer
+var _hint_text := ""
 
 func _build_box() -> void:
 	_panel = PanelContainer.new()
@@ -41,25 +42,36 @@ func _place_box() -> void:
 func _ready() -> void:
 	_build_box()
 	GameManager.connect("send_message", _message)
+	GameManager.connect("hint_message", _hint)
 	clear()
 
 func _message(text: String) -> void:
 	_message_token += 1
 	var my_token := _message_token
 
+	_show_text(text)
+
+	await get_tree().create_timer(3.0, false).timeout
+
+	if my_token != _message_token:
+		return
+
+	_show_text(_hint_text)
+
+func _hint(text: String) -> void:
+	_hint_text = text
+	_message_token += 1
+	_show_text(text)
+
+func _show_text(text: String) -> void:
+	if text == "":
+		clear()
+		return
 	message_label.text = text
 	visible = true
 	message_label.visible = true
 	_panel.reset_size()
 	_place_box()
-
-	await get_tree().create_timer(3.0, false).timeout
-
-	# If another message started meanwhile, abort
-	if my_token != _message_token:
-		return
-
-	clear()
 
 func clear():
 	message_label.text = ""

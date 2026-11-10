@@ -13,6 +13,7 @@ signal run_won()
 signal new_match_started()
 signal player_kicked()
 signal send_message(text: String)
+signal hint_message(text: String)
 
 # --- Config ---
 const MAX_TURNS := 5
