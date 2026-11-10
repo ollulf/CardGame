@@ -126,7 +126,7 @@ match: 3
 		when: match_end
 		lines:
 			1: Phew, my *hearts 7* looked like a *5* after those drinks.
-			2: If *YOU* like drinking, check the shop next time. There is a *Drinking Booster* with *drinking cards*.
+			2: If *YOU* like drinking, check the shop next time. The *boosters* have *drinking cards* now.
 
 match: any
 	dialogues:

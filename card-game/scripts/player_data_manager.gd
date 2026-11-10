@@ -35,13 +35,10 @@ const DRINK_PENALTY_PER_ROUND := 1
 const DRINK_BONUS_PER_DRINK := 1
 const DRINK_ROUND_PRICE := 5
 const DRINK_ROUND_FROM_MATCH := 3
-const DRINKING_BOOSTER_FROM_MATCH := 4
+const ALK_BOOSTER_CARDS_FROM_MATCH := 4
 const BOOSTERS: Array[Dictionary] = [
-	{"name": "Smoke Booster", "price": 8, "cards": 5, "min_rank": 1, "max_rank": 9, "smoke_min": 2, "smoke_max": 3, "contents": "2-3 Smoke + basic suits"},
-	{"name": "Standard Booster", "price": 5, "cards": 6, "min_rank": 1, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "high_min": 2, "high_rank": 7, "contents": "Basic suits, two 7+ cards"},
-	{"name": "Premium Booster", "price": 12, "cards": 8, "min_rank": 5, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "contents": "Basic suits, ranks 5-9"},
-	{"name": "Zero Booster", "price": 7, "cards": 2, "min_rank": 0, "max_rank": 0, "smoke_min": 0, "smoke_max": 0, "contents": "Two 0 cards, any suit", "any_suit": true, "from_match": 3},
-	{"name": "Drinking Booster", "price": 8, "cards": 5, "min_rank": 1, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "alk_min": 2, "alk_max": 3, "contents": "2-3 Drinking + basic suits", "from_match": DRINKING_BOOSTER_FROM_MATCH},
+	{"name": "Standard Booster", "price": 5, "cards": 9, "min_rank": 0, "max_rank": 9, "special_min": 0, "special_max": 0, "rare_min": 1, "rare_max": 2, "filler": "common", "alk_from_match": ALK_BOOSTER_CARDS_FROM_MATCH, "tint": Color(0.78, 0.88, 1.0, 1), "contents": "1-2 rare trump cards + common suits"},
+	{"name": "Premium Booster", "price": 12, "cards": 3, "min_rank": 0, "max_rank": 9, "special_min": 0, "special_max": 1, "filler": "rare", "alk_from_match": ALK_BOOSTER_CARDS_FROM_MATCH, "tint": Color(1.0, 0.8, 0.4, 1), "contents": "0-1 special effect card + rare trump cards"},
 ]
 
 var smoking_stacks := {
