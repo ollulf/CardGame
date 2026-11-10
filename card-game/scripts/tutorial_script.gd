@@ -33,8 +33,14 @@ func is_scripted() -> bool:
 func starter(fallback: int) -> int:
 	return _current.get("starter", fallback)
 
-func trump(fallback: Card.Suit) -> Card.Suit:
-	return _current.get("trump", fallback)
+func match_trump(match_number: int, fallback: Card.Suit) -> Card.Suit:
+	var match_rounds: Dictionary = rounds.get(match_number, {})
+	var numbers := match_rounds.keys()
+	numbers.sort()
+	for number in numbers:
+		if match_rounds[number].has("trump"):
+			return match_rounds[number].trump
+	return fallback
 
 func hand_cards(seat: int) -> Array:
 	return _current.get("hands", {}).get(seat, [])

@@ -17,7 +17,7 @@ const RULES := """[h]GOAL[/h]
 [h]PLAYING A TURN[/h]
 • You must [b]follow the suit[/b] that was led if you can.
 • The [b]highest card[/b] of the led suit wins the turn.
-• The [b]trump suit[/b] beats every other suit, so the highest trump wins. It is picked at random every round.
+• The [b]trump suit[/b] beats every other suit, so the highest trump wins. It is picked at random at the start of every match and stays for the whole match.
 • [b]Smoking cards[/b] and [b]drinking cards[/b] are always trump.
 • A [b]0[/b] beats a 9 of the [b]same suit[/b].
 • On a tie, the card played [b]first[/b] wins.

@@ -54,6 +54,8 @@ func _clear_trump() -> void:
 	_root.visible = false
 
 func show_trump(suit: Card.Suit) -> void:
+	if _card_visual != null and _root.visible and _final_suit == suit:
+		return
 	_final_suit = suit
 	if _card_visual != null:
 		_card_visual.queue_free()

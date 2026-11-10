@@ -121,6 +121,8 @@ static func state_from_data(data: Dictionary):
 			if seat >= 0 and seat <= 2:
 				loosers.append(seat)
 	state["last_match_loosers"] = loosers
+	var trump := _int(data.get("trump"), -1)
+	state["trump"] = trump if trump >= 0 and trump <= Card.Suit.CLUBS else -1
 	return state
 
 static func cards_to_data(cards: Array) -> Array:

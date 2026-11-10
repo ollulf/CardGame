@@ -145,8 +145,11 @@ func _lock_suits(cards: Array[Card], match_number: int) -> Array[Card]:
 			result.append(card)
 	return result
 
-func pick_trump_suit() -> void:
-	trump_suit = TutorialScript.trump([Card.Suit.DIAMONDS, Card.Suit.HEARTS, Card.Suit.SPADES, Card.Suit.CLUBS].pick_random())
+func random_trump_suit() -> Card.Suit:
+	return [Card.Suit.DIAMONDS, Card.Suit.HEARTS, Card.Suit.SPADES, Card.Suit.CLUBS].pick_random()
+
+func set_trump_suit(suit: Card.Suit) -> void:
+	trump_suit = suit
 	print("Trump suit: ", Card.Suit.keys()[trump_suit])
 	trump_chosen.emit(trump_suit)
 

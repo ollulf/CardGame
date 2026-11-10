@@ -54,6 +54,8 @@ var last_match_loosers : Array[int] = []
 var _intro_done := false
 var _deal_pending := false
 var _trump_pending := false
+var _trump_revealed := false
+var match_trump := -1
 var round_over := false
 var round_token := 0
 var _match_start_state := {}
@@ -87,6 +89,8 @@ func start_round(starting_player_id: int) -> void:
 	await CardManager.load_player_decks()
 	var first_round := not _intro_done
 	_intro_done = true
+	if match_trump < 0:
+		_pick_match_trump()
 	if _game_start_state.is_empty():
 		_game_start_state = _capture_state()
 		_game_start_state["tutorial"] = tutorial_before
@@ -250,12 +254,23 @@ func restart_round():
 	start_new_turn(TutorialScript.starter(last_round_loosers.pick_random()))
 
 func reveal_trump() -> void:
-	CardManager.pick_trump_suit()
-	await get_tree().create_timer(TRUMP_REVEAL_TIME, false).timeout
+	if match_trump < 0:
+		_pick_match_trump()
+	var first_reveal := not _trump_revealed
+	_trump_revealed = true
+	CardManager.set_trump_suit(match_trump)
+	if first_reveal:
+		await get_tree().create_timer(TRUMP_REVEAL_TIME, false).timeout
+
+func _pick_match_trump() -> void:
+	match_trump = TutorialScript.match_trump(DialogueManager.upcoming_match(), CardManager.random_trump_suit())
 
 func start_new_match() -> void:
 	var total_loosers := get_total_loosers()
 	var starting_player_id: int = total_loosers.pick_random() if not total_loosers.is_empty() else randi() % 3
+	if match_trump < 0:
+		_pick_match_trump()
+	_trump_revealed = false
 	_match_start_state = _capture_state()
 
 	for id in range(3):
@@ -400,6 +415,7 @@ func _end_round(loosers: Array[int]) -> void:
 		player_kicked.emit()
 	else:
 		last_match_loosers = total_loosers.duplicate()
+		match_trump = -1
 		await _pay_out_prize(total_loosers)
 		if Missions.is_last_match(current_match()):
 			run_won.emit()
@@ -453,6 +469,7 @@ func _capture_state() -> Dictionary:
 	state["tutorial"] = TutorialScript.capture_state()
 	state["cigarettes"] = InteractionManager.held_cigarette_count()
 	state["last_match_loosers"] = last_match_loosers.duplicate()
+	state["trump"] = match_trump
 	return state
 
 func _restore_state(state: Dictionary) -> void:
@@ -463,6 +480,7 @@ func _restore_state(state: Dictionary) -> void:
 	PlayerDataManager.restore_state(state)
 	InteractionManager.reset_cigarettes(state.get("cigarettes", 0))
 	last_match_loosers.assign(state.get("last_match_loosers", []))
+	match_trump = state.get("trump", -1)
 	var pot = get_tree().get_first_node_in_group(PRIZE_POT_GROUP)
 	if pot:
 		pot.clear()
