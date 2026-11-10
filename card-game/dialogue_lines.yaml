@@ -16,12 +16,12 @@ match: 1
 			1: That means the *highest* card of the *first played suit* wins the turn.
 			2: ... unless ...
 			2: Unless it's of the *trump color*, that is *always higher*, right?
-			1: But the *trump* is picked *at random* every round.
+			1: But the *trump* is picked *at random* for every match and stays the same for the whole match.
 			1: Yes.
 			1: But in that case, the *highest trump* card *wins*.
 			wait_for_cards_played: 1
 			1: Nobody can beat my *hearts 9*.
-			1: Since it's *trump* for this round, it's the *highest*.
+			1: Since *hearts* is *trump* for this match, it's the *highest*.
 			2: Yeah, I cannot beat that...
 			2: And if I have the *first played suit*, I have to play that.
 
@@ -85,7 +85,7 @@ match: 1
 			wait_for_cards_played: 2
 			2: Finally I am drawing my *smoking* cards.
 			2: It basically is *always* a *trump* card.
-			1: But if *YOU* would play a *higher diamonds* trump card now, *YOU* would win this turn.
+			1: But if *YOU* would play a *higher hearts* trump card now, *YOU* would win this turn.
 
 		when: turn_start
 		round: 3
@@ -112,6 +112,7 @@ match: 2
 			1: The *prize money* is *split* between the two *winners*.
 			2: And the *new loser* has to *pay* for the next round.
 			1: Let's hope it's not me again...
+			2: And remember, a *new match* means a *new trump*.
 			wait_for_cards_played: 1
 			1: Ahh *YOU* ...
 			cue: give_player_cigs 3
