@@ -30,7 +30,6 @@ func setup(data: Card, _face_down: bool) -> void:
 
 	card.values_changed.connect(update_visuals)
 	card.removed.connect(destroy)
-	add_to_group(BuffTooltip.CARD_GROUP)
 
 	update_layout()
 	
@@ -82,20 +81,6 @@ func update_visuals():
 
 	update_rank_color($RankLabel)
 	update_rank_color($RankLabel2)
-	refresh_buff_badges()
-
-func refresh_buff_badges() -> void:
-	var old := get_node_or_null("BuffBadges")
-	if old != null:
-		old.free()
-	if face_down or card == null or BuffTooltip.get_concept() != BuffTooltip.Concept.BADGES:
-		return
-	var badges := BuffTooltip.build_badges(card)
-	if badges == null:
-		return
-	add_child(badges)
-	badges.reset_size()
-	badges.position = Vector2((size.x - badges.size.x) * 0.5, BuffTooltip.BADGE_TOP).round()
 
 func update_rank_color(label: Label) -> void:
 	if card.rank > card.base_rank:
@@ -250,7 +235,6 @@ func collect_to(gather_center: Vector2, pile_center: Vector2, pile_scale: Vector
 func show_back() -> void:
 	face_down = true
 	set_winner(false)
-	refresh_buff_badges()
 	if has_node("Back"):
 		return
 	var back := TextureRect.new()

@@ -16,7 +16,6 @@ var unlocked := false
 var _panel: PanelContainer
 var _skip_buttons: Array[Button] = []
 var _tutorial_button: Button
-var _tooltip_button: Button
 var _pointer_parent: Node
 var _pointer_index := 0
 var _was_blocked := false
@@ -52,7 +51,6 @@ func _build() -> void:
 	_add_button(box, "Unlock all UI", unlock_all)
 	_add_button(box, "+%d cigarettes" % CIGARETTE_BONUS, add_cigarettes)
 	_add_button(box, "+%d$" % CASH_BONUS, add_cash)
-	_tooltip_button = _add_button(box, _tooltip_button_text(), cycle_buff_tooltip)
 	_add_button(box, "Close", close)
 
 
@@ -112,13 +110,6 @@ func skip_round(looser_id: int) -> void:
 	_refresh()
 
 
-func cycle_buff_tooltip() -> void:
-	BuffTooltip.cycle_concept(get_tree())
-	_tooltip_button.text = _tooltip_button_text()
-
-
-func _tooltip_button_text() -> String:
-	return "Buff tooltip: %s" % BuffTooltip.concept_name()
 
 
 func skip_tutorial() -> void:
