@@ -29,6 +29,7 @@ var _stand_pulse: Tween
 
 func _ready() -> void:
 	hide()
+	$PostFX.hide()
 	back_button.pressed.connect(close)
 	machine.set_label_text("Buy Cigarettes (%d$)" % PlayerDataManager.CIGARETTE_PACK_PRICE)
 	booster_stand.set_label_text("Booster Shelf")
@@ -66,6 +67,7 @@ func open() -> void:
 	_refresh_drinks_tap()
 	_refresh_stand_pulse()
 	show()
+	$PostFX.show()
 	opened.emit()
 
 
@@ -74,6 +76,7 @@ func close() -> void:
 		return
 
 	hide()
+	$PostFX.hide()
 	_stop_stand_pulse()
 	pointer.reparent(_pointer_parent)
 	_pointer_parent.move_child(pointer, _pointer_index)

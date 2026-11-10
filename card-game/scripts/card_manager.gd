@@ -14,7 +14,6 @@ const CLEAR_STAGGER := 0.08
 const COLLECT_GATHER_TIME := 0.25
 const COLLECT_FLIP_TIME := 0.15
 const COLLECT_FLY_TIME := 0.45
-const COLLECT_SCALE := 1.1
 const ZERO_BEATS_RANK := 9
 const TIE_CARD_SCALE := 1.5
 const TIE_CARD_SPACING := 120.0
@@ -156,8 +155,11 @@ func _lock_suits(cards: Array[Card], match_number: int) -> Array[Card]:
 			result.append(card)
 	return result
 
-func pick_trump_suit() -> void:
-	trump_suit = TutorialScript.trump([Card.Suit.DIAMONDS, Card.Suit.HEARTS, Card.Suit.SPADES, Card.Suit.CLUBS].pick_random())
+func random_trump_suit() -> Card.Suit:
+	return [Card.Suit.DIAMONDS, Card.Suit.HEARTS, Card.Suit.SPADES, Card.Suit.CLUBS].pick_random()
+
+func set_trump_suit(suit: Card.Suit) -> void:
+	trump_suit = suit
 	print("Trump suit: ", Card.Suit.keys()[trump_suit])
 	trump_chosen.emit(trump_suit)
 
@@ -342,13 +344,25 @@ func collect_table(winner: Card.Owner) -> void:
 		return
 	if winner_visual == null:
 		winner_visual = visuals[visuals.size() - 1]
-	var gather_center := winner_visual.global_position + winner_visual.pivot_offset
-	var pile_center := pile.top_position()
 	winner_visual.z_index = top_z_of(visuals)
-	Sfx.play_card_move(COLLECT_GATHER_TIME + COLLECT_FLIP_TIME)
-	for visual in visuals:
-		visual.collect_to(gather_center, pile_center, Vector2.ONE * COLLECT_SCALE, COLLECT_GATHER_TIME, COLLECT_FLIP_TIME, COLLECT_FLY_TIME)
-	await get_tree().create_timer(COLLECT_GATHER_TIME + COLLECT_FLIP_TIME + COLLECT_FLY_TIME, false).timeout
+	for i in visuals.size():
+		var visual := visuals[i]
+		var graveyard := graveyard_of(visual.card.owner)
+		var delay := i * CLEAR_STAGGER
+		var center := visual.global_position + visual.size * 0.5
+		if graveyard == null:
+			visual.fly_off_top(table_root.get_viewport().get_visible_rect().position.y, delay, CLEAR_TIME)
+		else:
+			var slot := graveyard.top_position()
+			get_tree().create_timer(COLLECT_GATHER_TIME + delay + COLLECT_FLIP_TIME + COLLECT_FLY_TIME, false).timeout.connect(graveyard.add_cards.bind(1))
+			visual.collect_to(center, slot, Vector2.ONE, COLLECT_GATHER_TIME + delay, COLLECT_FLIP_TIME, COLLECT_FLY_TIME)
+		Sfx.play_card_move(COLLECT_GATHER_TIME + delay + COLLECT_FLIP_TIME)
+	var cards_time := COLLECT_GATHER_TIME + (visuals.size() - 1) * CLEAR_STAGGER + COLLECT_FLIP_TIME + COLLECT_FLY_TIME
+	await get_tree().create_timer(cards_time, false).timeout
+	var stack: BierdeckelStack = get_tree().get_first_node_in_group(BierdeckelStack.GROUP)
+	if stack != null:
+		Sfx.play_card_move()
+		await Bierdeckel.fly(pile.get_parent(), stack.take(), pile.top_position())
 	pile.add_turn()
 
 func top_z_of(visuals: Array[CardVisual]) -> int:
@@ -359,6 +373,12 @@ func top_z_of(visuals: Array[CardVisual]) -> int:
 
 func won_pile_of(owner: Card.Owner) -> WonPile:
 	for pile in get_tree().get_nodes_in_group(GameManager.WON_PILE_GROUP):
+		if pile.pile_owner == owner:
+			return pile
+	return null
+
+func graveyard_of(owner: Card.Owner) -> GraveyardPile:
+	for pile in get_tree().get_nodes_in_group(GraveyardPile.GROUP):
 		if pile.pile_owner == owner:
 			return pile
 	return null
