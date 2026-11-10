@@ -5,6 +5,7 @@ signal closed
 
 const CARD_SCENE := preload("res://scenes/Card.tscn")
 const CARD_SIZE := Vector2(60, 90)
+const PREVIEW_SCALE := 1.3
 const DECK_CARD_SCALE := 0.6
 const COLLECTION_CARD_SCALE := 0.62
 const DECK_CARD_GAP := 4.0
@@ -55,6 +56,7 @@ var _deck_row: Control
 var _deck_counter: Label
 var _rows: VBoxContainer
 var _card_info: Label
+var _preview_holder: CenterContainer
 var _close_button: Button
 var _pending_rebuild := false
 var _deck_cells := {}
@@ -123,6 +125,10 @@ func _build() -> void:
 	_card_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_card_info.custom_minimum_size = Vector2(info.size.x, 0)
 	info.add_child(_card_info)
+	_preview_holder = CenterContainer.new()
+	_preview_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_preview_holder.custom_minimum_size = Vector2(info.size.x, CARD_SIZE.y * PREVIEW_SCALE)
+	info.add_child(_preview_holder)
 	_stats_panel = VBoxContainer.new()
 	_stats_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_stats_panel.custom_minimum_size = Vector2(info.size.x, 0)
@@ -478,6 +484,7 @@ func _is_left_click(event: InputEvent) -> bool:
 
 
 func _show_card(card: Card) -> void:
+	_clear(_preview_holder)
 	if card == null:
 		if InteractionManager.uses_touch():
 			_card_info.text = "Tap a card to see it here.\nTap it again to move it between your deck and your cards."
@@ -490,10 +497,20 @@ func _show_card(card: Card) -> void:
 			lines.append("Always trump. Gains +1 rank per cigarette smoked.")
 		Card.Suit.ALK:
 			lines.append("Always trump.")
-		_:
-			lines.append("Trump when %s is the trump suit." % SUIT_NAMES[card.suit])
-	var owned := _count_same(PlayerDataManager.collection, card) + _count_same(PlayerDataManager.active_deck, card)
-	lines.append("Owned: %d  (in deck: %d)" % [owned, _count_same(PlayerDataManager.active_deck, card)])
+	var holder := Control.new()
+	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.custom_minimum_size = CARD_SIZE * PREVIEW_SCALE
+	_preview_holder.add_child(holder)
+	var visual: CardVisual = CARD_SCENE.instantiate()
+	_ignore_mouse(visual)
+	visual.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	visual.size = CARD_SIZE
+	visual.pivot_offset = Vector2.ZERO
+	visual.hover_enabled = false
+	holder.add_child(visual)
+	visual.setup(card, false)
+	visual.scale = Vector2.ONE * PREVIEW_SCALE
+	visual.position = Vector2.ZERO
 	_card_info.text = "\n".join(lines)
 
 
@@ -614,6 +631,7 @@ func _draw_histogram(target: Control, counts: Array[int], bar_area: float, show_
 
 
 func _fill_stats_panel() -> void:
+	_clear(_stats_panel)
 	var deck := PlayerDataManager.active_deck.duplicate()
 	deck.sort_custom(_card_before)
 	var width := _stats_panel.custom_minimum_size.x
