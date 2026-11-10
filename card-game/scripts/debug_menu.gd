@@ -53,6 +53,7 @@ func _build() -> void:
 	_add_button(box, "+%d cigarettes" % CIGARETTE_BONUS, add_cigarettes)
 	_add_button(box, "+%d$" % CASH_BONUS, add_cash)
 	_add_button(box, "Give Draw card", give_effect_card.bind(CardEffect.Id.DRAW))
+	_add_button(box, "Give Suit +1 card", give_effect_card.bind(CardEffect.Id.SUIT_UP))
 	_matches_label = Label.new()
 	box.add_child(_matches_label)
 	var matches_row := HBoxContainer.new()

@@ -4,19 +4,24 @@ class_name CardEffect
 enum Id {
 	NONE,
 	DRAW,
+	SUIT_UP,
 }
 
 const WORDS := {
 	Id.DRAW: "DRAW",
+	Id.SUIT_UP: "SUITUP",
 }
 const NAMES := {
 	Id.DRAW: "Draw",
+	Id.SUIT_UP: "Suit +1",
 }
 const DESCRIPTIONS := {
 	Id.DRAW: "When played, draw a card from your deck.",
+	Id.SUIT_UP: "When played, all your cards of this card's suit get +1 rank for the rest of the match. Stacks.",
 }
 const COLORS := {
 	Id.DRAW: Color("4fa8e0"),
+	Id.SUIT_UP: Color("e0a64f"),
 }
 const ICONS := {
 	Id.DRAW: [
@@ -31,9 +36,22 @@ const ICONS := {
 		"#ooooooooo#",
 		".#########.",
 	],
+	Id.SUIT_UP: [
+		".#########.",
+		"#ooooooooo#",
+		"#ooooworoo#",
+		"#ooowwwooo#",
+		"#oowwwwwoo#",
+		"#ooooworoo#",
+		"#ooooworoo#",
+		"#ooooooooo#",
+		"#ooooooooo#",
+		".#########.",
+	],
 }
 const AI_COST_DISCOUNT := {
 	Id.DRAW: 1.5,
+	Id.SUIT_UP: 1.0,
 }
 
 
@@ -73,10 +91,12 @@ static func on_played(card: Card, player_id: int) -> void:
 	match card.effect:
 		Id.DRAW:
 			await CardManager.draw_extra_card(player_id)
+		Id.SUIT_UP:
+			CardManager.add_suit_bonus(player_id, card.suit, 1)
 
 
-static func modify_rank(_card: Card, rank: int, _player_id: int) -> int:
-	return rank
+static func modify_rank(card: Card, rank: int, player_id: int) -> int:
+	return rank + CardManager.suit_bonus(player_id, card.suit)
 
 
 static func ai_discount(card: Card, player_id: int) -> float:
