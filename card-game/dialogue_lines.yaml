@@ -184,3 +184,11 @@ match: any
 			2: Easy: when two cards are *equal*, the one played *first* wins.
 			2: So the *first* card on the table keeps the turn.
 			1: Good to know, being *first* has its perks.
+
+		when: round_tie
+		lines:
+			1: Hold on, there is a *tie* for the *fewest won turns*. Who loses the round now?
+			2: Then it is a *tie-break*: every tied player draws the *top card* of their *deck*.
+			2: The *lowest number* loses the round. *Suit* and *trump* do not matter here.
+			1: And if those are *equal* too, we just draw again.
+			2: Watch the *name tags*, they show whose card is whose.
