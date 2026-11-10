@@ -10,7 +10,7 @@ config_version=5
 
 [application]
 
-config/name="CardGame"
+config/name="Not a game about smoking"
 run/main_scene="uid://sho7nec3ufwc"
 config/features=PackedStringArray("4.5", "GL Compatibility")
 config/icon="res://icon.svg"
