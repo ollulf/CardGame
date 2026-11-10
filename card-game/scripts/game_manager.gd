@@ -385,12 +385,11 @@ func _wait_for_continue(anchor: Control, winner: Card.Owner) -> void:
 	var arrow := ContinueArrow.new()
 	anchor.add_child(arrow)
 	var center := anchor.global_position + anchor.size * 0.5
-	var pile := CardManager.won_pile_of(winner)
 	var dir := Vector2.DOWN
-	if pile != null:
-		var to_pile: Vector2 = pile.global_position - center
-		if to_pile.length() > 1.0:
-			dir = Vector2(signf(to_pile.x), 0.0) if absf(to_pile.x) > absf(to_pile.y) else Vector2(0.0, signf(to_pile.y))
+	if winner == Card.Owner.AI_1:
+		dir = Vector2.RIGHT
+	elif winner == Card.Owner.AI_2:
+		dir = Vector2.LEFT
 	arrow.angle = dir.angle() - PI * 0.5
 	var edge := minf(anchor.size.x * 0.5 / maxf(absf(dir.x), 0.001), anchor.size.y * 0.5 / maxf(absf(dir.y), 0.001)) + 10.0
 	arrow.global_position = center + dir * edge - Vector2(5.0, 3.0)
