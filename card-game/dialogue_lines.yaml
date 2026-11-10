@@ -163,7 +163,6 @@ match: 3
 		lines:
 			1: A *drinking card*! Somebody came thirsty.
 			2: Careful, it's *trump*, and it only gets *stronger* with every *drink*.
-			1: And everything else gets a bit *blurry*, hehe.
 
 		when: match_end
 		lines:
