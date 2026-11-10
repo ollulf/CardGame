@@ -160,13 +160,11 @@ match: 3
 		lines:
 			1: A *drinking card*! Somebody came thirsty.
 			2: Just like *smoking cards*, they are *always trump*.
-			1: We slipped *3 of them* into *YOUR* deck, just for this match.
 			2: Careful, it's *trump*, and it only gets *stronger* with every *drink*.
 
 		when: match_end
 		lines:
 			1: Phew, my *hearts 7* looked like a *5* after those drinks.
-			2: Those *3 drinking cards* were only borrowed, by the way.
 			2: If *YOU* like drinking, check the shop next time. There is a *Drinking Booster* with *drinking cards*.
 			1: And remember the *Round of Drinks*: *everybody* drinks...
 			2: ...including the ones without drinking cards. Hehe.
