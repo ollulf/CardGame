@@ -20,12 +20,14 @@ offset_left = 1.5258789e-05
 offset_right = 143.00002
 offset_bottom = 223.0
 scale = Vector2(3, 3)
+mouse_filter = 2
 texture = ExtResource("2_p6y3b")
 
 [node name="SmokingFingerSprite" type="TextureRect" parent="BaseHand"]
 visible = false
 z_index = -1
 layout_mode = 0
+mouse_filter = 2
 texture = ExtResource("3_c15go")
 
 [node name="Slot_1" type="Control" parent="."]
