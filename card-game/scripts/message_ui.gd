@@ -9,6 +9,7 @@ const BORDER_COLOR := Color(0.239216, 0.219608, 0.329412, 1)
 const TEXT_COLOR := Color(0.956863, 0.952941, 0.968627, 1)
 const FONT_SIZE := 20
 const TEXT_WIDTH := 360.0
+const BOX_CENTER_Y_OFFSET := 113.0
 
 var _panel: PanelContainer
 
@@ -30,10 +31,12 @@ func _build_box() -> void:
 	message_label.custom_minimum_size = Vector2(TEXT_WIDTH, 0.0)
 	message_label.add_theme_color_override("font_color", TEXT_COLOR)
 	message_label.add_theme_font_size_override("font_size", FONT_SIZE)
-	_panel.set_anchors_preset(Control.PRESET_CENTER)
-	_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
-	_panel.position.y += 69.0
+	_panel.resized.connect(_place_box)
+	_place_box()
+
+func _place_box() -> void:
+	var view := _panel.get_viewport_rect().size
+	_panel.position = Vector2((view.x - _panel.size.x) * 0.5, view.y * 0.5 + BOX_CENTER_Y_OFFSET - _panel.size.y * 0.5).round()
 
 func _ready() -> void:
 	_build_box()
@@ -47,6 +50,8 @@ func _message(text: String) -> void:
 	message_label.text = text
 	visible = true
 	message_label.visible = true
+	_panel.reset_size()
+	_place_box()
 
 	await get_tree().create_timer(3.0, false).timeout
 

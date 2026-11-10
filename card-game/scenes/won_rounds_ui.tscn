@@ -54,19 +54,19 @@ offset_bottom = 0.0
 
 [node name="Hearts_1" parent="Player_1/LostRounds" instance=ExtResource("2_life")]
 layout_mode = 0
-offset_left = -24.0
-offset_top = 110.0
-offset_right = 36.0
-offset_bottom = 200.0
-rotation = 0.1745
+offset_left = 128.0
+offset_top = 8.0
+offset_right = 188.0
+offset_bottom = 98.0
+rotation = -0.0698
 
 [node name="Hearts_2" parent="Player_1/LostRounds" instance=ExtResource("2_life")]
 layout_mode = 0
-offset_left = -18.0
-offset_top = 206.0
-offset_right = 42.0
-offset_bottom = 296.0
-rotation = -0.1396
+offset_left = 194.0
+offset_top = 12.0
+offset_right = 254.0
+offset_bottom = 102.0
+rotation = 0.0524
 
 [node name="Player_2" type="Panel" parent="."]
 self_modulate = Color(1, 1, 1, 0)
@@ -84,16 +84,16 @@ offset_bottom = 0.0
 
 [node name="Hearts_1" parent="Player_2/LostRounds" instance=ExtResource("2_life")]
 layout_mode = 0
-offset_left = 114.0
-offset_top = 110.0
-offset_right = 174.0
-offset_bottom = 200.0
-rotation = -0.1745
+offset_left = -38.0
+offset_top = 8.0
+offset_right = 22.0
+offset_bottom = 98.0
+rotation = 0.0698
 
 [node name="Hearts_2" parent="Player_2/LostRounds" instance=ExtResource("2_life")]
 layout_mode = 0
-offset_left = 108.0
-offset_top = 206.0
-offset_right = 168.0
-offset_bottom = 296.0
-rotation = 0.1396
+offset_left = -104.0
+offset_top = 12.0
+offset_right = -44.0
+offset_bottom = 102.0
+rotation = -0.0524

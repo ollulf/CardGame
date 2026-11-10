@@ -8,11 +8,9 @@ signal clicked
 
 @onready var sprite: Sprite2D = $Sprite2D
 @onready var tooltip: Control = $Tooltip
-@onready var bar_label: Control = $BarLabel
 @onready var money_label: Label = $MoneyLabel
 
 var _base_position: Vector2
-var _label_base_position: Vector2
 var _money_base_position: Vector2
 var _hovered: bool = false
 var _hidden_by_cue: bool = false
@@ -21,7 +19,6 @@ var _hidden_by_cue: bool = false
 func _ready() -> void:
 	_base_position = sprite.position
 	TableShadow.add_to(sprite)
-	_label_base_position = bar_label.position
 	_money_base_position = money_label.position
 	PlayerDataManager.money_changed.connect(_on_money_changed)
 	_on_money_changed(PlayerDataManager.money)
@@ -80,7 +77,6 @@ func _on_mouse_exited() -> void:
 func _refresh() -> void:
 	var active := _hovered and not blocked
 	sprite.position = _base_position + hover_offset if active else _base_position
-	bar_label.position = _label_base_position + hover_offset if active else _label_base_position
 	money_label.position = _money_base_position + hover_offset if active else _money_base_position
 	tooltip.visible = active
 
