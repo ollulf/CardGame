@@ -48,10 +48,11 @@ func _ready() -> void:
 	label.add_theme_color_override("font_color", TEXT_COLOR)
 	label.add_theme_font_size_override("font_size", InteractionManager.font_px(FONT_SIZE))
 	_panel.add_child(label)
-	add_child(_panel)
-	_panel.set_anchors_preset(Control.PRESET_CENTER)
-	_panel.grow_horizontal = Control.GROW_DIRECTION_BOTH
-	_panel.grow_vertical = Control.GROW_DIRECTION_BOTH
+	var center := CenterContainer.new()
+	center.set_anchors_preset(Control.PRESET_FULL_RECT)
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(center)
+	center.add_child(_panel)
 	if Engine.get_write_movie_path() != "" or DisplayServer.get_name() == "headless":
 		get_tree().create_timer(SHOW_TIME, false).timeout.connect(func(): dismissed.emit())
 

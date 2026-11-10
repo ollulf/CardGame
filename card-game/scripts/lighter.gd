@@ -8,7 +8,7 @@ const RETURN_TIME := 0.5
 const ARC_HEIGHT := 90.0
 const FLAME_GAP := 4.0
 const LIGHT_LEAN := 0.45
-const ART_LEAN := -0.5
+const ART_LEAN := 0.0
 const FLY_Z_INDEX := 51
 
 signal returned

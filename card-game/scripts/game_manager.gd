@@ -331,7 +331,6 @@ func _request_current_player() -> void:
 		return
 
 	var player_id := play_order[current_play_index]
-	message("Your turn" if player_id == HUMAN_ID else str(PLAYER_NAMES[player_id]) + "'s turn")
 	emit_signal("request_play_card", player_id)
 
 # Called by human & AI controllers
@@ -383,15 +382,16 @@ func _wait_for_continue(anchor: Control, winner: Card.Owner) -> void:
 	if not is_instance_valid(anchor):
 		return
 	var arrow := ContinueArrow.new()
-	anchor.add_child(arrow)
-	var center := anchor.global_position + anchor.size * 0.5
+	get_tree().current_scene.add_child(arrow)
+	var rect := anchor.get_global_rect()
+	var center := rect.get_center()
 	var dir := Vector2.DOWN
 	if winner == Card.Owner.AI_1:
 		dir = Vector2.LEFT
 	elif winner == Card.Owner.AI_2:
 		dir = Vector2.RIGHT
 	arrow.angle = dir.angle() - PI * 0.5
-	var edge := minf(anchor.size.x * 0.5 / maxf(absf(dir.x), 0.001), anchor.size.y * 0.5 / maxf(absf(dir.y), 0.001)) + 10.0
+	var edge := minf(rect.size.x * 0.5 / maxf(absf(dir.x), 0.001), rect.size.y * 0.5 / maxf(absf(dir.y), 0.001)) + 20.0
 	arrow.global_position = center + dir * edge - Vector2(5.0, 3.0)
 	await arrow.clicked
 	arrow.queue_free()
@@ -451,6 +451,7 @@ func retry_match() -> void:
 	start_new_match()
 
 var starting_over := false
+var replaying_finish := false
 
 func start_over() -> void:
 	_intro_done = false
@@ -466,7 +467,9 @@ func resume_run(match_state: Dictionary, game_state: Dictionary, between_matches
 	_match_start_state = match_state
 	if between_matches:
 		new_match_started.emit()
+		replaying_finish = true
 		match_finished.emit(last_match_loosers.duplicate())
+		replaying_finish = false
 	else:
 		start_new_match()
 
@@ -482,7 +485,9 @@ func start_without_tutorial() -> void:
 	new_match_started.emit()
 	DialogueManager.play_match_end()
 	await DialogueManager.wait_until_idle()
+	replaying_finish = true
 	match_finished.emit(last_match_loosers.duplicate())
+	replaying_finish = false
 
 func current_match() -> int:
 	return _match_start_state.get("match", 1)
