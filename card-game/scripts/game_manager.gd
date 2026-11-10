@@ -58,6 +58,7 @@ var _trump_pending := false
 var _trump_revealed := false
 var match_trump := -1
 var round_over := false
+var match_active := false
 var round_token := 0
 var _match_start_state := {}
 var _game_start_state := {}
@@ -81,6 +82,7 @@ func set_table_root(node: Control) -> void:
 	CardManager.set_table_root(node)
 
 func start_round(starting_player_id: int) -> void:
+	match_active = true
 	current_turn = 0
 	round_over = false
 	CardManager.played_cards_round.empty()
@@ -280,6 +282,7 @@ func start_new_match() -> void:
 
 	CardManager.clear_all_cards()
 
+	match_active = false
 	new_match_started.emit()
 	starting_over = false
 
@@ -429,8 +432,10 @@ func _end_round(loosers: Array[int]) -> void:
 	if total_loosers.is_empty():
 		next_round_available.emit()
 	elif total_loosers.has(HUMAN_ID):
+		match_active = false
 		player_kicked.emit()
 	else:
+		match_active = false
 		last_match_loosers = total_loosers.duplicate()
 		match_trump = -1
 		await _pay_out_prize(total_loosers)
@@ -466,6 +471,7 @@ func resume_run(match_state: Dictionary, game_state: Dictionary, between_matches
 	_restore_state(match_state)
 	_match_start_state = match_state
 	if between_matches:
+		match_active = false
 		new_match_started.emit()
 		replaying_finish = true
 		match_finished.emit(last_match_loosers.duplicate())
@@ -482,6 +488,7 @@ func start_without_tutorial() -> void:
 	state["match"] = 2
 	_restore_state(state)
 	_match_start_state = state
+	match_active = false
 	new_match_started.emit()
 	DialogueManager.play_match_end()
 	await DialogueManager.wait_until_idle()

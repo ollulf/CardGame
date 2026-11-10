@@ -18,7 +18,7 @@ const DENY_COLOR := Color(1.0, 0.45, 0.4)
 const CONFIRM_TEXT := "Really?"
 const NOT_ENOUGH_MONEY_TEXT := "Not enough money"
 const HINT_TEXT := "Tap a pack, then tap it again to buy it"
-const PACK_COLORS: Array[Color] = [Color(0.8, 0.8, 0.84, 1), Color(0.78, 0.88, 1.0, 1), Color(1.0, 0.86, 0.6, 1), Color(0.72, 1.0, 0.78, 1), Color(1.0, 0.7, 0.42, 1)]
+const PACK_COLOR := Color(0.8, 0.8, 0.84, 1)
 const PACK_TEXTURE := preload("res://sprites/booster_pack.png")
 const SHINE_SHADER := preload("res://shaders/booster_shine.gdshader")
 const SHADING_MAP := preload("res://sprites/booster_pack_map.png")
@@ -26,6 +26,7 @@ const SHINE_STAGGER := 0.35
 
 var entries: Array[PanelContainer] = []
 var _footers: Array[Label] = []
+var _rank_labels: Array[Label] = []
 var _styles: Array[StyleBoxFlat] = []
 var _confirm_index := -1
 var _deny_tween: Tween
@@ -79,7 +80,7 @@ func _build() -> void:
 	add_child(_hint_label)
 
 	for i in PlayerDataManager.BOOSTERS.size():
-		var entry := _build_entry(PlayerDataManager.BOOSTERS[i], pack_tint(i))
+		var entry := _build_entry(PlayerDataManager.BOOSTERS[i], pack_tint(PlayerDataManager.BOOSTERS[i]))
 		add_child(entry)
 		entries.append(entry)
 	_layout_entries()
@@ -96,6 +97,7 @@ func _build() -> void:
 func _layout_entries() -> void:
 	var shown: Array[PanelContainer] = []
 	for i in entries.size():
+		_rank_labels[i].text = rank_text(PlayerDataManager.BOOSTERS[i], DialogueManager.upcoming_match())
 		entries[i].visible = PlayerDataManager.is_booster_available(PlayerDataManager.BOOSTERS[i])
 		if entries[i].visible:
 			shown.append(entries[i])
@@ -151,8 +153,9 @@ func _build_entry(booster: Dictionary, pack_color: Color) -> PanelContainer:
 	box.add_child(_centered(_label("%d$" % booster["price"], 22, PRICE_COLOR)))
 	box.add_child(_centered(_label("%d cards" % booster["cards"], 15, MUTED_COLOR)))
 	box.add_child(_centered(_label(booster["contents"], 15, MUTED_COLOR)))
-	var ranks := "Rank %d" % booster["min_rank"] if booster["min_rank"] == booster["max_rank"] else "Ranks %d-%d" % [booster["min_rank"], booster["max_rank"]]
-	box.add_child(_centered(_label(ranks, 15, MUTED_COLOR)))
+	var rank_label := _centered(_label("", 15, MUTED_COLOR))
+	box.add_child(rank_label)
+	_rank_labels.append(rank_label)
 	var footer := _centered(_label("", 18, SELECTED_COLOR))
 	footer.custom_minimum_size = Vector2(0, 26)
 	box.add_child(footer)
@@ -160,8 +163,14 @@ func _build_entry(booster: Dictionary, pack_color: Color) -> PanelContainer:
 	return entry
 
 
-static func pack_tint(index: int) -> Color:
-	return PACK_COLORS[index % PACK_COLORS.size()]
+static func pack_tint(booster: Dictionary) -> Color:
+	return booster.get("tint", PACK_COLOR)
+
+
+static func rank_text(booster: Dictionary, match_number: int) -> String:
+	var low := BoosterWindow.lowest_rank(booster, match_number)
+	var high: int = clampi(booster.get("max_rank", BoosterWindow.MAX_RANK), low, BoosterWindow.MAX_RANK)
+	return "Rank %d" % low if low == high else "Ranks %d-%d" % [low, high]
 
 
 func _box_style(border: Color) -> StyleBoxFlat:

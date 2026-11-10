@@ -6,6 +6,7 @@ signal closed
 
 const NOT_ENOUGH_MONEY_TEXT := "Not enough money"
 const WAIT_TEXT := "Wait..."
+const STAMPS_LOCKED_TEXT := "Stamps: between matches only"
 const ROUND_ORDERED_TEXT := "Round ordered!"
 
 @export var pointer: Control
@@ -52,7 +53,7 @@ func _ready() -> void:
 	stamp_stand.set_label_text("Stamp Stand")
 	stamp_stand.needs_confirm = false
 	stamp_stand.sprite.texture = StampStandArt.texture()
-	stamp_stand.clicked.connect(open_stamp_shop)
+	stamp_stand.clicked.connect(_on_stamp_stand_clicked)
 	stamp_shop = StampShop.new()
 	add_child(stamp_shop)
 	stamp_shop.denied.connect(_flash_cash.bind(Color(1.0, 0.35, 0.3)))
@@ -80,6 +81,7 @@ func _show_bar() -> void:
 	pointer.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_DISABLED
 	_refresh_cash()
 	_refresh_drinks_tap()
+	_refresh_stamp_stand()
 	show()
 	$PostFX.show()
 
@@ -149,6 +151,19 @@ func _serve_ordered_round() -> void:
 func _on_booster_stand_clicked() -> void:
 	booster_shelf.show_hint = _guide_wants_booster()
 	booster_shelf.open()
+
+
+func _on_stamp_stand_clicked() -> void:
+	if GameManager.match_active:
+		stamp_stand.deny(STAMPS_LOCKED_TEXT)
+		return
+	open_stamp_shop()
+
+
+func _refresh_stamp_stand() -> void:
+	var locked := GameManager.match_active
+	stamp_stand.set_label_text(STAMPS_LOCKED_TEXT if locked else "Stamp Stand")
+	stamp_stand.sprite.modulate = Color(0.55, 0.55, 0.55) if locked else Color.WHITE
 
 
 func open_stamp_shop() -> void:
