@@ -6,6 +6,7 @@ class_name HumanPlayer
 @export var MAX_GAP := 58.0
 
 @export var bottom_margin: float = 150
+var card_half_width := 30.0
 
 var card_visuals : Array[CardVisual] = []
 
@@ -110,7 +111,7 @@ func render_hand():
 func _anchor_to_bottom_of_view() -> void:
 	# UI coordinates (this Control is the root)
 	var vs := get_viewport().get_visible_rect().size
-	position = Vector2(vs.x * 0.5, vs.y - bottom_margin)
+	position = Vector2(vs.x * 0.5 - card_half_width, vs.y - bottom_margin)
 
 
 func layout_hand_cards() -> void:
