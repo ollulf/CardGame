@@ -112,9 +112,13 @@ static func sparks(parent: Node, global_center: Vector2, color: Color, amount: i
 	burst.scale_amount_min = 1.0
 	burst.scale_amount_max = 2.0
 	var fade := Gradient.new()
-	fade.set_color(0, color.lerp(Color.WHITE, 0.4))
+	fade.set_color(0, color.lerp(Color.WHITE, 0.6))
 	fade.set_color(1, Color(color, 0.0))
+	fade.add_point(0.6, color)
 	burst.color_ramp = fade
+	var glow := CanvasItemMaterial.new()
+	glow.blend_mode = CanvasItemMaterial.BLEND_MODE_ADD
+	burst.material = glow
 	burst.z_index = 80
 	burst.top_level = true
 	parent.add_child(burst)
