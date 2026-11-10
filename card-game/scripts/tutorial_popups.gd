@@ -20,7 +20,7 @@ const POINT_PAD := 36.0
 const MIN_TARGET_SIZE := 4.0
 const BASIC_TIPS := ["follow", "trump", "bierdeckel", "deck", "lives", "smoke"]
 
-const TIPS := {
+const DEFAULT_TIPS := {
 	"follow": {
 		"title": "Your turn",
 		"text": "Play one card. The [b]highest card[/b] of the [b]first suit played[/b] wins the turn. The other players must [b]follow the first suit[/b] if they can.",
@@ -83,6 +83,50 @@ const TIPS := {
 	},
 }
 
+const TEXTS_PATH := "res://tutorial_popups.yaml"
+const DEFAULT_BUTTON := "Got it"
+
+static var _loaded := false
+static var _file_tips := {}
+static var _file_button := DEFAULT_BUTTON
+
+static func reload_texts() -> void:
+	_loaded = true
+	_file_tips = {}
+	_file_button = DEFAULT_BUTTON
+	var yaml := YamlLite.parse_file(TEXTS_PATH, ["id"])
+	if yaml.data.is_empty():
+		push_warning("TutorialPopups: no usable texts in %s, using built-in texts" % TEXTS_PATH)
+		return
+	for entry in yaml.data:
+		if entry is Dictionary and entry.get("id") == "button":
+			if entry.get("text") is String and entry.text != "":
+				_file_button = entry.text
+			continue
+		if not entry is Dictionary or not entry.get("id") is String or not DEFAULT_TIPS.has(entry.id):
+			push_warning("TutorialPopups: ignoring a tip entry without a known 'id' in %s" % TEXTS_PATH)
+			continue
+		var tip_data: Dictionary = DEFAULT_TIPS[entry.id].duplicate()
+		for field in ["title", "text"]:
+			if entry.get(field) is String and entry[field] != "":
+				tip_data[field] = entry[field]
+			else:
+				push_warning("TutorialPopups: tip '%s' has no '%s' in %s, using the built-in one" % [entry.id, field, TEXTS_PATH])
+		_file_tips[entry.id] = tip_data
+	for key in DEFAULT_TIPS:
+		if not _file_tips.has(key):
+			push_warning("TutorialPopups: tip '%s' is missing in %s, using the built-in text" % [key, TEXTS_PATH])
+
+static func tip_texts(key: String) -> Dictionary:
+	if not _loaded:
+		reload_texts()
+	return _file_tips.get(key, DEFAULT_TIPS[key])
+
+static func button_label() -> String:
+	if not _loaded:
+		reload_texts()
+	return _file_button
+
 static var instance: TutorialPopups
 static var shown: Array[String] = []
 
@@ -117,13 +161,14 @@ static func load_shown(keys) -> void:
 	shown.clear()
 	if keys is Array:
 		for key in keys:
-			if key is String and TIPS.has(key) and not key in shown:
+			if key is String and DEFAULT_TIPS.has(key) and not key in shown:
 				shown.append(key)
 
 func _init() -> void:
 	layer = POPUP_LAYER
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	instance = self
+	_loaded = false
 
 func _ready() -> void:
 	GameManager.request_play_card.connect(_on_request_play_card)
@@ -217,7 +262,7 @@ func _tied_card(card: Card) -> Card:
 	return null
 
 func request(key: String, target = null, urgent := false) -> void:
-	if key in shown or not TIPS.has(key):
+	if key in shown or not DEFAULT_TIPS.has(key):
 		return
 	shown.append(key)
 	if urgent:
@@ -247,7 +292,7 @@ func _show_next() -> void:
 		_show_after_dialogue()
 		return
 	var entry: Array = _pending.pop_front()
-	var tip_data: Dictionary = TIPS[entry[0]]
+	var tip_data: Dictionary = tip_texts(entry[0])
 	_target = entry[1]
 	_pause_game()
 	_blocker = Control.new()
@@ -261,8 +306,8 @@ func _show_next() -> void:
 	box.add_theme_constant_override("separation", 4)
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_bubble.add_child(box)
-	box.add_child(_title(tip_data.title))
-	box.add_child(_body(tip_data.text.format({"min": Missions.DECK_MIN, "max": Missions.DECK_MAX}),minf(BUBBLE_WIDTH, get_viewport().get_visible_rect().size.x - 60.0)))
+	box.add_child(_title(tip_data.title.replace("{player}", GameManager.player_name(GameManager.HUMAN_ID))))
+	box.add_child(_body(tip_data.text.replace("{player}", GameManager.player_name(GameManager.HUMAN_ID)).format({"min": Missions.DECK_MIN, "max": Missions.DECK_MAX}), minf(BUBBLE_WIDTH, get_viewport().get_visible_rect().size.x - 60.0)))
 	box.add_child(_button())
 	add_child(_bubble)
 	_lift_pointer()
@@ -438,7 +483,7 @@ func _body(text: String, width: float) -> RichTextLabel:
 
 func _button() -> Button:
 	var button := Button.new()
-	button.text = "Got it"
+	button.text = button_label()
 	button.focus_mode = Control.FOCUS_NONE
 	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	if InteractionManager.is_phone:
