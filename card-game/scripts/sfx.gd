@@ -112,6 +112,10 @@ const TIE_BREAK_SOUND := preload("res://sounds/bass_pluck.ogg")
 const TIE_BREAK_DB := -8.0
 const POPUP_SOUND := preload("res://sounds/popup_page.ogg")
 const POPUP_DB := -20.0
+const SPECIAL_POP_SOUND := preload("res://sounds/special_pop.ogg")
+const SPECIAL_POP_DB := -15.0
+const SPECIAL_POP_DELAY := 0.15
+const SPECIAL_POP_SELF_SOUNDING := [CardEffect.Id.TRUMP, CardEffect.Id.SUIT_UP]
 const CHAIR_SCRAPE_SOUND := preload("res://sounds/chair_scrape.ogg")
 const CHAIR_SCRAPE_DB := -12.0
 const LAST_CALL_SOUND := preload("res://sounds/last_call_bell.ogg")
@@ -186,6 +190,7 @@ func _ready() -> void:
 	GameManager.new_match_started.connect(_on_new_match_started)
 	GameManager.round_started.connect(_apply_mood)
 	PlayerDataManager.stamp_applied.connect(play_stamp.unbind(1))
+	CardManager.special_played.connect(_on_special_played)
 
 func play_card_move(delay: float = 0.0) -> void:
 	if delay > 0.0:
@@ -565,3 +570,10 @@ func _hook_node(node: Node) -> void:
 		node.pressed.connect(play_button)
 	elif node is AiSmoke and not node.burned_out.is_connected(_on_smoke_burned_out):
 		node.burned_out.connect(_on_smoke_burned_out)
+
+
+func _on_special_played(card: Card, _seat: int) -> void:
+	if not card.has_stamp() and SPECIAL_POP_SELF_SOUNDING.has(card.effect):
+		return
+	await get_tree().create_timer(SPECIAL_POP_DELAY, false).timeout
+	play(SPECIAL_POP_SOUND, 0.06, SPECIAL_POP_DB)
