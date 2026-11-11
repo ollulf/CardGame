@@ -1,6 +1,7 @@
 extends CanvasLayer
 class_name DebugMenu
 
+const GROUP := "debug_menu"
 const TOGGLE_ACTION := "toggle_debug_menu"
 const UNLOCK_CUES := ["show_deck", "show_won_turns", "show_life_cards", "show_purse", "show_cigs", "show_trump"]
 const PANEL_WIDTH := 260.0
@@ -29,6 +30,7 @@ func _ready() -> void:
 		queue_free()
 		return
 	layer = 120
+	add_to_group(GROUP)
 	_build()
 	hide()
 	GameManager.new_match_started.connect(_on_new_match_started)
