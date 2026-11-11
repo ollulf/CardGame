@@ -45,9 +45,9 @@ var current_turn := 0
 var play_order: Array[int] = []
 var current_play_index := 0
 
-var human_player = Player
-var ai_player_1 = Player
-var ai_player_2 = Player
+var human_player: Player
+var ai_player_1: Player
+var ai_player_2: Player
 
 var last_round_loosers : Array[int]
 var last_match_loosers : Array[int] = []
@@ -61,6 +61,7 @@ var round_over := false
 var round_token := 0
 var _match_start_state := {}
 var _game_start_state := {}
+var _continue_arrow: ContinueArrow
 
 func _init() -> void:
 	if Engine.get_write_movie_path() != "":
@@ -81,13 +82,16 @@ func set_table_root(node: Control) -> void:
 	CardManager.set_table_root(node)
 
 func start_round(starting_player_id: int) -> void:
+	var token := round_token
 	current_turn = 0
 	round_over = false
-	CardManager.played_cards_round.empty()
+	CardManager.played_cards_round.clear()
 	var tutorial_before := TutorialScript.capture_state()
 	TutorialScript.begin_round()
 	starting_player_id = TutorialScript.starter(starting_player_id)
 	await CardManager.load_player_decks()
+	if token != round_token:
+		return
 	var first_round := not _intro_done
 	_intro_done = true
 	if match_trump < 0:
@@ -104,14 +108,22 @@ func start_round(starting_player_id: int) -> void:
 		_deal_pending = true
 	else:
 		await _deal_and_reveal()
+		if token != round_token:
+			return
 
 	round_started.emit()
 
 	await DialogueManager.wait_until_idle()
+	if token != round_token:
+		return
 	if _deal_pending:
 		await _deal_and_reveal()
+		if token != round_token:
+			return
 	if _trump_pending:
 		await _reveal_pending_trump()
+		if token != round_token:
+			return
 
 	start_new_turn(starting_player_id)
 
@@ -240,19 +252,27 @@ func _reveal_pending_trump() -> void:
 	await reveal_trump()
 
 func restart_round():
+	var token := round_token
 	current_turn = 0
 	round_over = false
 	TutorialScript.begin_round()
-	
+
 	await CardManager.generate_player_hands()
+	if token != round_token:
+		return
 
 	await reveal_trump()
+	if token != round_token:
+		return
 
 	round_started.emit()
 
 	await DialogueManager.wait_until_idle()
+	if token != round_token:
+		return
 
-	start_new_turn(TutorialScript.starter(last_round_loosers.pick_random()))
+	var fallback: int = last_round_loosers.pick_random() if not last_round_loosers.is_empty() else randi() % 3
+	start_new_turn(TutorialScript.starter(fallback))
 
 func reveal_trump() -> void:
 	if match_trump < 0:
@@ -283,7 +303,10 @@ func start_new_match() -> void:
 	new_match_started.emit()
 	starting_over = false
 
+	var token := round_token
 	await _auto_pay_prize()
+	if token != round_token:
+		return
 
 	start_round(starting_player_id)
 
@@ -350,7 +373,7 @@ func _finish_turn() -> void:
 	var winner : Card.Owner = CardManager.get_turn_winner()
 	var winner_visual := CardManager.highlight_turn_winner()
 
-	message(_message_name(winner) + " won the turn")
+	message(_message_name(owner_to_id(winner)) + " won the turn")
 
 	await _wait_for_continue(winner_visual, winner)
 	if token != round_token:
@@ -379,10 +402,13 @@ func _wait_for_continue(anchor: Control, winner: Card.Owner) -> void:
 	if Engine.get_write_movie_path() != "" or DisplayServer.get_name() == "headless" or anchor == null:
 		await get_tree().create_timer(TURN_WINNER_SHOW_TIME, false).timeout
 		return
+	var token := round_token
 	await DialogueManager.wait_until_idle()
-	if not is_instance_valid(anchor):
+	if token != round_token or not is_instance_valid(anchor):
 		return
+	_free_continue_arrow()
 	var arrow := ContinueArrow.new()
+	_continue_arrow = arrow
 	anchor.add_child(arrow)
 	var center := anchor.global_position + anchor.size * 0.5
 	var pile := CardManager.won_pile_of(winner)
@@ -395,7 +421,12 @@ func _wait_for_continue(anchor: Control, winner: Card.Owner) -> void:
 	var edge := minf(anchor.size.x * 0.5 / maxf(absf(dir.x), 0.001), anchor.size.y * 0.5 / maxf(absf(dir.y), 0.001)) + 10.0
 	arrow.global_position = center + dir * edge - Vector2(5.0, 3.0)
 	await arrow.clicked
-	arrow.queue_free()
+	_free_continue_arrow()
+
+func _free_continue_arrow() -> void:
+	if is_instance_valid(_continue_arrow):
+		_continue_arrow.queue_free()
+	_continue_arrow = null
 
 func _end_round(loosers: Array[int]) -> void:
 	last_round_loosers = loosers
@@ -482,7 +513,10 @@ func start_without_tutorial() -> void:
 	_match_start_state = state
 	new_match_started.emit()
 	DialogueManager.play_match_end()
+	var token := round_token
 	await DialogueManager.wait_until_idle()
+	if token != round_token:
+		return
 	match_finished.emit(last_match_loosers.duplicate())
 
 func current_match() -> int:
@@ -499,6 +533,7 @@ func _capture_state() -> Dictionary:
 
 func _restore_state(state: Dictionary) -> void:
 	round_token += 1
+	_free_continue_arrow()
 	DialogueManager.clear_waiting()
 	DialogueManager.rewind_to_match(state.get("match", 1))
 	TutorialScript.restore_state(state.get("tutorial", {}))
@@ -517,6 +552,7 @@ func skip_round(looser_id: int) -> void:
 	if not can_skip_round():
 		return
 	round_token += 1
+	_free_continue_arrow()
 	current_turn = MAX_TURNS
 	round_over = true
 	if human_player is HumanPlayer:

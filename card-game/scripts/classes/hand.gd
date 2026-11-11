@@ -32,6 +32,9 @@ func empty():
 		card.remove()
 	cards.clear()
 
+func clear():
+	cards.clear()
+
 func size() -> int:
 	return cards.size()
 
@@ -39,9 +42,6 @@ func get_index_by_card(card : Card) -> int:
 	return cards.find(card)
 
 func contains_card_of_suit(suit: Card.Suit) -> bool:
-	if suit == null:
-		return true
-	
 	for card in cards:
 		if card.suit == suit:
 			return true

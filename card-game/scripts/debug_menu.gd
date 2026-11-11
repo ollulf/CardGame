@@ -22,6 +22,11 @@ var _was_blocked := false
 
 
 func _ready() -> void:
+	if not OS.is_debug_build():
+		set_process(false)
+		set_process_input(false)
+		queue_free()
+		return
 	layer = 120
 	_build()
 	hide()

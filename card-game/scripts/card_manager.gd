@@ -374,7 +374,7 @@ func graveyard_of(owner: Card.Owner) -> GraveyardPile:
 
 func clear_all_cards() -> void:
 	turn_clean_up()
-	played_cards_round.empty()
+	played_cards_round.clear()
 
 	for hand in [player_hand, AI_1_hand, AI_2_hand]:
 		if hand != null:
