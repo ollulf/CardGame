@@ -90,8 +90,11 @@ const CHEERS_CLINK_GAP := 0.16
 const CHEERS_DOWN_GAP := 0.24
 const CHEERS_GAP_JITTER := 0.05
 const CHEERS_DB_JITTER := 1.5
-const TABLE_KNOCK_SOUND := preload("res://sounds/table_knock.ogg")
-const TABLE_KNOCK_DB := -5.0
+const TRUMP_TICK_SOUND := preload("res://sounds/trump_tick.ogg")
+const TRUMP_TICK_DB := -22.0
+const TRUMP_TICK_PITCH_VARIATION := 0.06
+const TRUMP_LAND_SOUND := preload("res://sounds/trump_land.ogg")
+const TRUMP_LAND_DB := -6.0
 const CHAIR_SCRAPE_SOUND := preload("res://sounds/chair_scrape.ogg")
 const CHAIR_SCRAPE_DB := -12.0
 const LAST_CALL_SOUND := preload("res://sounds/last_call_bell.ogg")
@@ -371,8 +374,11 @@ func _play_glass_trio(stream: AudioStream, volume_db: float, gap: float) -> void
 			_last_played.pitch_scale = pitches[i] * (1.0 + randf_range(-0.02, 0.02))
 
 
-func play_table_knock() -> void:
-	play(TABLE_KNOCK_SOUND, 0.03, TABLE_KNOCK_DB)
+func play_trump_tick() -> void:
+	play(TRUMP_TICK_SOUND, TRUMP_TICK_PITCH_VARIATION, TRUMP_TICK_DB)
+
+func play_trump_land() -> void:
+	play(TRUMP_LAND_SOUND, 0.03, TRUMP_LAND_DB)
 
 func play_chair_scrape() -> void:
 	play(CHAIR_SCRAPE_SOUND, 0.08, CHAIR_SCRAPE_DB)

@@ -111,6 +111,7 @@ func _play_reveal() -> void:
 	var front_next := true
 	for half in SPIN_HALF_TIMES:
 		spin.tween_property(_holder, "scale:x", 0.0, half).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+		spin.tween_callback(Sfx.play_trump_tick)
 		if front_next:
 			shown = (shown + 1) % 4
 			spin.tween_callback(_set_face.bind(shown as Card.Suit))
@@ -120,6 +121,7 @@ func _play_reveal() -> void:
 		spin.tween_property(_holder, "scale:x", 1.0, half).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	spin.tween_property(_holder, "scale:x", 0.0, LAND_HALF_TIME).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	spin.tween_callback(_set_face.bind(_final_suit))
+	spin.tween_callback(Sfx.play_trump_land)
 	spin.tween_property(_holder, "scale:x", 1.0, LAND_HALF_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_spin_tween = spin
 
