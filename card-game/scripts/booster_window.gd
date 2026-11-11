@@ -13,9 +13,6 @@ const MIN_RANK := 1
 const MAX_RANK := 9
 
 const PANEL_RECT := Rect2(176, 124, 800, 400)
-const PACK_TEXTURE := preload("res://sprites/booster_pack.png")
-const SHINE_SHADER := preload("res://shaders/booster_shine.gdshader")
-const SHADING_MAP := preload("res://sprites/booster_pack_map.png")
 const FLIP_FX_SHADER := preload("res://shaders/booster_flip_fx.gdshader")
 const CARD_MASK := preload("res://sprites/card_Background.png")
 const PACK_SCALE := 2
@@ -76,10 +73,10 @@ func _build() -> void:
 	add_child(_pack)
 
 	var shine := ShaderMaterial.new()
-	shine.shader = SHINE_SHADER
-	shine.set_shader_parameter("shading_map", SHADING_MAP)
+	shine.shader = BoosterArt.SHINE_SHADER
+	shine.set_shader_parameter("shading_map", BoosterArt.SHADING_MAP)
 
-	_body = _pack_piece(Rect2(0, FLAP_PIXELS, PACK_TEXTURE.get_width(), PACK_TEXTURE.get_height() - FLAP_PIXELS), shine)
+	_body = _pack_piece(Rect2(0, FLAP_PIXELS, BoosterArt.PACK_TEXTURE.get_width(), BoosterArt.PACK_TEXTURE.get_height() - FLAP_PIXELS), shine)
 	_body.position = Vector2(0, FLAP_PIXELS * PACK_SCALE)
 	_pack.add_child(_body)
 
@@ -95,7 +92,7 @@ func _build() -> void:
 	_logo.size = Vector2(PACK_SIZE.x - LOGO_PADDING * 2, 70)
 	_pack.add_child(_logo)
 
-	_flap = _pack_piece(Rect2(0, 0, PACK_TEXTURE.get_width(), FLAP_PIXELS), shine)
+	_flap = _pack_piece(Rect2(0, 0, BoosterArt.PACK_TEXTURE.get_width(), FLAP_PIXELS), shine)
 	_flap.pivot_offset = _flap.size
 	_pack.add_child(_flap)
 
@@ -116,7 +113,7 @@ func _build() -> void:
 
 func _pack_piece(region: Rect2, shine: ShaderMaterial) -> TextureRect:
 	var atlas := AtlasTexture.new()
-	atlas.atlas = PACK_TEXTURE
+	atlas.atlas = BoosterArt.PACK_TEXTURE
 	atlas.region = region
 	var piece := TextureRect.new()
 	piece.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -131,7 +128,7 @@ func _pack_piece(region: Rect2, shine: ShaderMaterial) -> TextureRect:
 func open(booster: Dictionary = PlayerDataManager.BOOSTERS[0]) -> void:
 	_booster = booster
 	_logo.text = String(booster.get("name", "Booster")).to_upper().replace(" ", "\n")
-	var tint := BoosterShelf.pack_tint(booster)
+	var tint := BoosterArt.pack_tint(booster)
 	_body.self_modulate = tint
 	_flap.self_modulate = tint
 	for visual in card_visuals:

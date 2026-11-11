@@ -126,7 +126,7 @@ func show_boosters(offers: Array[int]) -> void:
 		if not has_offer:
 			continue
 		var booster: Dictionary = PlayerDataManager.BOOSTERS[index]
-		booster_items[i].sprite.self_modulate = BoosterShelf.pack_tint(booster)
+		booster_items[i].sprite.self_modulate = BoosterArt.pack_tint(booster)
 		booster_items[i].set_label_text("%d cards: %s" % [int(booster["cards"]), String(booster["contents"])])
 		_booster_names[i].text = String(booster["name"])
 		_booster_tags[i].text = "%d$" % int(booster["price"])
@@ -168,13 +168,13 @@ func _build_stamp_slot(i: int) -> void:
 func _build_booster_slot(i: int) -> void:
 	var center: Vector2 = BOOSTER_SLOTS[i]
 	var item := _item(PACK_SIZE, center - PACK_SIZE * 0.5 + Vector2(0, -6))
-	item.sprite.texture = BoosterShelf.PACK_TEXTURE
+	item.sprite.texture = BoosterArt.PACK_TEXTURE
 	item.sprite.pivot_offset = PACK_SIZE * 0.5
 	item.sprite.rotation_degrees = BOOSTER_TILT[i]
 	var shine := ShaderMaterial.new()
-	shine.shader = BoosterShelf.SHINE_SHADER
-	shine.set_shader_parameter("time_offset", i * BoosterShelf.SHINE_STAGGER)
-	shine.set_shader_parameter("shading_map", BoosterShelf.SHADING_MAP)
+	shine.shader = BoosterArt.SHINE_SHADER
+	shine.set_shader_parameter("time_offset", i * BoosterArt.SHINE_STAGGER)
+	shine.set_shader_parameter("shading_map", BoosterArt.SHADING_MAP)
 	item.sprite.material = shine
 	item.clicked.connect(func() -> void: booster_clicked.emit(i))
 	booster_items.append(item)
