@@ -25,7 +25,7 @@ const SUIT_CODES := {
 const UNLIMITED := -1
 const ZERO_RANK_MATCH := 2
 const ALK_MATCH := 3
-const LAST_MATCH := 5
+const LAST_MATCH := 8
 
 var matches: Dictionary = load_missions(MISSIONS_PATH)
 var _cigarettes_used := {}
