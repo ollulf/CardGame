@@ -10,6 +10,7 @@ const MAX_ROW_CARDS := 5
 const COLLECT_DELAY := 2.0
 const NORMAL_SUITS: Array[Card.Suit] = [Card.Suit.DIAMONDS, Card.Suit.HEARTS, Card.Suit.SPADES, Card.Suit.CLUBS]
 const MIN_RANK := 1
+const NORMAL_SUIT_WEIGHT := 3
 const MAX_RANK := 9
 
 const PANEL_RECT := Rect2(176, 124, 800, 400)
@@ -157,26 +158,13 @@ static func roll(booster: Dictionary, match_number: int) -> Array[Card]:
 	var count: int = booster.get("cards", MAX_ROW_CARDS)
 	var min_rank := lowest_rank(booster, match_number)
 	var max_rank: int = clampi(booster.get("max_rank", MAX_RANK), min_rank, MAX_RANK)
+	var suits := pack_suits(booster, match_number)
 	var effects := special_effects()
-	var special_count := 0
-	if not effects.is_empty():
-		special_count = mini(_roll_count(booster, "special_min", "special_max"), count)
-	var rest := count - special_count
-	var rare_count := rest
-	if booster.get("filler", "common") != "rare":
-		rare_count = mini(_roll_count(booster, "rare_min", "rare_max"), rest)
-	var rare := rare_suits(booster, match_number)
-	var special_suits: Array[Card.Suit] = NORMAL_SUITS.duplicate()
-	special_suits.append_array(rare)
+	var special_count := 0 if effects.is_empty() else mini(int(booster.get("specials", 0)), count)
 	var result: Array[Card] = []
 	for i in count:
-		var rank := randi_range(min_rank, max_rank)
-		if i < special_count:
-			result.append(Card.new(special_suits.pick_random(), rank, Card.Owner.HUMAN, false, effects.pick_random()))
-		elif i < special_count + rare_count:
-			result.append(Card.new(rare.pick_random(), rank, Card.Owner.HUMAN, false))
-		else:
-			result.append(Card.new(NORMAL_SUITS.pick_random(), rank, Card.Owner.HUMAN, false))
+		var effect: CardEffect.Id = effects.pick_random() if i < special_count else CardEffect.Id.NONE
+		result.append(Card.new(suits.pick_random(), randi_range(min_rank, max_rank), Card.Owner.HUMAN, false, effect))
 	result.shuffle()
 	return result
 
@@ -185,9 +173,25 @@ static func lowest_rank(booster: Dictionary, match_number: int) -> int:
 	return clampi(maxi(int(booster.get("min_rank", MIN_RANK)), Missions.lowest_rank(match_number)), 0, MAX_RANK)
 
 
-static func rare_suits(booster: Dictionary, match_number: int) -> Array[Card.Suit]:
+static func pack_suits(booster: Dictionary, match_number: int) -> Array[Card.Suit]:
+	var suits: Array[Card.Suit] = []
+	match String(booster.get("suits", "normal")):
+		"smoke":
+			suits.append(Card.Suit.SMOKE)
+		"drink":
+			suits.append(Card.Suit.ALK)
+		"all":
+			for i in NORMAL_SUIT_WEIGHT:
+				suits.append_array(NORMAL_SUITS)
+			suits.append_array(trump_suits(match_number))
+		_:
+			suits.append_array(NORMAL_SUITS)
+	return suits
+
+
+static func trump_suits(match_number: int) -> Array[Card.Suit]:
 	var suits: Array[Card.Suit] = [Card.Suit.SMOKE]
-	if match_number >= int(booster.get("alk_from_match", 0)):
+	if match_number >= PlayerDataManager.ALK_BOOSTER_CARDS_FROM_MATCH:
 		suits.append(Card.Suit.ALK)
 	return suits
 
@@ -196,14 +200,6 @@ static func special_effects() -> Array:
 	var effects: Array = CardEffect.Id.values()
 	effects.erase(CardEffect.Id.NONE)
 	return effects
-
-
-static func _roll_count(booster: Dictionary, min_key: String, max_key: String) -> int:
-	var low: int = booster.get(min_key, 0)
-	var high: int = booster.get(max_key, 0)
-	if high <= 0:
-		return 0
-	return randi_range(mini(low, high), high)
 
 
 func _gui_input(event: InputEvent) -> void:

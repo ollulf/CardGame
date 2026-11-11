@@ -49,10 +49,13 @@ const HORST_DEALS_PER_VISIT := 1
 const HORST_OFFER_FROM_MATCH := 4
 const HORST_OFFER_PRICE := 4
 const BOOSTER_OFFERS_PER_MATCH := 3
-const BOOSTER_OFFER_WEIGHTS: Array[int] = [60, 40]
 const BOOSTERS: Array[Dictionary] = [
-	{"name": "Kiosk Pack", "price": 5, "cards": 9, "min_rank": 0, "max_rank": 9, "special_min": 0, "special_max": 0, "rare_min": 1, "rare_max": 2, "filler": "common", "alk_from_match": ALK_BOOSTER_CARDS_FROM_MATCH, "tint": Color(0.78, 0.88, 1.0, 1), "contents": "1-2 rare trump cards + common suits"},
-	{"name": "Back-Room Pack", "price": 8, "cards": 3, "min_rank": 0, "max_rank": 9, "special_min": 0, "special_max": 1, "filler": "rare", "alk_from_match": ALK_BOOSTER_CARDS_FROM_MATCH, "tint": Color(1.0, 0.8, 0.4, 1), "contents": "0-1 special effect card + rare trump cards"},
+	{"name": "Common Pack", "price": 4, "cards": 8, "specials": 1, "suits": "normal", "min_rank": 0, "weight": 0, "tint": Color(0.8, 0.8, 0.84, 1), "contents": "common suits, 1 special"},
+	{"name": "Random Pack", "price": 5, "cards": 8, "specials": 1, "suits": "all", "min_rank": 0, "weight": 30, "tint": Color(0.78, 0.88, 1.0, 1), "contents": "any suit, 1 special"},
+	{"name": "Smoke Pack", "price": 7, "cards": 3, "specials": 1, "suits": "smoke", "min_rank": 0, "weight": 20, "tint": Color(0.62, 0.62, 0.68, 1), "contents": "smoke trumps, 1 special"},
+	{"name": "Drink Pack", "price": 7, "cards": 3, "specials": 1, "suits": "drink", "min_rank": 0, "weight": 20, "from_match": ALK_BOOSTER_CARDS_FROM_MATCH, "tint": Color(0.95, 0.72, 0.45, 1), "contents": "drink trumps, 1 special"},
+	{"name": "Special Pack", "price": 8, "cards": 2, "specials": 2, "suits": "all", "min_rank": 0, "weight": 10, "tint": Color(1.0, 0.82, 0.35, 1), "contents": "2 specials"},
+	{"name": "Zero Pack", "price": 5, "cards": 4, "specials": 0, "suits": "all", "min_rank": 0, "max_rank": 0, "weight": 20, "from_match": Missions.ZERO_RANK_MATCH, "tint": Color(0.7, 0.95, 0.75, 1), "contents": "four 0s, any suit"},
 ]
 
 var smoking_stacks := {
@@ -230,17 +233,17 @@ func get_booster_offers() -> Array[int]:
 
 func roll_booster_offers() -> Array[int]:
 	var pool: Array[int] = []
-	for i in BOOSTERS.size():
+	for i in range(1, BOOSTERS.size()):
 		if is_booster_available(BOOSTERS[i]):
 			pool.append(i)
-	var offers: Array[int] = []
-	for i in BOOSTER_OFFERS_PER_MATCH:
+	var offers: Array[int] = [0]
+	while offers.size() < BOOSTER_OFFERS_PER_MATCH:
 		if pool.is_empty():
 			offers.append(-1)
-		elif i == 0:
-			offers.append(pool[0])
-		else:
-			offers.append(_weighted_booster(pool))
+			continue
+		var pick := _weighted_booster(pool)
+		offers.append(pick)
+		pool.erase(pick)
 	return offers
 
 func _weighted_booster(pool: Array[int]) -> int:
@@ -255,7 +258,7 @@ func _weighted_booster(pool: Array[int]) -> int:
 	return pool[0]
 
 func _offer_weight(index: int) -> int:
-	return BOOSTER_OFFER_WEIGHTS[index] if index < BOOSTER_OFFER_WEIGHTS.size() else 1
+	return int(BOOSTERS[index].get("weight", 1))
 
 func buy_booster_offer(index: int) -> bool:
 	var offers := get_booster_offers()
@@ -428,7 +431,7 @@ static func roll_horst_card(match_number: int) -> Card:
 	var effects := BoosterWindow.special_effects()
 	if not effects.is_empty() and randf() < 0.5:
 		var special_suits := suits.duplicate()
-		special_suits.append_array(BoosterWindow.rare_suits(BOOSTERS[1], match_number))
+		special_suits.append_array(BoosterWindow.trump_suits(match_number))
 		return Card.new(special_suits.pick_random(), rank, Card.Owner.HUMAN, false, effects.pick_random())
 	return Card.new(suits.pick_random(), rank, Card.Owner.HUMAN, false, CardEffect.Id.NONE, CardStamp.random_id())
 
