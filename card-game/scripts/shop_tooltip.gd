@@ -9,13 +9,16 @@ const INNER_BG := Color(0.27, 0.26, 0.3)
 const NUMBER := "f2a94a"
 const SPECIAL := "a98bff"
 const LOCKED := "ff7a6b"
-const SUIT_NAMES := {
-	Card.Suit.DIAMONDS: "Diamonds",
-	Card.Suit.HEARTS: "Hearts",
-	Card.Suit.SPADES: "Spades",
-	Card.Suit.CLUBS: "Clubs",
-	Card.Suit.ALK: "Drinks",
-	Card.Suit.SMOKE: "Smoke",
+const SUIT_ICON_SIZE := 18
+const NO_BREAK := "\u00a0"
+const ICON_GAP := "\u202f"
+const SUIT_ICONS := {
+	Card.Suit.DIAMONDS: "res://sprites/suit_Karo.png",
+	Card.Suit.HEARTS: "res://sprites/suit_Herz.png",
+	Card.Suit.SPADES: "res://sprites/suit_Pik.png",
+	Card.Suit.CLUBS: "res://sprites/suit_Kreuz.png",
+	Card.Suit.ALK: "res://sprites/suit_Alk.png",
+	Card.Suit.SMOKE: "res://sprites/suit_Smoke.png",
 }
 
 var _title: Label
@@ -45,6 +48,7 @@ func _ready() -> void:
 	_body = RichTextLabel.new()
 	_body.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_body.bbcode_enabled = true
+	_body.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_body.fit_content = true
 	_body.scroll_active = false
 	_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -77,22 +81,22 @@ static func describe(booster: Dictionary, match_number: int) -> String:
 	var specials := mini(int(booster.get("specials", 0)), count)
 	var low := BoosterWindow.lowest_rank(booster, match_number)
 	var high := clampi(int(booster.get("max_rank", BoosterWindow.MAX_RANK)), low, BoosterWindow.MAX_RANK)
-	var ranks := str(low) if low == high else "%d - %d" % [low, high]
-	var text := "Contains %s cards of suit %s" % [_number(str(count)), _number(_suit_list(booster, match_number))]
+	var ranks := str(low) if low == high else "%d%s-%s%d" % [low, NO_BREAK, NO_BREAK, high]
+	var text := "Contains %s cards of suit %s" % [_number(str(count)), _suit_list(booster, match_number)]
 	if specials >= count and count > 0:
-		text += ", all %s" % _special("special")
+		text += ", %s" % _special("all" + NO_BREAK + "special")
 	elif specials > 0:
-		text += ", and %s %s" % [_number(str(specials)), _special("special")]
+		text += ", and %s" % _special(str(specials) + NO_BREAK + "special")
 	return text + " from rank %s." % _number(ranks)
 
 
 static func _suit_list(booster: Dictionary, match_number: int) -> String:
-	var names: Array[String] = []
+	var icons: Array[String] = []
 	for suit in BoosterWindow.pack_suits(booster, match_number):
-		var suit_name: String = SUIT_NAMES.get(suit, "?")
-		if not suit_name in names:
-			names.append(suit_name)
-	return ", ".join(names)
+		var icon := "[img=%dx%d]%s[/img]" % [SUIT_ICON_SIZE, SUIT_ICON_SIZE, SUIT_ICONS.get(suit, "")]
+		if not icon in icons:
+			icons.append(icon)
+	return ICON_GAP.join(icons)
 
 
 static func _number(text: String) -> String:
