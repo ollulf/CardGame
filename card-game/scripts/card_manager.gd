@@ -574,7 +574,7 @@ func return_tie_card(player_id: int, card: Card) -> void:
 	if deck != null and card != null:
 		deck.cards.insert(0, card)
 
-func show_tie_break(draws: Dictionary, losers: Array[int]) -> void:
+func show_tie_break(draws: Dictionary, losers: Array[int], hold: Callable = Callable()) -> void:
 	var ids: Array = draws.keys()
 	var visuals := {}
 	var homes := {}
@@ -627,7 +627,20 @@ func show_tie_break(draws: Dictionary, losers: Array[int]) -> void:
 			_mark_tie_tag(tags[id], _tie_name(id) + (" tie again" if losers.size() > 1 else (" lose!" if _tie_name(id) == HUMAN_TIE_NAME else " loses!")), TIE_LOSER_TAG_COLOR)
 		else:
 			_mark_tie_tag(tags[id], _tie_name(id) + " safe", TIE_OWNER_COLORS.get(id, Color.WHITE).darkened(0.35))
-	await get_tree().create_timer(TIE_RESULT_TIME, false).timeout
+	var anchor: CardVisual = null
+	for id in ids:
+		if visuals.has(id) and is_instance_valid(visuals[id]):
+			anchor = visuals[id]
+	if hold.is_valid() and anchor != null:
+		if not await hold.call(anchor):
+			for id in visuals:
+				if is_instance_valid(visuals[id]):
+					visuals[id].queue_free()
+				if is_instance_valid(tags[id]):
+					tags[id].queue_free()
+			return
+	else:
+		await get_tree().create_timer(TIE_RESULT_TIME, false).timeout
 	for id in visuals:
 		var tag = tags[id]
 		if is_instance_valid(tag):
