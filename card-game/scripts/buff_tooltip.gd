@@ -13,6 +13,7 @@ const GAP := 8.0
 const SCREEN_MARGIN := 6.0
 const FADE_TIME := 0.1
 const ICON_SIZE := Vector2(18, 18)
+const TEXT_WIDTH := 190.0
 
 static var _instance: BuffTooltip
 
@@ -142,10 +143,10 @@ func _card_rect() -> Rect2:
 func _build_pill(card: Card) -> Control:
 	var pill := PanelContainer.new()
 	pill.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	pill.add_theme_stylebox_override("panel", _style(BG_COLOR, BORDER_COLOR, 2, 14, Vector2(10, 2)))
+	pill.add_theme_stylebox_override("panel", _style(BG_COLOR, BORDER_COLOR, 2, 6, Vector2(10, 6)))
 	var lines := VBoxContainer.new()
 	lines.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	lines.add_theme_constant_override("separation", 2)
+	lines.add_theme_constant_override("separation", 6)
 	pill.add_child(lines)
 	if not card.buff_parts.is_empty():
 		lines.add_child(_buff_row(card))
@@ -163,8 +164,12 @@ static func stamp_row(stamp: int, font_size: int) -> HBoxContainer:
 	var badge := StampBadge.create(stamp)
 	badge.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(badge)
-	row.add_child(_label(CardStamp.display_name(stamp) + " stamp:", CardStamp.color(stamp).lightened(0.3), font_size))
-	row.add_child(_label(CardStamp.description(stamp), Color.WHITE, font_size))
+	var column := VBoxContainer.new()
+	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	column.add_theme_constant_override("separation", 0)
+	column.add_child(_label(CardStamp.display_name(stamp) + " stamp", CardStamp.color(stamp).lightened(0.3), font_size))
+	column.add_child(_wrapped(CardStamp.description(stamp), font_size))
+	row.add_child(column)
 	return row
 
 
@@ -175,8 +180,7 @@ static func effect_row(effect: int, font_size: int) -> HBoxContainer:
 	var badge := EffectBadge.create(effect)
 	badge.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	row.add_child(badge)
-	row.add_child(_label(CardEffect.display_name(effect) + ":", CardEffect.color(effect).lightened(0.3), font_size))
-	row.add_child(_label(CardEffect.description(effect), Color.WHITE, font_size))
+	row.add_child(_wrapped(CardEffect.description(effect), font_size))
 	return row
 
 
@@ -222,6 +226,13 @@ static func _label(text: String, color: Color, font_size: int = 0) -> Label:
 	label.add_theme_color_override("font_color", color)
 	if font_size > 0:
 		label.add_theme_font_size_override("font_size", font_size)
+	return label
+
+
+static func _wrapped(text: String, font_size: int) -> Label:
+	var label := _label(text, Color.WHITE, font_size)
+	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	label.custom_minimum_size.x = TEXT_WIDTH
 	return label
 
 

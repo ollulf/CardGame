@@ -5,6 +5,12 @@ const PIXEL := 2.0
 const BORDER_COLOR := Color(0.1, 0.08, 0.07)
 const PAPER_COLOR := Color(0.97, 0.95, 0.9)
 const INK_COLOR := Color(0.1, 0.08, 0.07)
+const TEXTURES := {
+	CardEffect.Id.DRAW: preload("res://sprites/draw_icon.png"),
+	CardEffect.Id.COPY: preload("res://sprites/copy_icon.png"),
+	CardEffect.Id.SUIT_UP: preload("res://sprites/suit_up_icon.png"),
+	CardEffect.Id.TRUMP: preload("res://sprites/new_trump_icon.png"),
+}
 
 var effect := CardEffect.Id.NONE
 var pixel := PIXEL
@@ -21,6 +27,14 @@ static func create(effect_id: int, pixel_size: float = PIXEL) -> EffectBadge:
 
 func set_effect(effect_id: int) -> void:
 	effect = effect_id
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	if TEXTURES.has(effect):
+		var texture: Texture2D = TEXTURES[effect]
+		custom_minimum_size = texture.get_size() * pixel
+		size = custom_minimum_size
+		visible = true
+		queue_redraw()
+		return
 	var rows := CardEffect.icon(effect)
 	var width := 0 if rows.is_empty() else String(rows[0]).length()
 	custom_minimum_size = Vector2(width, rows.size()) * pixel
@@ -30,6 +44,9 @@ func set_effect(effect_id: int) -> void:
 
 
 func _draw() -> void:
+	if TEXTURES.has(effect):
+		draw_texture_rect(TEXTURES[effect], Rect2(Vector2.ZERO, size), false)
+		return
 	var rows := CardEffect.icon(effect)
 	var fill := CardEffect.color(effect)
 	for y in rows.size():

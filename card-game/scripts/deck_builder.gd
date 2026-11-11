@@ -498,7 +498,7 @@ func _show_card(card: Card) -> void:
 		Card.Suit.ALK:
 			_add_info_box("Never trump" if card.is_colorless() else "Always trump", "Colorless." if card.is_colorless() else "", _suit_color(card.suit))
 	if card.has_effect():
-		_add_info_box(CardEffect.display_name(card.effect), CardEffect.description(card.effect), SPECIAL_COLOR)
+		_add_info_box("Special", CardEffect.description(card.effect), SPECIAL_COLOR)
 	if card.has_stamp():
 		_add_info_box("%s stamp" % CardStamp.display_name(card.stamp), CardStamp.description(card.stamp), ACCENT_COLOR)
 	var holder := Control.new()
