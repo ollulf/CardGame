@@ -9,7 +9,6 @@ var human_player: HumanPlayer
 const MAX_IN_HAND := 3
 const BURN_SECONDS := AiSmoke.LIGHT_TIME + AiSmoke.BURN_TIME
 const DRAG_THRESHOLD := 6.0
-const SMOKE_CAP_TEXT := "Enough smoke for now: max +%d per round."
 
 var _burn_token: int = 0
 
@@ -302,11 +301,7 @@ func pickedUpCig() -> void:
 	addCigToHand()
 
 func usedLighter() -> void:
-	var room := PlayerDataManager.cigarettes_until_cap(0)
-	if room <= 0:
-		GameManager.message(SMOKE_CAP_TEXT % PlayerDataManager.MAX_SMOKE_BONUS)
-		return
-	CardManager.update_cards(hand.light_all_unlit(room))
+	CardManager.update_cards(hand.light_all_unlit())
 
 	_burn_token += 1
 	var my_token := _burn_token

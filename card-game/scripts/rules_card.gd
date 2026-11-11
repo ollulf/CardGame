@@ -23,7 +23,7 @@ const RULES := """[h]GOAL[/h]
 • On a tie, the card played [b]first[/b] wins.
 
 [h]SMOKING AND DRINKS[/h]
-• Every cigarette you smoke gives your smoking cards [b]+1[/b] until the round ends, up to [b]+3[/b].
+• Every cigarette you smoke gives your smoking cards [b]+1[/b] until the round ends. Smoke as many as you like.
 • A [b]round of drinks[/b] makes everybody drink: drinking cards [b]+1[/b], all other cards [b]-1[/b], for the whole match."""
 
 var _button: Button

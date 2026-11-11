@@ -73,7 +73,8 @@ func play_match(m: int) -> int:
 		var cigs := Missions.cigarette_limit(m, seat)
 		if seat == 0:
 			cigs = 3 if m == 2 else 6
-		smoke_bonus.append(clampi(cigs / 3, 0, PlayerDataManager.MAX_SMOKE_BONUS) if cigs >= 0 else PlayerDataManager.MAX_SMOKE_BONUS)
+		var cap := 99 if seat == 0 else PlayerDataManager.MAX_SMOKE_BONUS
+		smoke_bonus.append(clampi(cigs / 3, 0, cap) if cigs >= 0 else cap)
 	var starter := randi_range(0, 2)
 	for round_index in 8:
 		if round_index > 0 and m >= PlayerDataManager.DRINK_ROUND_FROM_MATCH:
@@ -99,6 +100,7 @@ func play_match(m: int) -> int:
 				hands[seat].erase(card)
 				card["by"] = seat
 				card["eff"] = _rank(card, seat)
+				card["base"] = last_rank[seat] if card["effect"] == CardEffect.Id.COPY and last_rank[seat] >= 0 else card["rank"]
 				table.append(card)
 				_on_played(card, seat, hands, decks)
 			if table.is_empty():
@@ -129,7 +131,7 @@ func _on_played(card: Dictionary, seat: int, hands: Array, decks: Array) -> void
 		CardEffect.Id.TRUMP:
 			if card["suit"] < ALK:
 				trump = card["suit"]
-	last_rank[seat] = card["eff"]
+	last_rank[seat] = card["base"]
 
 
 func _is_trump(card: Dictionary) -> bool:
@@ -139,7 +141,7 @@ func _is_trump(card: Dictionary) -> bool:
 func _rank(card: Dictionary, seat: int) -> int:
 	var rank: int = card["rank"]
 	if card["effect"] == CardEffect.Id.COPY and last_rank[seat] >= 0:
-		return last_rank[seat]
+		rank = last_rank[seat]
 	if card["suit"] == SMOKE:
 		rank += smoke_bonus[seat]
 	if card["suit"] == ALK:

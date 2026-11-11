@@ -140,7 +140,7 @@ func apply_buffs(player_id: int) -> void:
 		var copied := CardEffect.copied_rank(card, player_id)
 		var target := card.base_rank if copied < 0 else copied
 		var floor_rank := mini(target, 1)
-		if copied < 0 and card.suit == Card.Suit.SMOKE and smoke_bonus != 0:
+		if card.suit == Card.Suit.SMOKE and smoke_bonus != 0:
 			target += smoke_bonus
 			parts.append({"kind": "smoke", "amount": smoke_bonus, "count": cigarettes})
 		if card.suit == Card.Suit.ALK:
@@ -152,11 +152,10 @@ func apply_buffs(player_id: int) -> void:
 			if drink_penalty != 0 and target > 0:
 				parts.append({"kind": "drink_penalty", "amount": lowered - target, "count": drink_rounds, "capped": lowered - target != -drink_penalty, "floor": floor_rank})
 			target = lowered
-		if copied < 0:
-			var suit_extra := suit_bonus(player_id, card.suit)
-			if suit_extra != 0:
-				parts.append({"kind": "suit_up", "amount": suit_extra, "count": suit_extra})
-			target = CardEffect.modify_rank(card, target, player_id)
+		var suit_extra := suit_bonus(player_id, card.suit)
+		if suit_extra != 0:
+			parts.append({"kind": "suit_up", "amount": suit_extra, "count": suit_extra})
+		target = CardEffect.modify_rank(card, target, player_id)
 		var changed := card.rank != target or card.buff_parts != parts
 		card.buff_parts = parts
 		if changed:
