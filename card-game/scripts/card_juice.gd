@@ -36,9 +36,9 @@ const DENY_FREQ := 38.0
 const DENY_DECAY := 7.0
 
 
-const WIN_POP_SCALE := 1.22
-const WIN_SHAKE_PX := 5.0
-const WIN_SHAKE_TIME := 0.25
+const WIN_POP_SCALE := 1.08
+const WIN_POP_TIME := 0.1
+const WIN_SETTLE_TIME := 0.3
 const TABLE_FLOAT_PX := 3.0
 const TABLE_FLOAT_SPEED := 1.3
 
