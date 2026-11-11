@@ -1,9 +1,10 @@
-[gd_scene load_steps=33 format=3 uid="uid://sho7nec3ufwc"]
+[gd_scene load_steps=34 format=3 uid="uid://sho7nec3ufwc"]
 
 [ext_resource type="Script" uid="uid://b1ufuvgq634xj" path="res://scripts/GameSetup.gd" id="1_yo8lh"]
 [ext_resource type="PackedScene" uid="uid://bjmm2q84dkq0v" path="res://scenes/hand_visualisation.tscn" id="2_r2isv"]
 [ext_resource type="Script" uid="uid://bqtm4pcvcl48u" path="res://scripts/ai_player.gd" id="2_shfjk"]
 [ext_resource type="Script" uid="uid://cixtgg70qdal3" path="res://scripts/cig_pack.gd" id="3_el7dg"]
+[ext_resource type="Texture2D" uid="uid://b5m0a8rcbetfd" path="res://sprites/Cigarettes_closed_icon.png" id="4_555rj"]
 [ext_resource type="Texture2D" uid="uid://bd4p2ye1o2uc5" path="res://sprites/Cigarettes_icon.png" id="5_555rj"]
 [ext_resource type="Texture2D" uid="uid://bo05sg6rj5oqn" path="res://sprites/lighter.png" id="5_lcid1"]
 [ext_resource type="PackedScene" uid="uid://bj87ioqol7050" path="res://scenes/won_rounds_ui.tscn" id="5_q6cnf"]
@@ -127,7 +128,7 @@ visible = false
 position = Vector2(878, 608)
 scale = Vector2(3, 3)
 script = ExtResource("3_el7dg")
-normal_texture = ExtResource("5_555rj")
+normal_texture = ExtResource("4_555rj")
 hover_texture = ExtResource("5_555rj")
 hover_offset = Vector2(0, -5)
 
@@ -137,7 +138,7 @@ shape = SubResource("RectangleShape2D_el7dg")
 
 [node name="Sprite2D" type="Sprite2D" parent="CigPack"]
 z_index = 1
-texture = ExtResource("5_555rj")
+texture = ExtResource("4_555rj")
 
 [node name="Amount" type="Label" parent="CigPack/Sprite2D"]
 offset_left = -17.5
