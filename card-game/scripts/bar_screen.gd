@@ -89,6 +89,8 @@ func _show_bar() -> void:
 	$PostFX.show()
 	if counter.drinks.visible:
 		TutorialPopups.tip("drinks", counter.drinks)
+	if PlayerDataManager.are_stamps_available() and not GameManager.match_active and not counter.stamp_items.is_empty():
+		TutorialPopups.tip("stamps", counter.stamp_items[0])
 
 
 func close() -> void:
