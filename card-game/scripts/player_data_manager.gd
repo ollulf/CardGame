@@ -48,7 +48,7 @@ const HORST_DEAL_PAY := 1
 const HORST_DEALS_PER_VISIT := 1
 const HORST_OFFER_FROM_MATCH := 4
 const HORST_OFFER_PRICE := 4
-const BOOSTER_OFFERS_PER_MATCH := 3
+const BOOSTER_OFFERS_PER_MATCH := 4
 const BOOSTERS: Array[Dictionary] = [
 	{"name": "Common Booster", "symbol": "common", "price": 4, "cards": 8, "specials": 1, "suits": "normal", "min_rank": 0, "weight": 0, "tint": Color(0.8, 0.8, 0.84, 1), "contents": "common suits, 1 special"},
 	{"name": "Random Booster", "symbol": "random", "price": 5, "cards": 8, "specials": 1, "suits": "all", "min_rank": 0, "weight": 30, "tint": Color(0.78, 0.88, 1.0, 1), "contents": "any suit, 1 special"},
