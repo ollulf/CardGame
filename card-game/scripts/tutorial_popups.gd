@@ -18,7 +18,7 @@ const SCREEN_MARGIN := 8.0
 const TAIL_GAP := 30.0
 const POINT_PAD := 36.0
 const MIN_TARGET_SIZE := 4.0
-const BASIC_TIPS := ["follow", "trump", "bierdeckel", "deck", "lives", "smoke"]
+const BASIC_TIPS := ["follow", "trump", "bierdeckel", "deck", "lives"]
 
 const DEFAULT_TIPS := {
 	"follow": {
@@ -75,7 +75,7 @@ const DEFAULT_TIPS := {
 	},
 	"drinks": {
 		"title": "Round of drinks",
-		"text": "At the bar a [b]Round of Drinks[/b] costs [b]$5[/b]. Everyone drinks: drinking cards [b]+1[/b], all others [b]-1[/b] for the match.",
+		"text": "At the bar a [b]Round of Drinks[/b] costs [b]5$[/b]. Everyone drinks: drinking cards [b]+1[/b], all others [b]-1[/b] for the match.",
 	},
 	"alk": {
 		"title": "Drinking cards",
@@ -210,8 +210,6 @@ func _on_round_started() -> void:
 	var match_number := DialogueManager.upcoming_match()
 	if DialogueManager.match_pays_prize(match_number):
 		request("prize", get_tree().get_first_node_in_group(GameManager.PRIZE_POT_GROUP))
-	if DialogueManager.match_uses_cue("show_drinks"):
-		request("drinks", get_tree().get_first_node_in_group("wallet"))
 
 func _on_round_finished(loosers) -> void:
 	var ui = get_tree().get_first_node_in_group(GameManager.WON_ROUNDS_UI_GROUP)

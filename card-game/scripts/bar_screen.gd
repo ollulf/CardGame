@@ -84,6 +84,8 @@ func _show_bar() -> void:
 	_refresh_stamp_stand()
 	show()
 	$PostFX.show()
+	if drinks_tap.visible:
+		TutorialPopups.tip("drinks", drinks_tap)
 
 
 func close() -> void:

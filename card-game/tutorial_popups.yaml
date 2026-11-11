@@ -70,7 +70,7 @@ id: deck_size
 id: drinks
 	when: first visit to the bar
 	title: Round of drinks
-	text: At the bar a [b]Round of Drinks[/b] costs [b]$5[/b]. Everyone drinks: drinking cards [b]+1[/b], all others [b]-1[/b] for the match.
+	text: At the bar a [b]Round of Drinks[/b] costs [b]5$[/b]. Everyone drinks: drinking cards [b]+1[/b], all others [b]-1[/b] for the match.
 
 id: alk
 	when: first drinking card is played
