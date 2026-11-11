@@ -16,7 +16,8 @@ const CARD_FLIP_DB := 0.0
 const CARD_FLIP_PITCH_VARIATION := 0.1
 const BOOSTER_CHEER_SOUNDS := [
 	preload("res://sounds/booster_cheer_aww.wav"),
-	preload("res://sounds/booster_cheer_haha.wav"),
+	preload("res://sounds/booster_whistle_long.ogg"),
+	preload("res://sounds/booster_whistle_short.ogg"),
 	preload("res://sounds/booster_cheer_oooh.wav"),
 ]
 const BOOSTER_CHEER_DB := -4.0
@@ -84,6 +85,11 @@ const GLASS_CLINK_SOUND := preload("res://sounds/glass_clink.ogg")
 const GLASS_CLINK_DB := -6.0
 const GLASS_DOWN_SOUND := preload("res://sounds/glass_down.ogg")
 const GLASS_DOWN_DB := -8.0
+const CHEERS_PITCHES := [0.93, 1.0, 1.08]
+const CHEERS_CLINK_GAP := 0.16
+const CHEERS_DOWN_GAP := 0.24
+const CHEERS_GAP_JITTER := 0.05
+const CHEERS_DB_JITTER := 1.5
 const TABLE_KNOCK_SOUND := preload("res://sounds/table_knock.ogg")
 const TABLE_KNOCK_DB := -5.0
 const CHAIR_SCRAPE_SOUND := preload("res://sounds/chair_scrape.ogg")
@@ -345,10 +351,25 @@ func play_stamp() -> void:
 	play(STAMP_SOUND, 0.04, STAMP_DB)
 
 func play_drink_round() -> void:
-	play(GLASS_CLINK_SOUND, 0.05, GLASS_CLINK_DB)
+	_play_glass_trio(GLASS_CLINK_SOUND, GLASS_CLINK_DB, CHEERS_CLINK_GAP)
 
 func play_glass_down() -> void:
 	play(GLASS_DOWN_SOUND, 0.06, GLASS_DOWN_DB)
+
+func play_glasses_down() -> void:
+	_play_glass_trio(GLASS_DOWN_SOUND, GLASS_DOWN_DB, CHEERS_DOWN_GAP)
+
+
+func _play_glass_trio(stream: AudioStream, volume_db: float, gap: float) -> void:
+	var pitches := CHEERS_PITCHES.duplicate()
+	pitches.shuffle()
+	for i in pitches.size():
+		if i > 0:
+			await get_tree().create_timer(gap + randf_range(-CHEERS_GAP_JITTER, CHEERS_GAP_JITTER), false).timeout
+		play(stream, 0.0, volume_db + randf_range(-CHEERS_DB_JITTER, CHEERS_DB_JITTER))
+		if _last_played != null:
+			_last_played.pitch_scale = pitches[i] * (1.0 + randf_range(-0.02, 0.02))
+
 
 func play_table_knock() -> void:
 	play(TABLE_KNOCK_SOUND, 0.03, TABLE_KNOCK_DB)

@@ -39,7 +39,7 @@ func drink_round(show_only := false) -> void:
 	if not show_only:
 		art.sipped.connect(_on_round_sipped, CONNECT_ONE_SHOT)
 	await art.play_sip(ROUND_LEFT_IN_GLASS, 1.0)
-	Sfx.play_glass_down()
+	Sfx.play_glasses_down()
 	var fade := create_tween()
 	fade.tween_interval(LINGER_TIME)
 	fade.tween_property(self, "modulate:a", 0.0, FADE_TIME)
