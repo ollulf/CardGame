@@ -50,12 +50,12 @@ const HORST_OFFER_FROM_MATCH := 4
 const HORST_OFFER_PRICE := 4
 const BOOSTER_OFFERS_PER_MATCH := 3
 const BOOSTERS: Array[Dictionary] = [
-	{"name": "Kiosk Pack", "symbol": "common", "price": 4, "cards": 8, "specials": 1, "suits": "normal", "min_rank": 0, "weight": 0, "tint": Color(0.8, 0.8, 0.84, 1), "contents": "common suits, 1 special"},
-	{"name": "Lucky Dip", "symbol": "random", "price": 5, "cards": 8, "specials": 1, "suits": "all", "min_rank": 0, "weight": 30, "tint": Color(0.78, 0.88, 1.0, 1), "contents": "any suit, 1 special"},
-	{"name": "Smoke Break", "symbol": "smoke", "price": 7, "cards": 3, "specials": 1, "suits": "smoke", "min_rank": 0, "weight": 20, "tint": Color(0.62, 0.62, 0.68, 1), "contents": "smoke trumps, 1 special"},
-	{"name": "Happy Hour", "symbol": "drink", "price": 7, "cards": 3, "specials": 1, "suits": "drink", "min_rank": 0, "weight": 20, "from_match": ALK_BOOSTER_CARDS_FROM_MATCH, "tint": Color(0.95, 0.72, 0.45, 1), "contents": "drink trumps, 1 special"},
-	{"name": "Back Room", "symbol": "special", "price": 8, "cards": 2, "specials": 2, "suits": "all", "min_rank": 0, "weight": 10, "tint": Color(1.0, 0.82, 0.35, 1), "contents": "2 specials"},
-	{"name": "Empty Pockets", "symbol": "zero", "price": 5, "cards": 4, "specials": 0, "suits": "all", "min_rank": 0, "max_rank": 0, "weight": 20, "from_match": Missions.ZERO_RANK_MATCH, "tint": Color(0.7, 0.95, 0.75, 1), "contents": "four 0s, any suit"},
+	{"name": "Common Booster", "symbol": "common", "price": 4, "cards": 8, "specials": 1, "suits": "normal", "min_rank": 0, "weight": 0, "tint": Color(0.8, 0.8, 0.84, 1), "contents": "common suits, 1 special"},
+	{"name": "Random Booster", "symbol": "random", "price": 5, "cards": 8, "specials": 1, "suits": "all", "min_rank": 0, "weight": 30, "tint": Color(0.78, 0.88, 1.0, 1), "contents": "any suit, 1 special"},
+	{"name": "Smoke Booster", "symbol": "smoke", "price": 7, "cards": 3, "specials": 1, "suits": "smoke", "min_rank": 0, "weight": 20, "tint": Color(0.62, 0.62, 0.68, 1), "contents": "smoke trumps, 1 special"},
+	{"name": "Drink Booster", "symbol": "drink", "price": 7, "cards": 3, "specials": 1, "suits": "drink", "min_rank": 0, "weight": 20, "from_match": ALK_BOOSTER_CARDS_FROM_MATCH, "tint": Color(0.95, 0.72, 0.45, 1), "contents": "drink trumps, 1 special"},
+	{"name": "Special Booster", "symbol": "special", "price": 8, "cards": 2, "specials": 2, "suits": "all", "min_rank": 0, "weight": 10, "tint": Color(1.0, 0.82, 0.35, 1), "contents": "2 specials"},
+	{"name": "0 Booster", "symbol": "zero", "price": 5, "cards": 4, "specials": 0, "suits": "all", "min_rank": 0, "max_rank": 0, "weight": 20, "from_match": Missions.ZERO_RANK_MATCH, "tint": Color(0.7, 0.95, 0.75, 1), "contents": "four 0s, any suit"},
 ]
 
 var smoking_stacks := {
