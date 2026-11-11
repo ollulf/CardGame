@@ -284,7 +284,6 @@ func apply_stamp(card: Card, stamp: int) -> bool:
 	var new_index := new_cards.find(card)
 	if new_index >= 0:
 		new_cards[new_index] = stamped
-	print("Stamp applied: ", stamped.string_info())
 	stamp_applied.emit(stamped)
 	if in_deck:
 		deck_changed.emit()

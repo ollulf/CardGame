@@ -130,7 +130,6 @@ static func on_played(card: Card, player_id: int) -> void:
 		Id.COPY:
 			var last: Card = CardManager.last_played_by.get(player_id)
 			if last != null and last.rank != card.rank:
-				print("Effect copy: player ", player_id, " copies rank ", last.rank, " from ", last.string_info())
 				card.rank = last.rank
 				card.apply_modifiers()
 		Id.SUIT_UP:

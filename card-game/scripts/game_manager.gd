@@ -307,7 +307,6 @@ func start_new_turn(starting_player_id: int) -> void:
 	play_order = _build_play_order(starting_player_id)
 	current_play_index = 0
 
-	print("Starting Player: " + player_name(starting_player_id))
 
 	emit_signal("turn_started", current_turn, starting_player_id)
 	
@@ -581,7 +580,6 @@ func get_round_looser() -> Array[int]:
 		ai_player_2.won_turns
 	)
 	
-	print(min_wins)
 	
 	# Collect all players that match the minimum
 	if human_player.won_turns == min_wins:
@@ -593,7 +591,6 @@ func get_round_looser() -> Array[int]:
 	if ai_player_2.won_turns == min_wins:
 		result.append(ai_player_2.player_id)
 
-	print(result)
 	return result
 
 func resolve_tie(loosers: Array[int]) -> Array[int]:
