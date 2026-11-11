@@ -77,7 +77,8 @@ func show_text(title: String, body: String, anchor: Rect2) -> void:
 	var x := anchor.position.x - size.x - GAP
 	if x < GAP:
 		x = anchor.end.x + GAP
-	position = Vector2(x, anchor.get_center().y - size.y * 0.5).round()
+	var top := clampf(anchor.get_center().y - size.y * 0.5, GAP, maxf(GAP, get_viewport_rect().size.y - size.y - GAP))
+	position = Vector2(x, top).round()
 
 
 static func describe(booster: Dictionary, match_number: int) -> String:

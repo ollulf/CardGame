@@ -3,6 +3,7 @@ extends  Node
 signal trump_chosen(suit: Card.Suit)
 signal card_played(player_id: int, card: Card)
 signal special_played(card: Card, seat: int)
+signal suit_bonus_changed(player_id: int)
 
 const PLAY_ZONE_OFFSET := Vector2(-330, -350)
 const PLAY_ZONE_SIZE := Vector2(660, 400)
@@ -57,13 +58,21 @@ func add_suit_bonus(player_id: int, suit: Card.Suit, amount: int) -> void:
 	var owned: Dictionary = suit_bonuses.get(player_id, {})
 	owned[suit] = owned.get(suit, 0) + amount
 	suit_bonuses[player_id] = owned
+	suit_bonus_changed.emit(player_id)
 	apply_buffs(player_id)
+
+func _clear_match_buffs() -> void:
+	last_played_by.clear()
+	var seats := suit_bonuses.keys()
+	suit_bonuses.clear()
+	for seat in seats:
+		suit_bonus_changed.emit(seat)
 
 func _ready() -> void:
 	PlayerDataManager.stats_changed.connect(apply_buffs)
 	trump_chosen.connect(_on_trump_chosen)
 	GameManager.round_finished.connect(_discard_leftover_hands)
-	GameManager.new_match_started.connect(func(): last_played_by.clear(); suit_bonuses.clear())
+	GameManager.new_match_started.connect(_clear_match_buffs)
 
 func _discard_leftover_hands(_loosers) -> void:
 	var pairs := [[player_hand, player_deck, Card.Owner.HUMAN], [AI_1_hand, AI_1_deck, Card.Owner.AI_1], [AI_2_hand, AI_2_deck, Card.Owner.AI_2]]
