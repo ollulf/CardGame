@@ -69,7 +69,6 @@ func _ready() -> void:
 	booster_window.finished.connect(_on_booster_window_finished)
 	stamp_stand.set_label_text("Stamp Stand")
 	stamp_stand.needs_confirm = false
-	stamp_stand.sprite.texture = StampStandArt.texture()
 	stamp_stand.clicked.connect(_on_stamp_stand_clicked)
 	stamp_shop = StampShop.new()
 	add_child(stamp_shop)
