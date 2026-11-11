@@ -18,6 +18,7 @@ func _build_box() -> void:
 	_panel = PanelContainer.new()
 	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var style := StyleBoxFlat.new()
+	style.set_corner_radius_all(6)
 	style.bg_color = BG_COLOR
 	style.border_color = BORDER_COLOR
 	style.set_border_width_all(3)

@@ -19,18 +19,18 @@ const PANEL_BORDER := Color("6b6390")
 const TIP_BG := Color(0.0901961, 0.0862745, 0.109804, 0.96)
 const LOCKED := Color(0.55, 0.55, 0.55)
 const STAMP_SLOTS := [Vector2(420, 150), Vector2(580, 150), Vector2(740, 150)]
-const BOOSTER_SLOTS := [Vector2(385, 390), Vector2(515, 390), Vector2(645, 390), Vector2(775, 390)]
+const BOOSTER_SLOTS := [Vector2(385, 424), Vector2(515, 424), Vector2(645, 424), Vector2(775, 424)]
 const STAMP_TILT := [-3.0, 2.0, -1.5]
-const BOOSTER_TILT := [-6.0, 3.0, -2.0, 4.0]
-const STAMP_MAT := Rect2(300, 40, 560, 230)
-const BOOSTER_MAT := Rect2(300, 290, 560, 250)
+const BOOSTER_TILT := [0.0, 0.0, 0.0, 0.0]
+const STAMP_MAT := Rect2(300, 40, 560, 220)
+const BOOSTER_MAT := Rect2(300, 280, 560, 280)
 const LEFT_PANEL := Rect2(24, 40, 230, 470)
-const ITEMS_MAT := Rect2(880, 40, 248, 500)
+const ITEMS_MAT := Rect2(880, 40, 248, 520)
 const ITEM_SLOTS := [Vector2(1004, 150), Vector2(1004, 390)]
 const COASTER_OFFSET := Vector2(0, 22)
 const DRINKS_TITLE := "Round of drinks"
 const DRINKS_DESCRIPTION := "Everyone at the table drinks: drinking cards +1, all others -1 for the match."
-const PACK_SIZE := Vector2(64, 120)
+const PACK_SIZE := Vector2(86, 160)
 const SLIP_SIZE := Vector2i(46, 52)
 const HOVER_LIFT := Vector2(0, -10)
 const HOVER_SCALE := 1.15
@@ -194,7 +194,7 @@ func _build_booster_slot(i: int) -> void:
 	booster_items.append(item)
 	_booster_offers.append(-1)
 	_add_hover(item, BOOSTER_TILT[i], _booster_tip.bind(i))
-	_booster_tags.append(_tag(center + Vector2(0, 80)))
+	_booster_tags.append(_tag(center + Vector2(0, 100)))
 
 
 func _stamp_tip(i: int) -> Array:

@@ -117,7 +117,7 @@ func _box(fill: Color, border: Color) -> StyleBoxFlat:
 	style.bg_color = fill
 	style.set_border_width_all(2)
 	style.border_color = border
-	style.set_corner_radius_all(4)
+	style.set_corner_radius_all(6)
 	return style
 
 func _label(text: String, font_size: int, color: Color) -> Label:
@@ -234,7 +234,7 @@ func _suit_row(suit: Card.Suit, cards: Array, deck: Deck, is_trump: bool) -> Con
 	var frame := PanelContainer.new()
 	frame.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var style := StyleBoxFlat.new()
-	style.set_corner_radius_all(4)
+	style.set_corner_radius_all(6)
 	style.content_margin_left = 6
 	style.content_margin_right = 6
 	style.content_margin_top = 4

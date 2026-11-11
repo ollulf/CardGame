@@ -201,6 +201,7 @@ func _panel(rect: Rect2) -> Panel:
 
 func _box(fill: Color, border: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
+	style.set_corner_radius_all(6)
 	style.bg_color = fill
 	style.set_border_width_all(2)
 	style.border_color = border
@@ -512,7 +513,7 @@ func _add_info_box(heading: String, text: String, color: Color) -> void:
 	var box := PanelContainer.new()
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	var style := _box(PANEL_COLOR_2, Color(color, 0.6))
-	style.set_corner_radius_all(4)
+	style.set_corner_radius_all(6)
 	style.set_content_margin_all(6)
 	box.add_theme_stylebox_override("panel", style)
 	var column := VBoxContainer.new()

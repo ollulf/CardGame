@@ -63,6 +63,7 @@ func _build() -> void:
 	_panel.position = PANEL_RECT.position
 	_panel.size = PANEL_RECT.size
 	var panel_style := StyleBoxFlat.new()
+	panel_style.set_corner_radius_all(6)
 	panel_style.bg_color = Color("17161c")
 	panel_style.set_border_width_all(2)
 	panel_style.border_color = Color("6b6390")

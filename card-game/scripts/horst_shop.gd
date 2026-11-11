@@ -426,6 +426,7 @@ func _button(text: String, at: Vector2, button_size: Vector2) -> Button:
 
 func _box_style(bg: Color, border: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
+	style.set_corner_radius_all(6)
 	style.bg_color = bg
 	style.border_color = border
 	style.set_border_width_all(2)

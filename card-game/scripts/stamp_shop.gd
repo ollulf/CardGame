@@ -411,6 +411,7 @@ func _on_money_changed(money: int) -> void:
 
 func _box_style(border: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()
+	style.set_corner_radius_all(6)
 	style.bg_color = BG_COLOR
 	style.border_color = border
 	style.set_border_width_all(2)

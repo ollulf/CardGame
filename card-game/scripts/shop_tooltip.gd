@@ -111,7 +111,7 @@ static func _special(text: String) -> String:
 
 
 static func outer_style() -> StyleBoxFlat:
-	return _box(BG, 3, 8, 12)
+	return _box(BG, 3, 6, 12)
 
 
 static func inner_style() -> StyleBoxFlat:
