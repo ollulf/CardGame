@@ -39,8 +39,8 @@ const DENY_DECAY := 7.0
 const WIN_POP_SCALE := 1.22
 const WIN_SHAKE_PX := 5.0
 const WIN_SHAKE_TIME := 0.25
-const WIN_SPARKS := 26
-const WIN_SPARK_COLOR := Color(1.0, 0.85, 0.3)
+const TABLE_FLOAT_PX := 3.0
+const TABLE_FLOAT_SPEED := 1.3
 
 const NUMBER_POP_RISE_PX := 34.0
 const NUMBER_POP_TIME := 0.8

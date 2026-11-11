@@ -367,6 +367,7 @@ func render_played_card(card : Card, from: Transform2D) -> void:
 
 	# Layering: later plays on top
 	card_visual.z_index = played_cards_turn.size()
+	card_visual.float_on_table = true
 	card_visual.update_layout()
 	card_visual.float_in_from(from)
 

@@ -8,6 +8,7 @@ const NODE_NAME := "TableShadow"
 var _source: CanvasItem
 var _twin: CanvasItem
 var _synced: Array[StringName] = []
+var lift := 0.0
 
 
 static func add_to(item: CanvasItem, synced_properties: Array[StringName] = []) -> TableShadow:
@@ -44,7 +45,9 @@ func _follow() -> void:
 	var parent_xform := _source.get_global_transform()
 	if absf(parent_xform.determinant()) < 0.0001:
 		return
-	position = parent_xform.affine_inverse().basis_xform(OFFSET)
+	position = parent_xform.affine_inverse().basis_xform(OFFSET + Vector2(lift * 0.5, lift))
+	if _twin == null:
+		self_modulate.a = COLOR.a * (1.0 - lift * 0.05)
 
 
 func _sync_twin() -> void:
