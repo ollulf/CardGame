@@ -25,7 +25,7 @@ const NAMES := {
 }
 const DESCRIPTIONS := {
 	Id.DRAW: "When played, draw a card from your deck.",
-	Id.COPY: "When played, copies the current rank of the last card you played this match.",
+	Id.COPY: "Has the rank of the last card you played this match, already in your hand.",
 	Id.SUIT_UP: "When played, all your cards of this card's suit get +1 rank for the rest of the match. Stacks.",
 	Id.TRUMP: "When played, its suit becomes trump until the end of the round (smoke and drink cards are always trump).",
 }
@@ -139,6 +139,10 @@ static func on_played(card: Card, player_id: int) -> void:
 
 
 static func modify_rank(card: Card, rank: int, player_id: int) -> int:
+	if card.effect == Id.COPY:
+		var last: Card = CardManager.last_played_by.get(player_id)
+		if last != null:
+			return last.rank
 	return rank + CardManager.suit_bonus(player_id, card.suit)
 
 
@@ -147,7 +151,4 @@ static func ai_discount(card: Card, player_id: int) -> float:
 		var deck := CardManager.deck_of(player_id)
 		if deck == null or deck.cards.is_empty():
 			return 0.0
-	if card.effect == Id.COPY:
-		var last: Card = CardManager.last_played_by.get(player_id)
-		return float(card.rank - last.rank) if last != null else 0.0
 	return AI_COST_DISCOUNT.get(card.effect, 0.0)

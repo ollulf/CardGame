@@ -339,6 +339,7 @@ func submit_play(player_id: int, card: Card, from: Transform2D = Transform2D.IDE
 		if token != GameManager.round_token:
 			return
 	last_played_by[player_id] = card
+	apply_buffs(player_id)
 
 	GameManager.play_callback(player_id)
 
