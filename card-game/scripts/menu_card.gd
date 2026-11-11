@@ -56,7 +56,7 @@ func _init() -> void:
 	_label.position = Vector2(14, 36)
 	_label.size = Vector2(CARD_SIZE.x - 28, CARD_SIZE.y - 72)
 	_label.add_theme_color_override("font_color", TEXT_COLOR)
-	_label.add_theme_font_size_override("font_size", 20)
+	_label.add_theme_font_size_override("font_size", InteractionManager.font_px(20))
 	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_button.add_child(_label)
 	_button.pressed.connect(func() -> void: pressed.emit())
@@ -102,7 +102,7 @@ func enable_input(text: String, max_length: int) -> void:
 	edit.context_menu_enabled = false
 	edit.position = Vector2(10, 82)
 	edit.size = Vector2(CARD_SIZE.x - 20, 40)
-	edit.add_theme_font_size_override("font_size", 17)
+	edit.add_theme_font_size_override("font_size", InteractionManager.font_px(17))
 	edit.add_theme_color_override("font_color", TEXT_COLOR)
 	edit.add_theme_color_override("font_uneditable_color", TEXT_COLOR)
 	edit.add_theme_color_override("font_placeholder_color", Color(0.5, 0.48, 0.56))
@@ -121,7 +121,7 @@ func enable_input(text: String, max_length: int) -> void:
 	ok_button.focus_mode = Control.FOCUS_NONE
 	ok_button.position = Vector2(CARD_SIZE.x / 2.0 - 26, CARD_SIZE.y - 62)
 	ok_button.size = Vector2(52, 30)
-	ok_button.add_theme_font_size_override("font_size", 16)
+	ok_button.add_theme_font_size_override("font_size", InteractionManager.font_px(16))
 	ok_button.add_theme_color_override("font_color", PRIMARY_COLOR)
 	_button.add_child(ok_button)
 	_button.pressed.connect(edit.grab_focus)

@@ -10,6 +10,9 @@ const TRACK_COLOR := Color(0.12549, 0.121569, 0.156863, 1)
 const TRACK_BORDER := Color(0.309804, 0.286275, 0.407843, 1)
 const DIM_COLOR := Color(0.03, 0.03, 0.05, 0.72)
 const VALUE_COLOR := Color(0.839216, 0.819608, 0.901961, 1)
+const UI_PIXEL := 3
+const SWITCH_SIZE := Vector2i(14, 8)
+const KNOB_SIZE := Vector2i(4, 7)
 const SLIDERS := [["Master", "Master"], ["Music", "Music"], ["Ambience", "Ambience"], ["Sound effects", "SFX"]]
 const QUIT_TEXT := "Quit to title"
 const QUIT_CONFIRM_TEXT := "Sure? Match progress is lost"
@@ -177,6 +180,13 @@ func _toggle(text: String) -> CheckButton:
 	toggle.add_theme_color_override("font_pressed_color", Color.WHITE)
 	for style in ["normal", "hover", "pressed", "hover_pressed", "focus"]:
 		toggle.add_theme_stylebox_override(style, StyleBoxEmpty.new())
+	toggle.add_theme_constant_override("icon_max_width", 0)
+	toggle.add_theme_icon_override("checked", _switch_icon(true, false))
+	toggle.add_theme_icon_override("unchecked", _switch_icon(false, false))
+	toggle.add_theme_icon_override("checked_disabled", _switch_icon(true, true))
+	toggle.add_theme_icon_override("unchecked_disabled", _switch_icon(false, true))
+	toggle.add_theme_icon_override("checked_mirrored", _switch_icon(true, false))
+	toggle.add_theme_icon_override("unchecked_mirrored", _switch_icon(false, false))
 	return toggle
 
 func _add_slider_row(grid: GridContainer, text: String, bus: String) -> void:
@@ -194,6 +204,9 @@ func _add_slider_row(grid: GridContainer, text: String, bus: String) -> void:
 	slider.add_theme_stylebox_override("slider", _track_style(TRACK_COLOR, TRACK_BORDER))
 	slider.add_theme_stylebox_override("grabber_area", _track_style(AMBER_DARK, AMBER_DARK))
 	slider.add_theme_stylebox_override("grabber_area_highlight", _track_style(AMBER, AMBER))
+	slider.add_theme_icon_override("grabber", _knob_icon(Color.WHITE))
+	slider.add_theme_icon_override("grabber_highlight", _knob_icon(AMBER))
+	slider.add_theme_icon_override("grabber_disabled", _knob_icon(TRACK_BORDER))
 	slider.value_changed.connect(_on_slider_changed.bind(bus))
 	if bus == "SFX":
 		slider.drag_ended.connect(func(_changed: bool) -> void: Sfx.play_button())
@@ -205,6 +218,40 @@ func _add_slider_row(grid: GridContainer, text: String, bus: String) -> void:
 	grid.add_child(value)
 	_sliders[bus] = slider
 	_value_labels[bus] = value
+
+static func _switch_icon(on: bool, disabled: bool) -> Texture2D:
+	var image := Image.create(SWITCH_SIZE.x, SWITCH_SIZE.y, false, Image.FORMAT_RGBA8)
+	image.fill(Color(0, 0, 0, 0))
+	var track := AMBER_DARK if on else TRACK_COLOR
+	var edge := AMBER_DARK.darkened(0.35) if on else TRACK_BORDER
+	var knob := Color.WHITE if on else VALUE_COLOR.darkened(0.25)
+	if disabled:
+		track = TRACK_COLOR
+		edge = TRACK_BORDER
+		knob = TRACK_BORDER
+	image.fill_rect(Rect2i(Vector2i.ZERO, SWITCH_SIZE), edge)
+	image.fill_rect(Rect2i(1, 1, SWITCH_SIZE.x - 2, SWITCH_SIZE.y - 2), track)
+	for corner in [Vector2i(0, 0), Vector2i(SWITCH_SIZE.x - 1, 0), Vector2i(0, SWITCH_SIZE.y - 1), SWITCH_SIZE - Vector2i.ONE]:
+		image.set_pixelv(corner, Color(0, 0, 0, 0))
+	var knob_size := SWITCH_SIZE.y - 4
+	var knob_x := SWITCH_SIZE.x - 2 - knob_size if on else 2
+	image.fill_rect(Rect2i(knob_x, 2, knob_size, knob_size), knob)
+	image.fill_rect(Rect2i(knob_x, 2 + knob_size - 1, knob_size, 1), knob.darkened(0.25))
+	return _pixel_texture(image)
+
+
+static func _knob_icon(color: Color) -> Texture2D:
+	var image := Image.create(KNOB_SIZE.x, KNOB_SIZE.y, false, Image.FORMAT_RGBA8)
+	image.fill(TRACK_BORDER.darkened(0.4))
+	image.fill_rect(Rect2i(1, 1, KNOB_SIZE.x - 2, KNOB_SIZE.y - 2), color)
+	image.fill_rect(Rect2i(1, KNOB_SIZE.y - 2, KNOB_SIZE.x - 2, 1), color.darkened(0.25))
+	return _pixel_texture(image)
+
+
+static func _pixel_texture(image: Image) -> Texture2D:
+	image.resize(image.get_width() * UI_PIXEL, image.get_height() * UI_PIXEL, Image.INTERPOLATE_NEAREST)
+	return ImageTexture.create_from_image(image)
+
 
 func _track_style(fill: Color, border: Color) -> StyleBoxFlat:
 	var style := StyleBoxFlat.new()

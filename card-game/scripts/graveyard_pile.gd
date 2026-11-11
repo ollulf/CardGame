@@ -33,12 +33,13 @@ func _ready() -> void:
 	_tooltip = Label.new()
 	_tooltip.z_index = 10
 	_tooltip.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_tooltip.add_theme_color_override("font_color", Color(0.95, 0.92, 0.85))
+	_tooltip.add_theme_color_override("font_color", Color(0.95, 0.94, 0.9))
 	_tooltip.add_theme_font_size_override("font_size", InteractionManager.font_px(13))
 	var style := StyleBoxFlat.new()
-	style.bg_color = Color(0.08, 0.07, 0.07, 0.92)
+	style.bg_color = ShopTooltip.BG
 	style.set_border_width_all(2)
-	style.border_color = Color(0.85, 0.8, 0.7)
+	style.border_color = ShopTooltip.EDGE
+	style.set_corner_radius_all(6)
 	style.content_margin_left = 10
 	style.content_margin_right = 10
 	style.content_margin_top = 6

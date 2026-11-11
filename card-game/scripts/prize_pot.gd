@@ -22,7 +22,7 @@ func _ready() -> void:
 	z_index = 5
 	_label = Label.new()
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_label.add_theme_font_size_override("font_size", 20)
+	_label.add_theme_font_size_override("font_size", InteractionManager.font_px(20))
 	_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
 	_label.add_theme_color_override("font_outline_color", Color(0.15, 0.1, 0.0))
 	_label.add_theme_constant_override("outline_size", 6)

@@ -50,7 +50,7 @@ func _ready() -> void:
 	box.add_child(_title)
 	_subtitle = Label.new()
 	_subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_subtitle.add_theme_font_size_override("font_size", 18)
+	_subtitle.add_theme_font_size_override("font_size", InteractionManager.font_px(18))
 	box.add_child(_subtitle)
 	var spacer := Control.new()
 	spacer.custom_minimum_size = Vector2(0, 28)

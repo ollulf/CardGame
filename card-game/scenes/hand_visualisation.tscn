@@ -37,7 +37,7 @@ offset_top = 38.0
 offset_right = 38.0
 offset_bottom = 38.0
 rotation = 0.5094975
-scale = Vector2(3.0000002, 3.0000002)
+scale = Vector2(3, 3)
 
 [node name="Slot_2" type="Control" parent="."]
 anchors_preset = 0

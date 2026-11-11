@@ -349,10 +349,11 @@ func _item(size_px: Vector2, pos: Vector2) -> CigaretteMachine:
 	tip.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	tip.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	tip.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	tip.add_theme_font_size_override("font_size", 13)
+	tip.add_theme_font_size_override("font_size", InteractionManager.font_px(13))
 	var style := StyleBoxFlat.new()
 	style.bg_color = TIP_BG
-	style.border_color = PANEL_BORDER
+	style.border_color = ShopTooltip.EDGE
+	style.set_corner_radius_all(6)
 	style.set_border_width_all(2)
 	style.content_margin_left = 10
 	style.content_margin_right = 10
@@ -396,7 +397,7 @@ func _label(text: String, pos: Vector2, font_size: int, color: Color, width := 0
 	label.text = text
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.position = pos
-	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_font_size_override("font_size", InteractionManager.font_px(font_size))
 	label.add_theme_color_override("font_color", color)
 	label.add_theme_color_override("font_shadow_color", Color(0, 0, 0, 0.6))
 	label.add_theme_constant_override("shadow_offset_y", 2)
@@ -431,7 +432,7 @@ func _tag(center: Vector2) -> Label:
 	tag.position = center - tag.size * 0.5
 	tag.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	tag.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	tag.add_theme_font_size_override("font_size", 18)
+	tag.add_theme_font_size_override("font_size", InteractionManager.font_px(18))
 	tag.add_theme_color_override("font_color", INK)
 	var style := StyleBoxFlat.new()
 	style.bg_color = PAPER

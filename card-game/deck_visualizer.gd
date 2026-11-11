@@ -80,7 +80,7 @@ func _build_frame():
 	close_button.focus_mode = Control.FOCUS_NONE
 	close_button.position = Vector2(LEFT_RECT.position.x, LEFT_RECT.end.y - 56)
 	close_button.size = Vector2(LEFT_RECT.size.x, 56)
-	close_button.add_theme_font_size_override("font_size", 18)
+	close_button.add_theme_font_size_override("font_size", InteractionManager.font_px(18))
 	close_button.add_theme_stylebox_override("normal", _box(DeckBuilder.PANEL_COLOR_2, DeckBuilder.LINE_COLOR))
 	close_button.add_theme_stylebox_override("hover", _box(DeckBuilder.PANEL_COLOR_2, DeckBuilder.ACCENT_COLOR))
 	close_button.add_theme_stylebox_override("pressed", _box(DeckBuilder.PANEL_COLOR, DeckBuilder.ACCENT_COLOR))
@@ -124,7 +124,7 @@ func _label(text: String, font_size: int, color: Color) -> Label:
 	var label := Label.new()
 	label.text = text
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	label.add_theme_font_size_override("font_size", font_size)
+	label.add_theme_font_size_override("font_size", InteractionManager.font_px(font_size))
 	label.add_theme_color_override("font_color", color)
 	return label
 
