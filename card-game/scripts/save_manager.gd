@@ -121,6 +121,14 @@ static func state_from_data(data: Dictionary):
 				offers.append(stamp)
 	state["stamp_offers"] = offers
 	state["stamp_offers_match"] = _int(data.get("stamp_offers_match"), 0)
+	var booster_offers: Array[int] = []
+	var raw_boosters = data.get("booster_offers", [])
+	if raw_boosters is Array:
+		for index in raw_boosters:
+			var booster := _int(index, -1)
+			booster_offers.append(booster if booster < PlayerDataManager.BOOSTERS.size() else -1)
+	state["booster_offers"] = booster_offers
+	state["booster_offers_match"] = _int(data.get("booster_offers_match"), 0)
 	state["horst_deals"] = maxi(0, _int(data.get("horst_deals"), 0))
 	state["horst_deals_match"] = maxi(0, _int(data.get("horst_deals_match"), 0))
 	state["horst_offer_used"] = data.get("horst_offer_used") == true

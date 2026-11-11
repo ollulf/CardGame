@@ -106,6 +106,12 @@ func _on_edit_deck_pressed() -> void:
 	PlayerDataManager.mark_deck_edited()
 	deck_builder.open()
 
+func can_edit_deck() -> bool:
+	return visible and edit_deck_button.visible
+
+func open_deck_builder() -> void:
+	_on_edit_deck_pressed()
+
 func _on_deck_builder_closed() -> void:
 	CardManager.load_player_decks()
 	_refresh_buttons()

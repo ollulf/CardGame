@@ -9,6 +9,7 @@ signal deck_changed
 signal buttons_unlock_changed
 signal cig_machine_changed(unlocked: bool)
 signal stamp_offers_changed
+signal booster_offers_changed
 signal stamp_applied(card: Card)
 signal horst_changed
 
@@ -46,6 +47,7 @@ const HORST_DEAL_PAY := 1
 const HORST_DEALS_PER_VISIT := 1
 const HORST_OFFER_FROM_MATCH := 4
 const HORST_OFFER_PRICE := 4
+const BOOSTER_OFFERS_PER_MATCH := 3
 const BOOSTERS: Array[Dictionary] = [
 	{"name": "Kiosk Pack", "price": 5, "cards": 9, "min_rank": 0, "max_rank": 9, "special_min": 0, "special_max": 0, "rare_min": 1, "rare_max": 2, "filler": "common", "alk_from_match": ALK_BOOSTER_CARDS_FROM_MATCH, "tint": Color(0.78, 0.88, 1.0, 1), "contents": "1-2 rare trump cards + common suits"},
 	{"name": "Back-Room Pack", "price": 8, "cards": 3, "min_rank": 0, "max_rank": 9, "special_min": 0, "special_max": 1, "filler": "rare", "alk_from_match": ALK_BOOSTER_CARDS_FROM_MATCH, "tint": Color(1.0, 0.8, 0.4, 1), "contents": "0-1 special effect card + rare trump cards"},
@@ -74,6 +76,8 @@ var active_deck: Array[Card] = []
 var new_cards: Array[Card] = []
 var stamp_offers: Array[int] = []
 var stamp_offers_match := 0
+var booster_offers: Array[int] = []
+var booster_offers_match := 0
 var horst_deals := 0
 var horst_deals_match := 0
 var horst_offer_used := false
@@ -213,6 +217,31 @@ func buy_booster(booster: Dictionary) -> bool:
 		return false
 	booster_bought.emit(booster)
 	return true
+
+func get_booster_offers() -> Array[int]:
+	var match_number := DialogueManager.upcoming_match()
+	if booster_offers_match != match_number:
+		booster_offers_match = match_number
+		booster_offers.clear()
+		var pool: Array[int] = []
+		for i in BOOSTERS.size():
+			if is_booster_available(BOOSTERS[i]):
+				pool.append(i)
+		for i in BOOSTER_OFFERS_PER_MATCH:
+			booster_offers.append(pool.pick_random() if not pool.is_empty() else -1)
+		booster_offers_changed.emit()
+	return booster_offers
+
+func buy_booster_offer(index: int) -> bool:
+	var offers := get_booster_offers()
+	if index < 0 or index >= offers.size() or offers[index] < 0:
+		return false
+	var booster := BOOSTERS[offers[index]]
+	if not can_afford(booster["price"]):
+		return false
+	offers[index] = -1
+	booster_offers_changed.emit()
+	return buy_booster(booster)
 
 func add_to_collection(cards: Array[Card]) -> void:
 	if cards.is_empty():
@@ -379,6 +408,8 @@ func capture_state() -> Dictionary:
 	return {
 		"stamp_offers": stamp_offers.duplicate(),
 		"stamp_offers_match": stamp_offers_match,
+		"booster_offers": booster_offers.duplicate(),
+		"booster_offers_match": booster_offers_match,
 		"horst_deals": horst_deals,
 		"horst_deals_match": horst_deals_match,
 		"horst_offer_used": horst_offer_used,
@@ -402,10 +433,13 @@ func restore_state(state: Dictionary) -> void:
 	new_cards.assign(state.get("new_cards", []))
 	stamp_offers.assign(state.get("stamp_offers", []))
 	stamp_offers_match = state.get("stamp_offers_match", 0)
+	booster_offers.assign(state.get("booster_offers", []))
+	booster_offers_match = state.get("booster_offers_match", 0)
 	horst_deals = state.get("horst_deals", 0)
 	horst_deals_match = state.get("horst_deals_match", 0)
 	horst_offer_used = state.get("horst_offer_used", false)
 	horst_changed.emit()
+	booster_offers_changed.emit()
 	stamp_offers_changed.emit()
 	clear_smoking()
 	clear_drinking()

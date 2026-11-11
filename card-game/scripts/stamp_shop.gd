@@ -35,6 +35,7 @@ const PICK_HINT := "You must put your %s stamp on a card. Tap a card, then tap i
 const PICK_CONFIRM_HINT := "Tap the card again to stamp it."
 
 var pending_stamp := CardStamp.Id.NONE
+var close_after_pick := false
 var _offers_root: Control
 var _pick_root: Control
 var _title: Label
@@ -295,6 +296,14 @@ func _cancel_confirm() -> void:
 	_confirm_index = -1
 
 
+func begin_pick(stamp: int) -> void:
+	pending_stamp = stamp
+	close_after_pick = true
+	_cancel_confirm()
+	_show_pick()
+	show()
+
+
 func _show_pick() -> void:
 	_title.text = PICK_TITLE
 	_hint_label.text = PICK_HINT % CardStamp.display_name(pending_stamp)
@@ -364,6 +373,11 @@ func pick(card: Card, cell: Control = null) -> bool:
 		return false
 	pending_stamp = CardStamp.Id.NONE
 	stamp_applied.emit(card)
+	if close_after_pick:
+		close_after_pick = false
+		hide()
+		closed.emit()
+		return true
 	_show_offers()
 	return true
 
