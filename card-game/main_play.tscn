@@ -162,6 +162,14 @@ vertical_alignment = 1
 position = Vector2(965, 614)
 script = ExtResource("drink_glass_script")
 
+[node name="WonRoundsUI" parent="." instance=ExtResource("5_q6cnf")]
+visible = false
+
+[node name="TrumpDisplay" type="Node2D" parent="."]
+visible = false
+position = Vector2(620, 34)
+script = ExtResource("trump_display_script")
+
 [node name="DeckPiles" type="Node2D" parent="."]
 
 [node name="HumanDeckPile" parent="DeckPiles" instance=ExtResource("deck_pile_scene")]
@@ -212,13 +220,6 @@ script = ExtResource("prize_pot_script")
 
 [node name="DrunkOverlay" type="CanvasLayer" parent="."]
 script = ExtResource("drunk_overlay_script")
-
-[node name="TrumpDisplay" type="CanvasLayer" parent="."]
-visible = false
-script = ExtResource("trump_display_script")
-
-[node name="WonRoundsUI" parent="." instance=ExtResource("5_q6cnf")]
-visible = false
 
 [node name="PlayerBuffs" type="CanvasLayer" parent="."]
 script = ExtResource("player_buffs_script")

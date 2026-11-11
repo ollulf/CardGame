@@ -26,6 +26,10 @@ var loss_tween: Tween
 var loss_rest_position: Vector2
 var losing := false
 
+func _ready() -> void:
+	TableShadow.add_to($LeftHalf/Background)
+	TableShadow.add_to($RightHalf/Background)
+
 func split(distance := SPLIT_DISTANCE, tilt_degrees := SPLIT_TILT_DEGREES) -> void:
 	if split_tween:
 		split_tween.kill()
