@@ -226,6 +226,7 @@ func change_trump_to(suit: Card.Suit, whole_match: bool) -> void:
 	if whole_match:
 		GameManager.match_trump = suit
 	set_trump_suit(suit)
+	Sfx.play_trump_swap()
 
 func generate_player_hands():	
 	_place_scripted_cards(player_deck, 0, Card.Owner.HUMAN)
@@ -629,6 +630,7 @@ func show_tie_break(draws: Dictionary, losers: Array[int], hold: Callable = Call
 			return_tie_card(id, draws[id])
 		return
 	await get_tree().create_timer(TIE_FLY_TIME, false).timeout
+	Sfx.play_tie_break()
 	for id in visuals:
 		if is_instance_valid(visuals[id]):
 			visuals[id].flip_face_up(TIE_FLIP_TIME)

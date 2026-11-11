@@ -6,13 +6,13 @@ const CIG_MACHINE_SOUND := preload("res://sounds/cig_machine.ogg")
 const CARD_DRAW_SOUND := preload("res://sounds/card_draw.wav")
 const CARD_MOVE_INTERVAL_MSEC := 60
 const CARD_MOVE_PITCH_VARIATION := 0.08
-const CARD_MOVE_VOLUME_DB := -4.0
+const CARD_MOVE_VOLUME_DB := -14.0
 const HOVER_CARD_SOUND := preload("res://sounds/hover_card.wav")
 const HOVER_CARD_DB := -12.0
 const HOVER_CARD_PITCH_VARIATION := 0.05
 const HOVER_CARD_INTERVAL_MSEC := 50
 const CARD_FLIP_SOUND := preload("res://sounds/card_played.wav")
-const CARD_FLIP_DB := 0.0
+const CARD_FLIP_DB := -9.0
 const CARD_FLIP_PITCH_VARIATION := 0.1
 const BOOSTER_CHEER_SOUNDS := [
 	preload("res://sounds/booster_cheer_aww.wav"),
@@ -25,6 +25,7 @@ const TYPE_SOUND := preload("res://sounds/type_sound.wav")
 const TYPE_SOUND_DB := -14.0
 const TYPE_PITCH_VARIATION := 0.06
 const BUTTON_SOUND := preload("res://sounds/button_press.wav")
+const BUTTON_DB := -16.0
 const WIN_CARD_SOUND := preload("res://sounds/win_card.wav")
 const WIN_CARD_DB := -8.0
 const WIN_CARD_PITCH_VARIATION := 0.04
@@ -52,7 +53,7 @@ const MUSIC_SILENT_DB := -60.0
 const MUSIC_FADE_TIME := 3.0
 const LATE_MUSIC_SOUND := preload("res://sounds/music_late_piano.ogg")
 const LATE_MUSIC_VOLUME_DB := -18.0
-const LATE_MUSIC_FROM_MATCH := 4
+const LATE_MUSIC_FROM_PROGRESS := 0.7
 const MUSIC_SWAP_FADE_TIME := 2.0
 
 const CROWD_SOUND := preload("res://sounds/ambience_crowd.ogg")
@@ -95,19 +96,36 @@ const TRUMP_TICK_DB := -22.0
 const TRUMP_TICK_PITCH_VARIATION := 0.06
 const TRUMP_LAND_SOUND := preload("res://sounds/trump_land.ogg")
 const TRUMP_LAND_DB := -6.0
+const TRUMP_SWAP_DB := -10.0
+const TRUMP_SWAP_PITCH := 1.12
+const RANK_POP_UP_PITCH := 1.35
+const RANK_POP_DOWN_PITCH := 0.72
+const RANK_POP_DB := -16.0
+const RANK_POP_INTERVAL_MSEC := 45
+const SOLD_OUT_SOUND := preload("res://sounds/sold_out_flap.ogg")
+const SOLD_OUT_DB := -12.0
+const BOOSTER_WHOOSH_SOUND := preload("res://sounds/booster_whoosh.ogg")
+const BOOSTER_WHOOSH_DB := -10.0
+const ROUND_WON_SOUND := preload("res://sounds/glass_tap.ogg")
+const ROUND_WON_DB := -14.0
+const TIE_BREAK_SOUND := preload("res://sounds/bass_pluck.ogg")
+const TIE_BREAK_DB := -8.0
+const POPUP_SOUND := preload("res://sounds/popup_page.ogg")
+const POPUP_DB := -20.0
 const CHAIR_SCRAPE_SOUND := preload("res://sounds/chair_scrape.ogg")
 const CHAIR_SCRAPE_DB := -12.0
 const LAST_CALL_SOUND := preload("res://sounds/last_call_bell.ogg")
 const LAST_CALL_DB := -8.0
-const COUGH_SOUNDS := [
-	preload("res://sounds/cough_light.ogg"),
-	preload("res://sounds/cough_mid.ogg"),
-	preload("res://sounds/cough_heavy.ogg"),
+const COUGH_TIERS := [
+	[preload("res://sounds/throat_clear_a.ogg"), preload("res://sounds/throat_clear_b.ogg"), preload("res://sounds/cough_light.ogg")],
+	[preload("res://sounds/cough_light.ogg"), preload("res://sounds/cough_short.ogg"), preload("res://sounds/cough_mid.ogg")],
+	[preload("res://sounds/cough_mid.ogg"), preload("res://sounds/cough_double.ogg"), preload("res://sounds/cough_heavy.ogg")],
 ]
-const COUGH_DB := -10.0
+const COUGH_DB := -17.0
 const COUGH_DELAY := 0.4
 const COUGH_BASE_CHANCE := 0.08
-const COUGH_CHANCE_PER_MATCH := 0.18
+const COUGH_MAX_CHANCE := 0.5
+const COUGH_COOLDOWN_MSEC := 20000
 
 const DUCK_DB := -14.0
 const DUCK_IN_TIME := 0.15
@@ -135,6 +153,9 @@ var _last_coin_msec := -1000
 var _crowd: AudioStreamPlayer
 var _mood_tween: Tween
 var _mood_level := -1
+var _last_rank_pop_msec := -1000
+var _last_cough_msec := -100000
+var _last_cough: AudioStream
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -337,7 +358,7 @@ func play_booster_rip() -> void:
 	play(BOOSTER_RIP_SOUND, 0.05)
 
 func play_button() -> void:
-	play(BUTTON_SOUND, 0.05)
+	play(BUTTON_SOUND, 0.05, BUTTON_DB)
 
 
 func play_coin_drop() -> void:
@@ -387,9 +408,44 @@ func play_last_call() -> void:
 	play(LAST_CALL_SOUND, 0.0, LAST_CALL_DB, true)
 
 func play_cough(match_number: int) -> void:
-	var level := clampi(match_number - 1, 0, 4)
-	var index := clampi(roundi((level + randf_range(-1.0, 1.0)) / 2.0), 0, COUGH_SOUNDS.size() - 1)
-	play(COUGH_SOUNDS[index], 0.06, COUGH_DB)
+	var tier := clampi(roundi(run_progress(match_number) * (COUGH_TIERS.size() - 1) + randf_range(-0.5, 0.5)), 0, COUGH_TIERS.size() - 1)
+	var options: Array = COUGH_TIERS[tier].filter(func(s): return s != _last_cough)
+	_last_cough = options.pick_random()
+	_last_cough_msec = Time.get_ticks_msec()
+	play(_last_cough, 0.06, COUGH_DB)
+
+func play_trump_swap() -> void:
+	play(TRUMP_LAND_SOUND, 0.0, TRUMP_SWAP_DB)
+	if _last_played != null:
+		_last_played.pitch_scale = TRUMP_SWAP_PITCH
+
+func play_rank_pop(diff: int) -> void:
+	var now := Time.get_ticks_msec()
+	if diff == 0 or now - _last_rank_pop_msec < RANK_POP_INTERVAL_MSEC:
+		return
+	_last_rank_pop_msec = now
+	play(TRUMP_TICK_SOUND, 0.0, RANK_POP_DB)
+	if _last_played != null:
+		_last_played.pitch_scale = (RANK_POP_UP_PITCH if diff > 0 else RANK_POP_DOWN_PITCH) * (1.0 + randf_range(-0.04, 0.04))
+
+func play_sold_out() -> void:
+	play(SOLD_OUT_SOUND, 0.05, SOLD_OUT_DB)
+
+func play_booster_whoosh() -> void:
+	play(BOOSTER_WHOOSH_SOUND, 0.05, BOOSTER_WHOOSH_DB)
+
+func play_round_won() -> void:
+	play(ROUND_WON_SOUND, 0.03, ROUND_WON_DB)
+
+func play_tie_break() -> void:
+	play(TIE_BREAK_SOUND, 0.0, TIE_BREAK_DB)
+
+func play_popup() -> void:
+	play(POPUP_SOUND, 0.04, POPUP_DB)
+
+
+func run_progress(match_number: int) -> float:
+	return clampf(float(match_number - 1) / maxf(Missions.LAST_MATCH - 1, 1), 0.0, 1.0)
 
 
 func _on_new_match_started() -> void:
@@ -401,7 +457,7 @@ func _on_new_match_started() -> void:
 func _apply_mood() -> void:
 	var match_number := GameManager.current_match()
 	_set_music_track(match_number)
-	var level := clampi(match_number - 1, 0, MOOD_CROWD_DB.size() - 1)
+	var level := roundi(run_progress(match_number) * (MOOD_CROWD_DB.size() - 1))
 	if level == _mood_level:
 		return
 	_mood_level = level
@@ -416,7 +472,7 @@ func _apply_mood() -> void:
 
 
 func _set_music_track(match_number: int) -> void:
-	var late := match_number >= LATE_MUSIC_FROM_MATCH or Missions.is_last_match(match_number)
+	var late := run_progress(match_number) >= LATE_MUSIC_FROM_PROGRESS or Missions.is_last_match(match_number)
 	var stream: AudioStream = LATE_MUSIC_SOUND if late else MUSIC_SOUND
 	var volume_db := LATE_MUSIC_VOLUME_DB if late else MUSIC_VOLUME_DB
 	if _music.stream == stream and _music.playing:
@@ -444,7 +500,9 @@ func _music_lowpass() -> AudioEffectLowPassFilter:
 
 func _on_smoke_burned_out() -> void:
 	var match_number := GameManager.current_match()
-	if randf() > COUGH_BASE_CHANCE + COUGH_CHANCE_PER_MATCH * (match_number - 1):
+	if Time.get_ticks_msec() - _last_cough_msec < COUGH_COOLDOWN_MSEC:
+		return
+	if randf() > lerpf(COUGH_BASE_CHANCE, COUGH_MAX_CHANCE, run_progress(match_number)):
 		return
 	await get_tree().create_timer(COUGH_DELAY, false).timeout
 	play_cough(match_number)
@@ -487,6 +545,8 @@ func duck_music(duration: float) -> void:
 func _on_round_finished(loosers) -> void:
 	if loosers is Array and loosers.has(GameManager.HUMAN_ID):
 		play_round_lost()
+	elif loosers is Array and not loosers.is_empty():
+		play_round_won()
 
 
 func _on_match_lost(looser_id: int) -> void:
