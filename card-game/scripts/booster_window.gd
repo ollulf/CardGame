@@ -89,8 +89,8 @@ func _build() -> void:
 	_logo.add_theme_font_size_override("font_size", 11)
 	_logo.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_logo.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	_logo.position = Vector2(LOGO_PADDING, 45)
-	_logo.size = Vector2(PACK_SIZE.x - LOGO_PADDING * 2, 70)
+	_logo.position = Vector2(LOGO_PADDING, 20)
+	_logo.size = Vector2(PACK_SIZE.x - LOGO_PADDING * 2, 36)
 	_pack.add_child(_logo)
 
 	_flap = _pack_piece(Rect2(0, 0, BoosterArt.PACK_TEXTURE.get_width(), FLAP_PIXELS), shine)
@@ -129,6 +129,9 @@ func _pack_piece(region: Rect2, shine: ShaderMaterial) -> TextureRect:
 func open(booster: Dictionary = PlayerDataManager.BOOSTERS[0]) -> void:
 	_booster = booster
 	_logo.text = String(booster.get("name", "Booster")).to_upper().replace(" ", "\n")
+	var pack := BoosterArt.pack_texture(booster)
+	(_body.texture as AtlasTexture).atlas = pack
+	(_flap.texture as AtlasTexture).atlas = pack
 	var tint := BoosterArt.pack_tint(booster)
 	_body.self_modulate = tint
 	_flap.self_modulate = tint

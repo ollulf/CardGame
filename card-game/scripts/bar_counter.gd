@@ -100,6 +100,7 @@ func show_boosters(offers: Array[int]) -> void:
 		if not has_offer:
 			continue
 		var booster: Dictionary = PlayerDataManager.BOOSTERS[index]
+		booster_items[i].sprite.texture = BoosterArt.pack_texture(booster)
 		booster_items[i].sprite.self_modulate = BoosterArt.pack_tint(booster)
 		booster_items[i].set_label_text("%d cards: %s" % [int(booster["cards"]), String(booster["contents"])])
 		_booster_names[i].text = String(booster["name"])
