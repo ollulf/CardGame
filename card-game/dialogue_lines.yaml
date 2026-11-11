@@ -37,6 +37,13 @@ match: 1
 			cue: show_drink_round
 			1: Alright, next round!
 
+		when: zero_beats_nine
+		lines:
+			2: My *Diamonds 9*. Eaten by a *0*.
+			1: Ha! Now you know how it feels, Manfred.
+			2: You've felt it more than anyone, Bernd.
+			1: ...That's fair.
+
 		when: turn_start
 		round: 2
 		turn: 2
@@ -108,7 +115,7 @@ match: 2
 
 		when: zero_played
 		lines:
-			2: Ooh, a *0*. Careful with your *9s*, Bernd.
+			2: Learned that one from *{player}*. Careful with your *9s*, Bernd.
 			1: Don't start. I didn't sleep for a week last time.
 			2: Best week of my life.
 
