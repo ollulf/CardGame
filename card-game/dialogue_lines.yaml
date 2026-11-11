@@ -19,7 +19,7 @@ match: 1
 		turn: 1
 		lines:
 			cue: show_won_turns
-			1: First *Bierdeckel* aquired, nice.
+			1: First *Bierdeckel* acquired, nice.
 			2: Just wait...
 			wait_for_cards_played: 2
 			2: No *hearts* for me... again.
