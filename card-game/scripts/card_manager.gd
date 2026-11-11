@@ -72,7 +72,6 @@ func _discard_leftover_hands(_loosers) -> void:
 		var deck: Deck = pair[1]
 		if hand == null or hand.is_empty():
 			continue
-		var before := 0 if deck == null else deck.cards.size()
 		var returned := hand.cards.duplicate()
 		hand.cards.clear()
 		var home := _deck_pile_center(pair[2], table_root) if table_root != null else Vector2.ZERO
@@ -85,7 +84,6 @@ func _discard_leftover_hands(_loosers) -> void:
 		if deck != null:
 			deck.cards.shuffle()
 			deck.move_draw_first_to_top()
-			print("Leftover cards shuffled into deck: owner ", pair[2], " returned ", returned.size(), " deck ", before, " -> ", deck.cards.size())
 
 func _fly_card_to_deck(card: Card, home: Vector2) -> void:
 	var visual := _find_visual(get_tree().root, card)
@@ -174,7 +172,6 @@ func load_player_decks():
 	player_deck.move_draw_first_to_top()
 	AI_1_deck = Deck.new(_mission_cards(match_number, 1, Card.Owner.AI_1))
 	AI_2_deck = Deck.new(_mission_cards(match_number, 2, Card.Owner.AI_2))
-	print("Decks generated")
 
 func _mission_cards(match_number: int, seat: int, owner: Card.Owner) -> Array[Card]:
 	var min_rank := Missions.lowest_rank(match_number)
@@ -216,7 +213,6 @@ func random_trump_suit() -> Card.Suit:
 
 func set_trump_suit(suit: Card.Suit) -> void:
 	trump_suit = suit
-	print("Trump suit: ", Card.Suit.keys()[trump_suit])
 	trump_chosen.emit(trump_suit)
 
 func change_trump_to(suit: Card.Suit, whole_match: bool) -> void:
@@ -227,7 +223,6 @@ func change_trump_to(suit: Card.Suit, whole_match: bool) -> void:
 	set_trump_suit(suit)
 
 func generate_player_hands():	
-	print("Drawing player hands")
 	_place_scripted_cards(player_deck, 0, Card.Owner.HUMAN)
 	_place_scripted_cards(AI_1_deck, 1, Card.Owner.AI_1)
 	_place_scripted_cards(AI_2_deck, 2, Card.Owner.AI_2)
@@ -245,7 +240,6 @@ func generate_player_hands():
 		[AI_2_deck, GameManager.ai_player_2, Card.Owner.AI_2],
 	])
 
-	print("All Hands drawn")
 
 func _deal_cards(seats: Array) -> void:
 	var counts: Array[int] = []
@@ -348,8 +342,6 @@ func submit_play(player_id: int, card: Card, from: Transform2D = Transform2D.IDE
 	last_played_by[player_id] = card
 
 	GameManager.play_callback(player_id)
-	print("played: ", card)
-	print("contains: ", played_cards_round.cards[0])
 
 func render_played_card(card : Card, from: Transform2D) -> void:
 	
@@ -556,7 +548,6 @@ func draw_extra_card(player_id: int) -> void:
 	if hand == null or hand.size() >= HAND_SIZE:
 		return
 	var card: Card = deck.cards.pop_back()
-	print("Effect draw: player ", player_id, " draws ", card.string_info())
 	await give_card(player_id, card)
 
 func give_card(player_id: int, card: Card) -> void:

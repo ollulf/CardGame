@@ -37,7 +37,6 @@ func on_round_started():
 	won_turns = 0
 
 func on_turn_completed(current_turn : int, winner_id: int):
-	print("signal of turn lost")
 	if winner_id == player_id:
 		won_turns += 1
 
