@@ -18,7 +18,7 @@ const INK := {
 	"s": Color(0.6, 0.6, 0.64),
 }
 const SYMBOLS := {
-	"Common Pack": [
+	"common": [
 		"..#######..",
 		"..#.....#..",
 		"..#..#..#..",
@@ -30,7 +30,7 @@ const SYMBOLS := {
 		"..#.....#..",
 		"..#######..",
 	],
-	"Random Pack": [
+	"random": [
 		"...#####...",
 		"..##...##..",
 		"..##...##..",
@@ -42,7 +42,7 @@ const SYMBOLS := {
 		".....##....",
 		".....##....",
 	],
-	"Smoke Pack": [
+	"smoke": [
 		"........s..",
 		".......s...",
 		"........s..",
@@ -54,7 +54,7 @@ const SYMBOLS := {
 		"###########",
 		"...........",
 	],
-	"Drink Pack": [
+	"drink": [
 		".wwwwww....",
 		".#######...",
 		".#yyyyy####",
@@ -66,7 +66,7 @@ const SYMBOLS := {
 		".#yyyyy#...",
 		".#######...",
 	],
-	"Special Pack": [
+	"special": [
 		".....#.....",
 		"....###....",
 		"....###....",
@@ -78,7 +78,7 @@ const SYMBOLS := {
 		".###...###.",
 		".#.......#.",
 	],
-	"Zero Pack": [
+	"zero": [
 		"...#####...",
 		"..###.###..",
 		".###...###.",
@@ -100,7 +100,7 @@ static func pack_tint(booster: Dictionary) -> Color:
 
 
 static func pack_texture(booster: Dictionary) -> Texture2D:
-	var key := String(booster.get("name", ""))
+	var key := String(booster.get("symbol", ""))
 	if not SYMBOLS.has(key):
 		return PACK_TEXTURE
 	if _pack_cache.has(key):
