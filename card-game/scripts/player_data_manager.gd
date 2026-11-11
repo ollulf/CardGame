@@ -40,6 +40,7 @@ const DRINK_PENALTY_PER_ROUND := 1
 const DRINK_BONUS_PER_DRINK := 1
 const DRINK_ROUND_PRICE := 5
 const DRINK_ROUND_FROM_MATCH := 3
+const STAMPS_FROM_MATCH := 4
 const ALK_BOOSTER_CARDS_FROM_MATCH := 4
 const HORST_FROM_MATCH := 2
 const HORST_CARDS_PER_DEAL := 3
@@ -310,6 +311,9 @@ func active_deck_copy() -> Array[Card]:
 	cards.shuffle()
 	return cards
 
+func are_stamps_available() -> bool:
+	return DialogueManager.upcoming_match() >= STAMPS_FROM_MATCH
+
 func get_stamp_offers() -> Array[int]:
 	var match_number := DialogueManager.upcoming_match()
 	if stamp_offers_match != match_number:
@@ -321,7 +325,7 @@ func get_stamp_offers() -> Array[int]:
 
 func buy_stamp(index: int) -> int:
 	var offers := get_stamp_offers()
-	if index < 0 or index >= offers.size() or not has_stampable_card():
+	if not are_stamps_available() or index < 0 or index >= offers.size() or not has_stampable_card():
 		return CardStamp.Id.NONE
 	var stamp := offers[index]
 	if not spend(CardStamp.price(stamp)):
