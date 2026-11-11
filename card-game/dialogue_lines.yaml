@@ -146,7 +146,7 @@ match: 3
 	dialogues:
 		when: match_start
 		lines:
-			2: Cigarettes alone are a sad hobby. Let's get some *drinks* going.
+			2: *Cigarettes* alone are a sad hobby. Let's get some *drinks* going.
 			cue: show_drinks
 			1: Says the man who orders before he sits down.
 			2: I'm efficient.
