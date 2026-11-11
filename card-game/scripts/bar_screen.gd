@@ -8,6 +8,16 @@ const NOT_ENOUGH_MONEY_TEXT := "Not enough money"
 const WAIT_TEXT := "Wait..."
 const STAMPS_LOCKED_TEXT := "Stamps: between matches only"
 const ROUND_ORDERED_TEXT := "Round ordered!"
+const ROOM_TEXTURES := [
+	preload("res://sprites/bar/bar_room_1.png"),
+	preload("res://sprites/bar/bar_room_2.png"),
+	preload("res://sprites/bar/bar_room_3.png"),
+	preload("res://sprites/bar/bar_room_4.png"),
+	preload("res://sprites/bar/bar_room_5.png"),
+]
+const HAZE_ALPHA := [0.25, 0.4, 0.55, 0.75, 0.95]
+const HAZE_SPEED := 6.0
+const FLICKER_CHANCE := [0.0, 0.0, 0.004, 0.012, 0.03]
 
 @export var pointer: Control
 
@@ -17,6 +27,10 @@ const ROUND_ORDERED_TEXT := "Round ordered!"
 @onready var drinks_tap: CigaretteMachine = %DrinksTap
 @onready var stamp_stand: CigaretteMachine = %StampStand
 @onready var cash_label: Label = %CashLabel
+@onready var room_art: TextureRect = %RoomArt
+@onready var lamp_left: TextureRect = %LampGlowLeft
+@onready var lamp_right: TextureRect = %LampGlowRight
+@onready var haze: Control = %Haze
 
 var _pointer_parent: Node
 var _pointer_index: int
@@ -27,6 +41,9 @@ var _cash_tween: Tween
 var _machine_busy := false
 var _round_ordered := false
 var _stand_arrow: GuideArrow
+var _mess_level := 1
+var _flicker_left := 0.0
+var _flicker_right := 0.0
 
 
 func _ready() -> void:
@@ -82,6 +99,7 @@ func _show_bar() -> void:
 	_refresh_cash()
 	_refresh_drinks_tap()
 	_refresh_stamp_stand()
+	_refresh_room()
 	show()
 	$PostFX.show()
 	if drinks_tap.visible:
@@ -183,7 +201,40 @@ func _guide_wants_booster() -> bool:
 	return guide != null and guide.guide_wants_booster()
 
 
-func _process(_delta: float) -> void:
+func _refresh_room() -> void:
+	_mess_level = clampi(DialogueManager.upcoming_match(), 1, ROOM_TEXTURES.size())
+	room_art.texture = ROOM_TEXTURES[_mess_level - 1]
+	haze.modulate.a = HAZE_ALPHA[_mess_level - 1]
+	lamp_left.visible = _mess_level < 5
+	lamp_left.modulate.a = 1.0
+	lamp_right.modulate.a = 1.0
+	_flicker_left = 0.0
+	_flicker_right = 0.0
+
+
+func _animate_room(delta: float) -> void:
+	haze.position.x = fmod(haze.position.x + HAZE_SPEED * delta, 1152.0)
+	var chance: float = FLICKER_CHANCE[_mess_level - 1]
+	if _mess_level == 4:
+		_flicker_left = _step_flicker(lamp_left, _flicker_left, chance * 0.5, delta)
+	_flicker_right = _step_flicker(lamp_right, _flicker_right, chance, delta)
+
+
+func _step_flicker(lamp: CanvasItem, timer: float, chance: float, delta: float) -> float:
+	if timer > 0.0:
+		timer -= delta
+		lamp.modulate.a = 0.15 if fmod(timer, 0.1) < 0.06 else 0.6
+		if timer <= 0.0:
+			lamp.modulate.a = 1.0
+		return timer
+	if randf() < chance:
+		return randf_range(0.1, 0.45)
+	return 0.0
+
+
+func _process(delta: float) -> void:
+	if visible:
+		_animate_room(delta)
 	var wants_stand := visible and not booster_shelf.visible and not booster_window.visible and not stamp_shop.visible and _guide_wants_booster()
 	_stand_arrow.target = booster_stand.sprite if wants_stand else null
 
