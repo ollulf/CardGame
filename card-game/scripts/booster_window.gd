@@ -8,8 +8,7 @@ enum State { HIDDEN, CLOSED, OPENING, REVEAL, DONE, LEAVING }
 const CARD_SCENE := preload("res://scenes/Card.tscn")
 const MAX_ROW_CARDS := 5
 const HOVER_TINT := Color(1.15, 1.1, 0.95)
-const TAKE_TEXT := "Click to pocket them"
-const TAKE_TEXT_TOUCH := "Tap to pocket them"
+const TAKE_ARROW_SCALE := 3.0
 const NORMAL_SUITS: Array[Card.Suit] = [Card.Suit.DIAMONDS, Card.Suit.HEARTS, Card.Suit.SPADES, Card.Suit.CLUBS]
 const MIN_RANK := 1
 const NORMAL_SUIT_WEIGHT := 3
@@ -38,7 +37,7 @@ var _panel: Panel
 var _pack: Control
 var _body: TextureRect
 var _flap: TextureRect
-var _take_label: Label
+var _take_arrow: ContinueArrow
 var _hovered := -1
 var _logo: Label
 var _booster: Dictionary = {}
@@ -100,15 +99,12 @@ func _build() -> void:
 	_flap.pivot_offset = _flap.size
 	_pack.add_child(_flap)
 
-	_take_label = Label.new()
-	_take_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_take_label.add_theme_font_size_override("font_size", InteractionManager.font_px(16))
-	_take_label.add_theme_color_override("font_color", Color("ffcf6e"))
-	_take_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_take_label.position = Vector2(PANEL_RECT.position.x, PANEL_RECT.end.y - 40)
-	_take_label.size = Vector2(PANEL_RECT.size.x, 28)
-	_take_label.hide()
-	add_child(_take_label)
+	_take_arrow = ContinueArrow.new()
+	_take_arrow.scale = Vector2(TAKE_ARROW_SCALE, TAKE_ARROW_SCALE)
+	_take_arrow.position = Vector2(PANEL_RECT.get_center().x - 5.0 * TAKE_ARROW_SCALE, PANEL_RECT.end.y - 30)
+	_take_arrow.hide()
+	add_child(_take_arrow)
+	_take_arrow.set_process_input(false)
 
 
 func _pack_piece(region: Rect2, shine: ShaderMaterial) -> TextureRect:
@@ -147,7 +143,7 @@ func open(booster: Dictionary = PlayerDataManager.BOOSTERS[0]) -> void:
 	_flap.position = Vector2.ZERO
 	_flap.rotation = 0.0
 	_flap.modulate = Color.WHITE
-	_take_label.hide()
+	_take_arrow.hide()
 	_hovered = -1
 	state = State.CLOSED
 	show()
@@ -339,10 +335,9 @@ func flip(index: int) -> void:
 	hover_at(get_local_mouse_position())
 	if not flipped.has(false):
 		state = State.DONE
-		_take_label.text = TAKE_TEXT_TOUCH if InteractionManager.uses_touch() else TAKE_TEXT
-		_take_label.modulate.a = 0.0
-		_take_label.show()
-		create_tween().tween_property(_take_label, "modulate:a", 1.0, 0.25)
+		_take_arrow.modulate.a = 0.0
+		_take_arrow.show()
+		create_tween().tween_property(_take_arrow, "modulate:a", 1.0, 0.25)
 
 
 func _play_flip_effect(visual: CardVisual, card: Card) -> void:
@@ -512,7 +507,7 @@ func _special_effect(visual: CardVisual, card: Card) -> void:
 func _send_off() -> void:
 	state = State.LEAVING
 	_set_hovered(-1)
-	_take_label.hide()
+	_take_arrow.hide()
 	PlayerDataManager.add_to_collection(cards)
 	var exit_x := get_viewport_rect().size.x + CARD_SIZE.x * CARD_SCALE
 	var fly := create_tween()
