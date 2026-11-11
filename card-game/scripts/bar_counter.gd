@@ -388,7 +388,7 @@ func _mat(r: Rect2, title: String) -> void:
 	style.shadow_color = Color(0, 0, 0, 0.35)
 	style.shadow_offset = Vector2(4, 8)
 	style.shadow_size = 2
-	_label(title, r.position + Vector2(14, 6), 18, MUTED)
+	_label(title, r.position + Vector2(0, 6), 18, MUTED, r.size.x)
 
 
 func _label(text: String, pos: Vector2, font_size: int, color: Color, width := 0.0) -> Label:
