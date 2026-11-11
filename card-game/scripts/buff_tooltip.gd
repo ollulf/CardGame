@@ -178,21 +178,36 @@ static func effect_row(effect: int, font_size: int) -> HBoxContainer:
 func _buff_row(card: Card) -> HBoxContainer:
 	var row := HBoxContainer.new()
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	row.add_theme_constant_override("separation", 4)
-	row.add_child(_label(str(card.base_rank), Color.WHITE))
+	row.add_theme_constant_override("separation", 6)
+	var total := _label(str(card.rank), rank_color(card), _font(20))
+	var line_height := total.get_combined_minimum_size().y
+	row.add_child(_top(_label(str(card.base_rank), Color.WHITE), line_height))
 	for part in card.buff_parts:
 		var amount := int(part.get("amount", 0))
-		var spacer := Control.new()
-		spacer.custom_minimum_size = Vector2(2, 0)
-		spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		row.add_child(spacer)
-		row.add_child(_label(signed(amount), amount_color(amount)))
-		row.add_child(_icon(part_icon(part), ICON_SIZE))
+		var column := VBoxContainer.new()
+		column.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		column.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+		column.add_theme_constant_override("separation", 0)
+		var number := _top(_label(signed(amount), amount_color(amount)), line_height)
+		number.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		column.add_child(number)
+		var icon := _icon(part_icon(part), ICON_SIZE)
+		icon.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		column.add_child(icon)
 		if part.get("capped", false):
-			row.add_child(_label("min %d" % int(part.get("floor", 1)), MUTED_COLOR, _font(12)))
-	row.add_child(_label("=", MUTED_COLOR))
-	row.add_child(_label(str(card.rank), rank_color(card), _font(20)))
+			var floor_label := _label("min %d" % int(part.get("floor", 1)), MUTED_COLOR, _font(12))
+			floor_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+			column.add_child(floor_label)
+		row.add_child(column)
+	row.add_child(_top(_label("=", MUTED_COLOR), line_height))
+	row.add_child(_top(total, line_height))
 	return row
+
+
+static func _top(label: Label, line_height: float) -> Label:
+	label.custom_minimum_size.y = line_height
+	label.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
+	return label
 
 
 static func _style(bg: Color, border: Color, border_width: int, radius: int, padding: Vector2) -> StyleBoxFlat:
