@@ -76,3 +76,8 @@ id: alk
 	when: first drinking card is played
 	title: Drinking cards
 	text: [b]Drinking cards[/b] are always trump and get [b]+1[/b] for every drink.
+
+id: horst
+	when: first visit to the bar with Horst (from match 2)
+	title: Horst
+	text: Horst buys [b]3 cards[/b] from your collection for [b]1$[/b], once per visit. A special card counts as 3.

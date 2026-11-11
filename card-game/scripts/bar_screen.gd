@@ -8,6 +8,10 @@ const NOT_ENOUGH_MONEY_TEXT := "Not enough money"
 const WAIT_TEXT := "Wait..."
 const STAMPS_LOCKED_TEXT := "Stamps: between matches only"
 const ROUND_ORDERED_TEXT := "Round ordered!"
+const HORST_LABEL_TEXT := "Horst (%d cards = %d$)"
+const HORST_COUNTING_TEXT := "Horst is counting"
+const HORST_LOCKED_TEXT := "Horst: between matches only"
+const HORST_DONE_TEXT := "Come back next round."
 const ROOM_TEXTURES := [
 	preload("res://sprites/bar/bar_room_1.png"),
 	preload("res://sprites/bar/bar_room_2.png"),
@@ -26,6 +30,7 @@ const FLICKER_CHANCE := [0.0, 0.0, 0.004, 0.012, 0.03]
 @onready var booster_stand: CigaretteMachine = %BoosterStand
 @onready var drinks_tap: CigaretteMachine = %DrinksTap
 @onready var stamp_stand: CigaretteMachine = %StampStand
+@onready var horst: CigaretteMachine = %Horst
 @onready var cash_label: Label = %CashLabel
 @onready var room_art: TextureRect = %RoomArt
 @onready var lamp_left: TextureRect = %LampGlowLeft
@@ -37,6 +42,7 @@ var _pointer_index: int
 var booster_shelf: BoosterShelf
 var booster_window: BoosterWindow
 var stamp_shop: StampShop
+var horst_shop: HorstShop
 var _cash_tween: Tween
 var _machine_busy := false
 var _round_ordered := false
@@ -74,6 +80,13 @@ func _ready() -> void:
 	stamp_shop = StampShop.new()
 	add_child(stamp_shop)
 	stamp_shop.denied.connect(_flash_cash.bind(Color(1.0, 0.35, 0.3)))
+	horst.sprite.texture = HorstArt.texture()
+	horst.clicked.connect(_on_horst_clicked)
+	horst_shop = HorstShop.new()
+	add_child(horst_shop)
+	horst_shop.denied.connect(_flash_cash.bind(Color(1.0, 0.35, 0.3)))
+	horst_shop.closed.connect(_refresh_horst)
+	PlayerDataManager.horst_changed.connect(_refresh_horst)
 	PlayerDataManager.money_changed.connect(_on_money_changed)
 	PlayerDataManager.cig_machine_changed.connect(_on_cig_machine_changed)
 	_on_cig_machine_changed(PlayerDataManager.cig_machine_unlocked)
@@ -99,11 +112,14 @@ func _show_bar() -> void:
 	_refresh_cash()
 	_refresh_drinks_tap()
 	_refresh_stamp_stand()
+	_refresh_horst()
 	_refresh_room()
 	show()
 	$PostFX.show()
 	if drinks_tap.visible:
 		TutorialPopups.tip("drinks", drinks_tap)
+	if horst.visible and not GameManager.match_active:
+		TutorialPopups.tip("horst", horst)
 
 
 func close() -> void:
@@ -111,6 +127,7 @@ func close() -> void:
 		return
 
 	stamp_shop.close()
+	horst_shop.close()
 	await SceneTransition.play(_hide_bar, true)
 	InteractionManager.skip_next_double_click()
 	get_tree().paused = false
@@ -186,6 +203,31 @@ func _refresh_stamp_stand() -> void:
 	stamp_stand.sprite.modulate = Color(0.55, 0.55, 0.55) if locked else Color.WHITE
 
 
+func _on_horst_clicked() -> void:
+	if GameManager.match_active:
+		horst.deny(HORST_LOCKED_TEXT)
+		return
+	if PlayerDataManager.horst_deals_left() <= 0 and not PlayerDataManager.is_horst_offer_available():
+		horst.deny(HORST_DONE_TEXT)
+		return
+	Sfx.play_cough(DialogueManager.upcoming_match())
+	horst_shop.open()
+
+
+func _refresh_horst() -> void:
+	horst.visible = PlayerDataManager.is_horst_available()
+	var locked := GameManager.match_active
+	var counting := PlayerDataManager.horst_deals_left() <= 0
+	if locked:
+		horst.set_label_text(HORST_LOCKED_TEXT)
+	elif counting:
+		horst.set_label_text(HORST_COUNTING_TEXT)
+	else:
+		horst.set_label_text(HORST_LABEL_TEXT % [PlayerDataManager.HORST_CARDS_PER_DEAL, PlayerDataManager.HORST_DEAL_PAY])
+	var greyed := locked or (counting and not PlayerDataManager.is_horst_offer_available())
+	horst.sprite.modulate = Color(0.55, 0.55, 0.55) if greyed else Color.WHITE
+
+
 func open_stamp_shop() -> void:
 	stamp_shop.open()
 
@@ -235,7 +277,7 @@ func _step_flicker(lamp: CanvasItem, timer: float, chance: float, delta: float) 
 func _process(delta: float) -> void:
 	if visible:
 		_animate_room(delta)
-	var wants_stand := visible and not booster_shelf.visible and not booster_window.visible and not stamp_shop.visible and _guide_wants_booster()
+	var wants_stand := visible and not booster_shelf.visible and not booster_window.visible and not stamp_shop.visible and not horst_shop.visible and _guide_wants_booster()
 	_stand_arrow.target = booster_stand.sprite if wants_stand else null
 
 

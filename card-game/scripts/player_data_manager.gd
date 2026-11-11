@@ -10,6 +10,7 @@ signal buttons_unlock_changed
 signal cig_machine_changed(unlocked: bool)
 signal stamp_offers_changed
 signal stamp_applied(card: Card)
+signal horst_changed
 
 var booster_collected := false
 var deck_edited := false
@@ -39,6 +40,12 @@ const DRINK_BONUS_PER_DRINK := 1
 const DRINK_ROUND_PRICE := 5
 const DRINK_ROUND_FROM_MATCH := 3
 const ALK_BOOSTER_CARDS_FROM_MATCH := 4
+const HORST_FROM_MATCH := 2
+const HORST_CARDS_PER_DEAL := 3
+const HORST_DEAL_PAY := 1
+const HORST_DEALS_PER_VISIT := 1
+const HORST_OFFER_FROM_MATCH := 4
+const HORST_OFFER_PRICE := 4
 const BOOSTERS: Array[Dictionary] = [
 	{"name": "Standard Booster", "price": 5, "cards": 9, "min_rank": 0, "max_rank": 9, "special_min": 0, "special_max": 0, "rare_min": 1, "rare_max": 2, "filler": "common", "alk_from_match": ALK_BOOSTER_CARDS_FROM_MATCH, "tint": Color(0.78, 0.88, 1.0, 1), "contents": "1-2 rare trump cards + common suits"},
 	{"name": "Premium Booster", "price": 8, "cards": 3, "min_rank": 0, "max_rank": 9, "special_min": 0, "special_max": 1, "filler": "rare", "alk_from_match": ALK_BOOSTER_CARDS_FROM_MATCH, "tint": Color(1.0, 0.8, 0.4, 1), "contents": "0-1 special effect card + rare trump cards"},
@@ -67,6 +74,9 @@ var active_deck: Array[Card] = []
 var new_cards: Array[Card] = []
 var stamp_offers: Array[int] = []
 var stamp_offers_match := 0
+var horst_deals := 0
+var horst_deals_match := 0
+var horst_offer_used := false
 
 func _ready() -> void:
 	GameManager.round_finished.connect(_on_round_finished)
@@ -298,10 +308,80 @@ func apply_stamp(card: Card, stamp: int) -> bool:
 		collection_changed.emit()
 	return true
 
+func is_horst_available() -> bool:
+	return DialogueManager.upcoming_match() >= HORST_FROM_MATCH
+
+func horst_deals_left() -> int:
+	if horst_deals_match != DialogueManager.upcoming_match():
+		return HORST_DEALS_PER_VISIT
+	return maxi(0, HORST_DEALS_PER_VISIT - horst_deals)
+
+static func horst_weight(card: Card) -> int:
+	return HORST_CARDS_PER_DEAL if card.has_effect() else 1
+
+static func horst_weight_of(cards: Array[Card]) -> int:
+	var total := 0
+	for card in cards:
+		total += horst_weight(card)
+	return total
+
+func horst_keeps_floor(cards: Array[Card]) -> bool:
+	return active_deck.size() + collection.size() - cards.size() >= Missions.DECK_MIN
+
+func can_sell_to_horst(cards: Array[Card]) -> bool:
+	if not is_horst_available() or horst_deals_left() <= 0 or horst_weight_of(cards) != HORST_CARDS_PER_DEAL:
+		return false
+	for i in cards.size():
+		if not collection.has(cards[i]) or cards.find(cards[i]) != i:
+			return false
+	return horst_keeps_floor(cards)
+
+func sell_to_horst(cards: Array[Card]) -> bool:
+	if not can_sell_to_horst(cards):
+		return false
+	for card in cards:
+		collection.erase(card)
+		new_cards.erase(card)
+	var match_number := DialogueManager.upcoming_match()
+	if horst_deals_match != match_number:
+		horst_deals_match = match_number
+		horst_deals = 0
+	horst_deals += 1
+	add_money(HORST_DEAL_PAY)
+	collection_changed.emit()
+	horst_changed.emit()
+	return true
+
+func is_horst_offer_available() -> bool:
+	return not horst_offer_used and DialogueManager.upcoming_match() >= HORST_OFFER_FROM_MATCH
+
+func buy_horst_offer() -> Card:
+	if not is_horst_offer_available() or not spend(HORST_OFFER_PRICE):
+		return null
+	horst_offer_used = true
+	var card := roll_horst_card(DialogueManager.upcoming_match())
+	var cards: Array[Card] = [card]
+	add_to_collection(cards)
+	horst_changed.emit()
+	return card
+
+static func roll_horst_card(match_number: int) -> Card:
+	var rank := randi_range(clampi(Missions.lowest_rank(match_number), 0, 9), 9)
+	var suits: Array[Card.Suit] = [Card.Suit.DIAMONDS, Card.Suit.HEARTS, Card.Suit.SPADES, Card.Suit.CLUBS]
+	var effects := BoosterWindow.special_effects()
+	if not effects.is_empty() and randf() < 0.5:
+		var special_suits := suits.duplicate()
+		special_suits.append_array(BoosterWindow.rare_suits(BOOSTERS[1], match_number))
+		return Card.new(special_suits.pick_random(), rank, Card.Owner.HUMAN, false, effects.pick_random())
+	return Card.new(suits.pick_random(), rank, Card.Owner.HUMAN, false, CardEffect.Id.NONE, CardStamp.random_id())
+
 func capture_state() -> Dictionary:
 	return {
 		"stamp_offers": stamp_offers.duplicate(),
 		"stamp_offers_match": stamp_offers_match,
+		"horst_deals": horst_deals,
+		"horst_deals_match": horst_deals_match,
+		"horst_offer_used": horst_offer_used,
 		"money": money,
 		"starting_money_granted": starting_money_granted,
 		"cig_machine_unlocked": cig_machine_unlocked,
@@ -322,6 +402,10 @@ func restore_state(state: Dictionary) -> void:
 	new_cards.assign(state.get("new_cards", []))
 	stamp_offers.assign(state.get("stamp_offers", []))
 	stamp_offers_match = state.get("stamp_offers_match", 0)
+	horst_deals = state.get("horst_deals", 0)
+	horst_deals_match = state.get("horst_deals_match", 0)
+	horst_offer_used = state.get("horst_offer_used", false)
+	horst_changed.emit()
 	stamp_offers_changed.emit()
 	clear_smoking()
 	clear_drinking()
