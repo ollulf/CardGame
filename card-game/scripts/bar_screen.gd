@@ -19,6 +19,13 @@ const ROOM_TEXTURES := [
 	preload("res://sprites/bar/bar_room_4.png"),
 	preload("res://sprites/bar/bar_room_5.png"),
 ]
+const HORST_TEXTURES := [
+	preload("res://sprites/bar/bar_horst_1.png"),
+	preload("res://sprites/bar/bar_horst_2.png"),
+	preload("res://sprites/bar/bar_horst_3.png"),
+	preload("res://sprites/bar/bar_horst_4.png"),
+	preload("res://sprites/bar/bar_horst_5.png"),
+]
 const HAZE_ALPHA := [0.25, 0.4, 0.55, 0.75, 0.95]
 const HAZE_SPEED := 6.0
 const FLICKER_CHANCE := [0.0, 0.0, 0.004, 0.012, 0.03]
@@ -81,7 +88,6 @@ func _ready() -> void:
 	stamp_shop = StampShop.new()
 	add_child(stamp_shop)
 	stamp_shop.denied.connect(_flash_cash.bind(Color(1.0, 0.35, 0.3)))
-	horst.sprite.texture = HorstArt.texture()
 	horst.clicked.connect(_on_horst_clicked)
 	horst_shop = HorstShop.new()
 	add_child(horst_shop)
@@ -257,6 +263,7 @@ func _guide_wants_booster() -> bool:
 func _refresh_room() -> void:
 	_mess_level = clampi(DialogueManager.upcoming_match(), 1, ROOM_TEXTURES.size())
 	room_art.texture = ROOM_TEXTURES[_mess_level - 1]
+	horst.sprite.texture = HORST_TEXTURES[_mess_level - 1]
 	haze.modulate.a = HAZE_ALPHA[_mess_level - 1]
 	lamp_left.visible = _mess_level < 5
 	lamp_left.modulate.a = 1.0
