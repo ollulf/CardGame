@@ -42,6 +42,9 @@ var _phase: float = randf() * TAU
 var _time: float = 0.0
 var _shown_rank: int = -1000
 var _shine: TextureRect
+var float_on_table := false
+var _table_float := false
+var _float_offset := 0.0
 
 func _ready() -> void:
 	set_process(juice_follow)
@@ -93,8 +96,6 @@ func set_winner(active: bool) -> void:
 	var pulse := create_tween()
 	pulse.tween_property(self, "scale", rest * CardJuice.WIN_POP_SCALE, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	pulse.tween_property(self, "scale", rest, 0.38).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
-	var center := get_global_transform() * (size * 0.5)
-	CardJuice.sparks(get_parent(), center, CardJuice.WIN_SPARK_COLOR, CardJuice.WIN_SPARKS, size * rest * 0.5)
 	CardJuice.shake(self, CardJuice.WIN_SHAKE_PX, CardJuice.WIN_SHAKE_TIME)
 
 func destroy():
@@ -323,6 +324,7 @@ func deal_from(from: Transform2D, reveal: bool) -> void:
 
 
 func fly_off_top(top: float, delay: float, duration: float) -> void:
+	stop_table_float()
 	hover_enabled = false
 	var target := global_position
 	target.y = top - size.y * scale.y * 2.0 - 40.0
@@ -339,6 +341,7 @@ func fly_off_top(top: float, delay: float, duration: float) -> void:
 
 
 func collect_to(gather_center: Vector2, pile_center: Vector2, pile_scale: Vector2, gather_time: float, flip_time: float, fly_time: float) -> void:
+	stop_table_float()
 	hover_enabled = false
 	pivot_offset = size * 0.5
 	var flat_scale := scale.x
@@ -426,6 +429,8 @@ func _on_float_finished(target_z: int, land_squash: bool = true) -> void:
 	z_index = target_z
 	update_layout()
 	hover_enabled = true
+	if float_on_table:
+		start_table_float()
 	if juice_follow:
 		_last_position = position
 		_smooth_rotation = rotation
@@ -433,6 +438,38 @@ func _on_float_finished(target_z: int, land_squash: bool = true) -> void:
 			punch(CardJuice.DEAL_LAND_SQUASH)
 	if InteractionManager.hovered_card == self:
 		hover_enter()
+
+
+func start_table_float() -> void:
+	if not CardJuice.ENABLED or juice_follow:
+		return
+	_table_float = true
+	_phase = randf() * TAU
+	set_process(true)
+
+
+func stop_table_float() -> void:
+	if not _table_float:
+		return
+	_table_float = false
+	position.y -= _float_offset
+	_float_offset = 0.0
+	_set_shadow_lift(0.0)
+	set_process(juice_follow)
+
+
+func _step_table_float(delta: float) -> void:
+	_time += delta
+	var lift := roundf((sin(_time * CardJuice.TABLE_FLOAT_SPEED + _phase) * 0.5 + 0.5) * CardJuice.TABLE_FLOAT_PX)
+	position.y += -lift - _float_offset
+	_float_offset = -lift
+	_set_shadow_lift(lift)
+
+
+func _set_shadow_lift(lift: float) -> void:
+	var shadow := $Background.get_node_or_null(TableShadow.NODE_NAME) as TableShadow
+	if shadow != null:
+		shadow.lift = lift
 
 
 func _kill_tween() -> void:
@@ -479,6 +516,9 @@ func deny() -> void:
 
 
 func _process(delta: float) -> void:
+	if _table_float:
+		_step_table_float(delta)
+		return
 	_time += delta
 	if _tween != null and _tween.is_valid() and _tween.is_running():
 		_last_position = position
