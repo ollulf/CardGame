@@ -284,7 +284,7 @@ func request(key: String, target = null, urgent := false) -> void:
 	shown.append(key)
 	if urgent:
 		_pending.push_front([key, target])
-		await get_tree().create_timer(URGENT_DELAY, false).timeout
+		await get_tree().create_timer(URGENT_DELAY, get_tree().paused).timeout
 		await DialogueManager.wait_until_idle()
 		if _bubble == null:
 			_show_next()
@@ -296,7 +296,7 @@ func _schedule() -> void:
 	if _waiting:
 		return
 	_waiting = true
-	await get_tree().create_timer(SHOW_DELAY, false).timeout
+	await get_tree().create_timer(SHOW_DELAY, get_tree().paused).timeout
 	await DialogueManager.wait_until_idle()
 	_waiting = false
 	if _bubble == null:

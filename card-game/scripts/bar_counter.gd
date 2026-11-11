@@ -152,6 +152,13 @@ func show_drinks(available: bool, label_text: String, ordered := false) -> void:
 	_refresh_hover_tip()
 
 
+func first_stamp_item() -> CanvasItem:
+	for item in stamp_items:
+		if item.visible:
+			return item.sprite
+	return null
+
+
 func first_booster_sprite() -> CanvasItem:
 	for item in booster_items:
 		if item.visible:
