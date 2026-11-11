@@ -7,7 +7,9 @@ const SPEECH_BUBBLE := preload("res://scenes/speech_bubble.tscn")
 const SEAT_COUNT := 3
 const SEAT_OFFSETS := [Vector2(-276, -18), Vector2(66, 0), Vector2(-66, 0)]
 const TRIGGERS := ["match_start", "round_start", "turn_start", "turn_end", "round_end", "match_won", "match_lost", "run_lost", "alk_played", "tie_played", "round_tie", "run_won", "first_smoke", "smoked", "first_drink", "round_by_you", "round_by_bernd", "round_by_manfred", "bought_cigs", "bought_booster", "bought_stamp", "sold_to_horst", "special_played", "stamp_played"]
-const ONCE_PER_MATCH_TRIGGERS := ["alk_played", "tie_played", "smoked"]
+const ONCE_PER_MATCH_TRIGGERS := ["alk_played", "tie_played", "smoked", "round_by_you", "round_by_bernd", "round_by_manfred"]
+const CARD_LINE_KEY := "card_line"
+const CARD_LINE_CHANCE := 0.35
 const ONCE_PER_RUN_TRIGGERS := ["round_tie", "first_smoke", "first_drink"]
 const VARIANT_TRIGGERS := ["first_smoke", "smoked", "first_drink", "round_by_you", "round_by_bernd", "round_by_manfred", "bought_cigs", "bought_booster", "bought_stamp", "sold_to_horst", "special_played", "stamp_played"]
 const ROUND_TRIGGER_BY_SEAT := ["round_by_you", "round_by_bernd", "round_by_manfred"]
@@ -421,8 +423,7 @@ func _on_special_played(card: Card, seat: int) -> void:
 		_fire_card("stamp_played", seat, card.stamp)
 
 func _fire_card(trigger: String, seat: int, card_id: int) -> void:
-	var key := "%s:%d:%d" % [trigger, seat, card_id]
-	if key in _fired_this_match:
+	if CARD_LINE_KEY in _fired_this_match or randf() >= CARD_LINE_CHANCE:
 		return
 	var pool: Array = []
 	for entry in lines:
@@ -437,7 +438,7 @@ func _fire_card(trigger: String, seat: int, card_id: int) -> void:
 		pool = pool.filter(func(entry): return entry.line != _last_variant.get(trigger, -1))
 	if pool.is_empty():
 		return
-	_fired_this_match.append(key)
+	_fired_this_match.append(CARD_LINE_KEY)
 	var picked: Dictionary = pool.pick_random()
 	_last_variant[trigger] = picked.line
 	_queue_entry(picked)

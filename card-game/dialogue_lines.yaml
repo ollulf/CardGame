@@ -524,130 +524,66 @@ match: any
 	dialogues:
 		when: special_played
 		seat: 1
+		lines:
+			1: Ha! Didn't see that one coming.
+
+		when: special_played
+		seat: 1
 		effect: DRAW
 		lines:
-			1: *Refill*! One for the hand, one for the glass.
-			2: Only one of those is a card, *Bernd*.
-
-		when: special_played
-		seat: 1
-		effect: COPY
-		lines:
-			1: *Same Again*! Best words in any language.
-			2: He says them to the bartender more than to us.
-
-		when: special_played
-		seat: 1
-		effect: SUITUP
-		lines:
-			1: *Stammtisch*! To the regulars.
-			2: There's two of us, *Bernd*. That's not a Stammtisch, that's a habit.
+			1: *Refill*. Story of my life.
 
 		when: special_played
 		seat: 1
 		effect: TRUMP
 		lines:
-			1: From now on, I'm *calling the shots*.
-			2: Then call me a *drink* while you're at it.
+			1: Now we play *my* way.
 
 		when: special_played
 		seat: 2
-		effect: DRAW
 		lines:
-			2: *Refill*. Don't look so surprised, *Bernd*.
-			1: I'm not surprised. I'm jealous.
+			2: Hm.
+			1: That's never good.
 
 		when: special_played
 		seat: 2
 		effect: COPY
 		lines:
 			2: *Same Again*.
-			1: He's been saying that since six o'clock.
-
-		when: special_played
-		seat: 2
-		effect: SUITUP
-		lines:
-			2: *Stammtisch*. Some of us are loyal to a suit.
-			1: Some of us are loyal to a stool.
-
-		when: special_played
-		seat: 2
-		effect: TRUMP
-		lines:
-			2: My table. My *trump*.
-			1: Your table? You don't even pay for your chair.
+			1: He says that to the bartender too.
 
 		when: special_played
 		seat: 0
 		lines:
 			1: Where did *{player}* get that?
-			2: From the bar, *Bernd*. Like all the good things.
-
-		when: special_played
-		seat: 0
-		effect: COPY
-		lines:
-			1: *Same Again*? That's *my* line, *{player}*.
+			2: From the bar, *Bernd*. Like everything good.
 
 		when: special_played
 		seat: 0
 		effect: SUITUP
 		lines:
-			2: *Stammtisch*? You've been here one evening, *{player}*.
-			1: Let them, *Manfred*. They're a regular now.
+			1: *Stammtisch*? One evening and they're a regular.
 
 		when: special_played
 		seat: 0
 		effect: TRUMP
 		lines:
 			2: Look who's *calling the shots*.
-			1: First game they barely spoke. Now they run the table.
+
+		when: stamp_played
+		seat: 0
+		lines:
+			1: Funny card, *{player}*. Where's it been?
+
+		when: stamp_played
+		seat: 0
+		stamp: COLORLESS
+		lines:
+			2: A *Joker*? We already have *Bernd*.
 
 		when: stamp_played
 		seat: 0
 		stamp: GAMBLE
 		lines:
 			2: Paid for losing. That's *Bernd*'s whole career.
-			1: And I'm *good* at it.
-
-		when: stamp_played
-		seat: 0
-		stamp: GAMBLE
-		lines:
-			1: *Sore Loser*! Finally, a stamp made for me.
-			2: Made *from* you, *Bernd*.
-
-		when: stamp_played
-		seat: 0
-		stamp: COLORLESS
-		lines:
-			1: A *Joker*? At this table?
-			2: There's already one at this table, *Bernd*. Next to me.
-
-		when: stamp_played
-		seat: 0
-		stamp: DRAW_FIRST
-		lines:
-			2: Up the sleeve, *{player}*? *Bernd* keeps his *cigarettes* there.
-			1: And my *lighter*. Sometimes.
-
-		when: stamp_played
-		seat: 0
-		stamp: PLUS_2
-		lines:
-			1: That card's *marked*. I can tell. I've marked a few.
-
-		when: stamp_played
-		seat: 0
-		stamp: PLUS_3
-		lines:
-			2: Marked cards, *{player}*? We used to get thrown out for that.
-			1: We still do. They always let us back in.
-
-		when: stamp_played
-		seat: 0
-		stamp: PLUS_4
-		lines:
-			1: That card's been to the *gym*.
-			2: Unlike you, *Bernd*.
+			1: And I'm good at it.
