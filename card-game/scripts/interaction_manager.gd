@@ -117,6 +117,7 @@ func _set_hovered(card_visual: CardVisual) -> void:
 		hovered_card.hover_enter()
 		if hovered_card.hover_enabled and not hovered_card.face_down:
 			Sfx.play_hover_card()
+	_refresh_suit_matches()
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_WM_WINDOW_FOCUS_OUT:
@@ -178,6 +179,7 @@ func check_for_hovered_card() -> void:
 		hovered_card.hover_enter()
 		if _is_draggable(hovered_card) and hovered_card.hover_enabled and not hovered_card.face_down:
 			Sfx.play_hover_card()
+	_refresh_suit_matches()
 
 
 
@@ -348,3 +350,24 @@ func _return_one_unlit_to_pack() -> void:
 	if did_remove:
 		cigPack.cig_amount += 1
 		cigPack.update_label()
+
+
+func _refresh_suit_matches() -> void:
+	var source: Card = null
+	if is_instance_valid(hovered_card) and not hovered_card.face_down and _is_draggable(hovered_card):
+		source = hovered_card.card
+	for ai in [GameManager.ai_player_1, GameManager.ai_player_2]:
+		var player := ai as AIPlayer
+		if player == null:
+			continue
+		for visual in player.card_visuals:
+			if is_instance_valid(visual):
+				visual.set_match_highlight(source != null and _same_color(source, visual.card))
+
+
+func _same_color(source: Card, other: Card) -> bool:
+	if other == null:
+		return false
+	if source.is_trump:
+		return other.is_trump
+	return not other.is_trump and other.suit == source.suit
