@@ -9,10 +9,9 @@ match: 1
 			1: Out of topics? You never had any. Everybody brought a *deck*?
 			cue: show_deck
 			cue: deal_cards
-			1: Go on *{player}*, you start. We don't bite.
-			2: He bites. Mostly the *ashtray*.
+			1: Go on *{player}*, you start.
 			wait_for_cards_played: 2
-			1: Ha! My *hearts 9*. Read it and weep.
+			1: Ha! My *hearts 9*, easy win.
 			2: Thirty years and he still gloats like it's the first time.
 
 		when: turn_end
@@ -20,8 +19,8 @@ match: 1
 		turn: 1
 		lines:
 			cue: show_won_turns
-			1: First *Bierdeckel* of the night. Somebody frame it.
-			2: Somebody frame his face when he loses.
+			1: First *Bierdeckel* aquired, nice.
+			2: Just wait...
 			wait_for_cards_played: 2
 			2: No *hearts* for me... again.
 
@@ -30,7 +29,7 @@ match: 1
 		lines:
 			cue: show_life_cards
 			2: Well, that makes me the *loser*...
-			2: Fine. Tradition is tradition. I'm getting the *drinks*.
+			2: Let me get us a round of *drinks*.
 			1: Awesome idea *Manfred*... 
 			1: Cheers!
 			2: Cheers.
@@ -69,8 +68,9 @@ match: 1
 		round: 3
 		lines:
 			wait_for_cards_played: 2
-			2: Finally, the good stuff.
-			1: You say that about everything that burns.
+			2: Finally...
+			2: I am drawing my smoke cards.
+			1: Well, lucky you.
 
 		when: turn_start
 		round: 3
