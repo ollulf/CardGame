@@ -13,7 +13,7 @@ config_version=5
 config/name="Not a game about smoking"
 run/main_scene="uid://sho7nec3ufwc"
 config/features=PackedStringArray("4.5", "GL Compatibility")
-config/icon="res://icon.svg"
+config/icon="res://icon.png"
 
 [autoload]
 
@@ -26,6 +26,7 @@ DialogueManager="*res://scripts/dialogue_manager.gd"
 TutorialScript="*res://scripts/tutorial_script.gd"
 Missions="*res://scripts/missions.gd"
 SaveManager="*res://scripts/save_manager.gd"
+Profile="*res://scripts/profile.gd"
 SceneTransition="*res://scripts/scene_transition.gd"
 
 [display]

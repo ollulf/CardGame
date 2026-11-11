@@ -17,6 +17,8 @@ var _icons: Array[TextureRect] = []
 var _tween: Tween
 var _lifted := false
 var _tilt := 0.0
+var edit: LineEdit
+var ok_button: Button
 
 func _init() -> void:
 	custom_minimum_size = CARD_SIZE
@@ -87,3 +89,40 @@ func _set_lifted(value: bool) -> void:
 	_tween.tween_property(_button, "rotation_degrees", 0.0 if value else _tilt, ANIM_TIME)
 	if value:
 		Sfx.play_hover_card()
+
+func enable_input(text: String, max_length: int) -> void:
+	_label.hide()
+	edit = LineEdit.new()
+	edit.text = text
+	edit.placeholder_text = "Your name"
+	edit.max_length = max_length
+	edit.alignment = HORIZONTAL_ALIGNMENT_CENTER
+	edit.virtual_keyboard_enabled = true
+	edit.select_all_on_focus = true
+	edit.context_menu_enabled = false
+	edit.position = Vector2(10, 82)
+	edit.size = Vector2(CARD_SIZE.x - 20, 40)
+	edit.add_theme_font_size_override("font_size", 17)
+	edit.add_theme_color_override("font_color", TEXT_COLOR)
+	edit.add_theme_color_override("font_uneditable_color", TEXT_COLOR)
+	edit.add_theme_color_override("font_placeholder_color", Color(0.5, 0.48, 0.56))
+	edit.add_theme_color_override("caret_color", PRIMARY_COLOR)
+	var line := StyleBoxFlat.new()
+	line.bg_color = Color(0, 0, 0, 0)
+	line.border_color = PRIMARY_COLOR
+	line.border_width_bottom = 3
+	line.content_margin_left = 2.0
+	line.content_margin_right = 2.0
+	for style in ["normal", "focus", "read_only"]:
+		edit.add_theme_stylebox_override(style, line)
+	_button.add_child(edit)
+	ok_button = Button.new()
+	ok_button.text = "OK"
+	ok_button.focus_mode = Control.FOCUS_NONE
+	ok_button.position = Vector2(CARD_SIZE.x / 2.0 - 26, CARD_SIZE.y - 62)
+	ok_button.size = Vector2(52, 30)
+	ok_button.add_theme_font_size_override("font_size", 16)
+	ok_button.add_theme_color_override("font_color", PRIMARY_COLOR)
+	_button.add_child(ok_button)
+	_button.pressed.connect(edit.grab_focus)
+	edit.grab_focus.call_deferred()

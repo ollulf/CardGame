@@ -17,6 +17,13 @@ func replace_card(index: int, card: Card) -> void:
 	else:
 		all_cards.append(card)
 
+func move_draw_first_to_top() -> void:
+	var first: Array[Card] = cards.filter(func(c: Card) -> bool: return c.draws_first())
+	if first.is_empty():
+		return
+	var rest: Array[Card] = cards.filter(func(c: Card) -> bool: return not c.draws_first())
+	cards = rest + first
+
 func draw(amount: int) -> Hand:
 	var hand := Hand.new()
 

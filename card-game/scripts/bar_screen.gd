@@ -6,6 +6,7 @@ signal closed
 
 const NOT_ENOUGH_MONEY_TEXT := "Not enough money"
 const WAIT_TEXT := "Wait..."
+const STAMPS_LOCKED_TEXT := "Stamps: between matches only"
 const ROUND_ORDERED_TEXT := "Round ordered!"
 
 @export var pointer: Control
@@ -14,12 +15,14 @@ const ROUND_ORDERED_TEXT := "Round ordered!"
 @onready var machine: CigaretteMachine = %CigaretteMachine
 @onready var booster_stand: CigaretteMachine = %BoosterStand
 @onready var drinks_tap: CigaretteMachine = %DrinksTap
+@onready var stamp_stand: CigaretteMachine = %StampStand
 @onready var cash_label: Label = %CashLabel
 
 var _pointer_parent: Node
 var _pointer_index: int
 var booster_shelf: BoosterShelf
 var booster_window: BoosterWindow
+var stamp_shop: StampShop
 var _cash_tween: Tween
 var _machine_busy := false
 var _round_ordered := false
@@ -47,6 +50,13 @@ func _ready() -> void:
 	PlayerDataManager.booster_bought.connect(booster_window.open)
 	booster_window.finished.connect(PlayerDataManager.mark_booster_collected)
 	booster_window.finished.connect(_on_booster_window_finished)
+	stamp_stand.set_label_text("Stamp Stand")
+	stamp_stand.needs_confirm = false
+	stamp_stand.sprite.texture = StampStandArt.texture()
+	stamp_stand.clicked.connect(_on_stamp_stand_clicked)
+	stamp_shop = StampShop.new()
+	add_child(stamp_shop)
+	stamp_shop.denied.connect(_flash_cash.bind(Color(1.0, 0.35, 0.3)))
 	PlayerDataManager.money_changed.connect(_on_money_changed)
 	PlayerDataManager.cig_machine_changed.connect(_on_cig_machine_changed)
 	_on_cig_machine_changed(PlayerDataManager.cig_machine_unlocked)
@@ -71,14 +81,18 @@ func _show_bar() -> void:
 	pointer.mouse_behavior_recursive = Control.MOUSE_BEHAVIOR_DISABLED
 	_refresh_cash()
 	_refresh_drinks_tap()
+	_refresh_stamp_stand()
 	show()
 	$PostFX.show()
+	if drinks_tap.visible:
+		TutorialPopups.tip("drinks", drinks_tap)
 
 
 func close() -> void:
-	if not visible or SceneTransition.is_running():
+	if not visible or SceneTransition.is_running() or stamp_shop.pending_stamp != CardStamp.Id.NONE:
 		return
 
+	stamp_shop.close()
 	await SceneTransition.play(_hide_bar, true)
 	InteractionManager.skip_next_double_click()
 	get_tree().paused = false
@@ -141,6 +155,23 @@ func _on_booster_stand_clicked() -> void:
 	booster_shelf.open()
 
 
+func _on_stamp_stand_clicked() -> void:
+	if GameManager.match_active:
+		stamp_stand.deny(STAMPS_LOCKED_TEXT)
+		return
+	open_stamp_shop()
+
+
+func _refresh_stamp_stand() -> void:
+	var locked := GameManager.match_active
+	stamp_stand.set_label_text(STAMPS_LOCKED_TEXT if locked else "Stamp Stand")
+	stamp_stand.sprite.modulate = Color(0.55, 0.55, 0.55) if locked else Color.WHITE
+
+
+func open_stamp_shop() -> void:
+	stamp_shop.open()
+
+
 func _on_booster_window_finished() -> void:
 	if visible:
 		booster_shelf.show_hint = false
@@ -153,7 +184,7 @@ func _guide_wants_booster() -> bool:
 
 
 func _process(_delta: float) -> void:
-	var wants_stand := visible and not booster_shelf.visible and not booster_window.visible and _guide_wants_booster()
+	var wants_stand := visible and not booster_shelf.visible and not booster_window.visible and not stamp_shop.visible and _guide_wants_booster()
 	_stand_arrow.target = booster_stand.sprite if wants_stand else null
 
 

@@ -1,6 +1,7 @@
 extends CanvasLayer
 class_name TrumpDisplay
 
+const GROUP := "trump_display"
 const CARD_SCENE := preload("res://scenes/Card.tscn")
 const CARD_SIZE := Vector2(60, 90)
 const TOP_MARGIN := 30.0
@@ -18,6 +19,7 @@ var _spin_tween: Tween
 var _final_suit: Card.Suit
 
 func _ready() -> void:
+	add_to_group(GROUP)
 	_root = Control.new()
 	_root.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -42,6 +44,9 @@ func _ready() -> void:
 
 	CardManager.trump_chosen.connect(show_trump)
 	GameManager.new_match_started.connect(_clear_trump)
+
+func anchor() -> Control:
+	return _holder
 
 func _clear_trump() -> void:
 	if _tween != null and _tween.is_valid():

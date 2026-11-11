@@ -29,6 +29,10 @@ func _slot(i: int) -> Vector2:
 	return Vector2((float(i) - float(MAX_LAYERS - 1) * 0.5) * SPACING, 0.0)
 
 
+func coaster(i: int) -> Bierdeckel:
+	return _layers[i] if i >= 0 and i < _layers.size() else null
+
+
 func top_position() -> Vector2:
 	return global_position + _slot(clampi(count, 0, MAX_LAYERS - 1))
 

@@ -58,6 +58,7 @@ var _trump_pending := false
 var _trump_revealed := false
 var match_trump := -1
 var round_over := false
+var match_active := false
 var round_token := 0
 var _match_start_state := {}
 var _game_start_state := {}
@@ -83,6 +84,7 @@ func set_table_root(node: Control) -> void:
 
 func start_round(starting_player_id: int) -> void:
 	var token := round_token
+	match_active = true
 	current_turn = 0
 	round_over = false
 	CardManager.played_cards_round.clear()
@@ -300,6 +302,7 @@ func start_new_match() -> void:
 
 	CardManager.clear_all_cards()
 
+	match_active = false
 	new_match_started.emit()
 	starting_over = false
 
@@ -327,7 +330,6 @@ func start_new_turn(starting_player_id: int) -> void:
 	play_order = _build_play_order(starting_player_id)
 	current_play_index = 0
 
-	print("Starting Player: " + player_name(starting_player_id))
 
 	emit_signal("turn_started", current_turn, starting_player_id)
 	
@@ -354,7 +356,6 @@ func _request_current_player() -> void:
 		return
 
 	var player_id := play_order[current_play_index]
-	message("Your turn" if player_id == HUMAN_ID else str(PLAYER_NAMES[player_id]) + "'s turn")
 	emit_signal("request_play_card", player_id)
 
 # Called by human & AI controllers
@@ -409,16 +410,16 @@ func _wait_for_continue(anchor: Control, winner: Card.Owner) -> void:
 	_free_continue_arrow()
 	var arrow := ContinueArrow.new()
 	_continue_arrow = arrow
-	anchor.add_child(arrow)
-	var center := anchor.global_position + anchor.size * 0.5
-	var pile := CardManager.won_pile_of(winner)
+	get_tree().current_scene.add_child(arrow)
+	var rect := anchor.get_global_rect()
+	var center := rect.get_center()
 	var dir := Vector2.DOWN
-	if pile != null:
-		var to_pile: Vector2 = pile.global_position - center
-		if to_pile.length() > 1.0:
-			dir = to_pile.normalized()
+	if winner == Card.Owner.AI_1:
+		dir = Vector2.LEFT
+	elif winner == Card.Owner.AI_2:
+		dir = Vector2.RIGHT
 	arrow.angle = dir.angle() - PI * 0.5
-	var edge := minf(anchor.size.x * 0.5 / maxf(absf(dir.x), 0.001), anchor.size.y * 0.5 / maxf(absf(dir.y), 0.001)) + 10.0
+	var edge := minf(rect.size.x * 0.5 / maxf(absf(dir.x), 0.001), rect.size.y * 0.5 / maxf(absf(dir.y), 0.001)) + 20.0
 	arrow.global_position = center + dir * edge - Vector2(5.0, 3.0)
 	await arrow.clicked
 	_free_continue_arrow()
@@ -461,28 +462,31 @@ func _end_round(loosers: Array[int]) -> void:
 	if total_loosers.is_empty():
 		next_round_available.emit()
 	elif total_loosers.has(HUMAN_ID):
+		match_active = false
 		player_kicked.emit()
 	else:
+		match_active = false
 		last_match_loosers = total_loosers.duplicate()
 		match_trump = -1
 		await _pay_out_prize(total_loosers)
 		if Missions.is_last_match(current_match()):
+			await DialogueManager.play_run_won()
 			run_won.emit()
 		else:
 			match_finished.emit(total_loosers)
 
 func _show_match_loser(looser_id: int) -> void:
 	var life_ui = get_tree().get_first_node_in_group(WON_ROUNDS_UI_GROUP)
-	var seat = life_ui.get_node_or_null("Player_%d" % looser_id) if life_ui else null
-	if seat == null:
+	if life_ui == null:
 		return
-	await MatchLoserBanner.show_for(life_ui, looser_id, seat)
+	await MatchLoserBanner.show_for(life_ui, looser_id)
 
 func retry_match() -> void:
 	_restore_state(_match_start_state)
 	start_new_match()
 
 var starting_over := false
+var replaying_finish := false
 
 func start_over() -> void:
 	_intro_done = false
@@ -497,8 +501,11 @@ func resume_run(match_state: Dictionary, game_state: Dictionary, between_matches
 	_restore_state(match_state)
 	_match_start_state = match_state
 	if between_matches:
+		match_active = false
 		new_match_started.emit()
+		replaying_finish = true
 		match_finished.emit(last_match_loosers.duplicate())
+		replaying_finish = false
 	else:
 		start_new_match()
 
@@ -511,13 +518,16 @@ func start_without_tutorial() -> void:
 	state["match"] = 2
 	_restore_state(state)
 	_match_start_state = state
+	match_active = false
 	new_match_started.emit()
 	DialogueManager.play_match_end()
 	var token := round_token
 	await DialogueManager.wait_until_idle()
 	if token != round_token:
 		return
+	replaying_finish = true
 	match_finished.emit(last_match_loosers.duplicate())
+	replaying_finish = false
 
 func current_match() -> int:
 	return _match_start_state.get("match", 1)
@@ -606,7 +616,6 @@ func get_round_looser() -> Array[int]:
 		ai_player_2.won_turns
 	)
 	
-	print(min_wins)
 	
 	# Collect all players that match the minimum
 	if human_player.won_turns == min_wins:
@@ -618,7 +627,6 @@ func get_round_looser() -> Array[int]:
 	if ai_player_2.won_turns == min_wins:
 		result.append(ai_player_2.player_id)
 
-	print(result)
 	return result
 
 func resolve_tie(loosers: Array[int]) -> Array[int]:

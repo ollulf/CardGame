@@ -118,22 +118,26 @@ func _build() -> void:
 
 	var info_box := _panel(Rect2(LEFT_RECT.position + Vector2(0, 66), Vector2(LEFT_RECT.size.x, LEFT_RECT.size.y - 132)))
 	var info := VBoxContainer.new()
-	info.position = Vector2(12, 10)
-	info.size = info_box.size - Vector2(24, 20)
-	info.add_theme_constant_override("separation", 14)
-	info_box.add_child(info)
+	var info_scroll := ScrollContainer.new()
+	info_scroll.position = Vector2(12, 10)
+	info_scroll.size = info_box.size - Vector2(24, 20)
+	info_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	info_box.add_child(info_scroll)
+	info.size = Vector2(info_scroll.size.x - 10, 0)
+	info.add_theme_constant_override("separation", 4)
+	info_scroll.add_child(info)
 	_card_info = _label("", 14, FG_COLOR)
 	_card_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_card_info.custom_minimum_size = Vector2(info.size.x, 0)
 	info.add_child(_card_info)
 	_preview_holder = CenterContainer.new()
 	_preview_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_preview_holder.custom_minimum_size = Vector2(info.size.x, CARD_SIZE.y * PREVIEW_SCALE)
+	_preview_holder.custom_minimum_size = Vector2(info.size.x, 0)
 	info.add_child(_preview_holder)
 	_stats_panel = VBoxContainer.new()
 	_stats_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_stats_panel.custom_minimum_size = Vector2(info.size.x, 0)
-	_stats_panel.add_theme_constant_override("separation", 6)
+	_stats_panel.add_theme_constant_override("separation", 2)
 	info.add_child(_stats_panel)
 
 	_close_button = Button.new()
@@ -429,6 +433,7 @@ func _on_cell_hovered(cell: Control, card: Card) -> void:
 	cell.z_index = 10
 	if not cell.has_meta("flying"):
 		cell.modulate = Color(1.15, 1.1, 0.95)
+		CardJuice.grid_hover(cell, true)
 	_show_card(card)
 
 
@@ -436,6 +441,7 @@ func _on_cell_unhovered(cell: Control) -> void:
 	cell.z_index = 0
 	if not cell.has_meta("flying"):
 		cell.modulate = Color.WHITE
+		CardJuice.grid_hover(cell, false)
 
 
 func _on_deck_cell_input(event: InputEvent, card: Card, cell: Control) -> void:
@@ -495,9 +501,13 @@ func _show_card(card: Card) -> void:
 	var lines: Array[String] = ["%s %d" % [SUIT_NAMES[card.suit], card.base_rank]]
 	match card.suit:
 		Card.Suit.SMOKE:
-			lines.append("Always trump. Gains +1 rank per cigarette smoked.")
+			lines.append(("Never trump (colorless). " if card.is_colorless() else "Always trump. ") + "Gains +1 rank per cigarette smoked.")
 		Card.Suit.ALK:
-			lines.append("Always trump.")
+			lines.append("Never trump (colorless)." if card.is_colorless() else "Always trump.")
+	if card.has_effect():
+		lines.append("%s: %s" % [CardEffect.display_name(card.effect), CardEffect.description(card.effect)])
+	if card.has_stamp():
+		lines.append("%s stamp: %s" % [CardStamp.display_name(card.stamp), CardStamp.description(card.stamp)])
 	var holder := Control.new()
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	holder.custom_minimum_size = CARD_SIZE * PREVIEW_SCALE
@@ -518,7 +528,7 @@ func _show_card(card: Card) -> void:
 func _count_same(cards: Array[Card], card: Card) -> int:
 	var count := 0
 	for other in cards:
-		if other.suit == card.suit and other.base_rank == card.base_rank:
+		if other.suit == card.suit and other.base_rank == card.base_rank and other.effect == card.effect and other.stamp == card.stamp:
 			count += 1
 	return count
 
@@ -528,7 +538,11 @@ func _card_before(a: Card, b: Card) -> bool:
 	var suit_b := SUIT_ORDER.find(b.suit)
 	if suit_a != suit_b:
 		return suit_a < suit_b
-	return a.base_rank < b.base_rank
+	if a.base_rank != b.base_rank:
+		return a.base_rank < b.base_rank
+	if a.effect != b.effect:
+		return a.effect < b.effect
+	return a.stamp < b.stamp
 
 
 func _suit_texture(suit: Card.Suit) -> Texture2D:

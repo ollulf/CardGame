@@ -3,7 +3,7 @@ extends CanvasLayer
 const PACK_ICON := preload("res://sprites/Cigarettes_icon.png")
 const EMPTY_COLOR := Color("d9645a")
 const BUDGET_COLOR := Color("f2d16b")
-const AI_OFFSET := Vector2(6.0, 122.0)
+const AI_OFFSET := Vector2(8.0, 64.0)
 const SEATS := [1, 2]
 
 var chips := {}
@@ -108,14 +108,14 @@ func _build_chip(seat: int) -> PanelContainer:
 
 	var row := HBoxContainer.new()
 	row.name = "Row"
-	row.add_theme_constant_override("separation", 5)
+	row.add_theme_constant_override("separation", 8)
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	chip.add_child(row)
 
 	var icon := TextureRect.new()
 	icon.name = "Icon"
 	icon.texture = PACK_ICON
-	icon.custom_minimum_size = Vector2(12, 16)
+	icon.custom_minimum_size = Vector2(PACK_ICON.get_width(), PACK_ICON.get_height())
 	icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -126,14 +126,14 @@ func _build_chip(seat: int) -> PanelContainer:
 	var count := Label.new()
 	count.name = "Count"
 	count.text = "x0"
-	count.add_theme_font_size_override("font_size", InteractionManager.font_px(14))
+	count.add_theme_font_size_override("font_size", InteractionManager.font_px(22))
 	count.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(count)
 
 	var budget_label := Label.new()
 	budget_label.name = "Budget"
 	budget_label.text = "0$"
-	budget_label.add_theme_font_size_override("font_size", InteractionManager.font_px(14))
+	budget_label.add_theme_font_size_override("font_size", InteractionManager.font_px(22))
 	budget_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_child(budget_label)
 	return chip

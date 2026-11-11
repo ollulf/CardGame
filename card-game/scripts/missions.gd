@@ -174,7 +174,7 @@ static func _deck(value, key: String, line: int):
 	for word in TutorialScript._words(value):
 		var card = _card(word)
 		if card == null:
-			push_error("Missions line %d: '%s' in %s is not a card like 'H 9' or 'HEARTS 9'" % [line, word, key])
+			push_error("Missions line %d: '%s' in %s is not a card like 'H 9', 'HEARTS 9' or 'HEARTS 9 DRAW'" % [line, word, key])
 			return null
 		listed.append(card)
 	return listed
@@ -194,10 +194,15 @@ static func _suit_row(text: String, key: String, line: int):
 		return null
 	var cards: Array = []
 	for word in TutorialScript._words(rest):
-		if not word.is_valid_int() or word.to_int() < 0 or word.to_int() > 9:
-			push_error("Missions line %d: '%s' in %s is not a rank from 0 to 9" % [line, word, key])
+		var parts: PackedStringArray = word.split(" ", false)
+		if parts.size() > 2 or not parts[0].is_valid_int() or parts[0].to_int() < 0 or parts[0].to_int() > 9:
+			push_error("Missions line %d: '%s' in %s is not a rank from 0 to 9, optionally with an effect like '7 DRAW'" % [line, word, key])
 			return null
-		cards.append([suit, word.to_int()])
+		var card = TutorialScript.with_effect([suit, parts[0].to_int()], parts[1] if parts.size() > 1 else "")
+		if card == null:
+			push_error("Missions line %d: '%s' in %s has an unknown effect (known: %s)" % [line, word, key, ", ".join(CardEffect.WORDS.values())])
+			return null
+		cards.append(card)
 	if cards.is_empty():
 		push_error("Missions line %d: '%s' in %s lists no ranks" % [line, text, key])
 		return null
@@ -211,10 +216,10 @@ static func _suit(word: String) -> int:
 
 static func _card(word: String):
 	var parts := word.split(" ", false)
-	if parts.size() != 2 or not parts[1].is_valid_int():
+	if parts.size() < 2 or parts.size() > 3 or not parts[1].is_valid_int():
 		return null
 	var suit := _suit(parts[0])
 	var rank := parts[1].to_int()
 	if suit < 0 or rank < 0 or rank > 9:
 		return null
-	return [suit, rank]
+	return TutorialScript.with_effect([suit, rank], parts[2] if parts.size() > 2 else "")

@@ -16,6 +16,7 @@ var unlocked := false
 var _panel: PanelContainer
 var _skip_buttons: Array[Button] = []
 var _tutorial_button: Button
+var _matches_label: Label
 var _pointer_parent: Node
 var _pointer_index := 0
 var _was_blocked := false
@@ -56,10 +57,22 @@ func _build() -> void:
 	_add_button(box, "Unlock all UI", unlock_all)
 	_add_button(box, "+%d cigarettes" % CIGARETTE_BONUS, add_cigarettes)
 	_add_button(box, "+%d$" % CASH_BONUS, add_cash)
+	_add_button(box, "Give Draw card", give_effect_card.bind(CardEffect.Id.DRAW))
+	_add_button(box, "Open stamp shop", open_stamp_shop)
+	_add_button(box, "Give random stamp", give_random_stamp)
+	_add_button(box, "Give Copy card", give_effect_card.bind(CardEffect.Id.COPY))
+	_add_button(box, "Give Suit +1 card", give_effect_card.bind(CardEffect.Id.SUIT_UP))
+	_add_button(box, "Give Trump card", give_effect_card.bind(CardEffect.Id.TRUMP))
+	_matches_label = Label.new()
+	box.add_child(_matches_label)
+	var matches_row := HBoxContainer.new()
+	box.add_child(matches_row)
+	_add_button(matches_row, "+1 match", func(): Profile.set_matches_played(Profile.matches_played + 1))
+	_add_button(matches_row, "Reset matches", func(): Profile.set_matches_played(0))
 	_add_button(box, "Close", close)
 
 
-func _add_button(box: VBoxContainer, text: String, action: Callable) -> Button:
+func _add_button(box: Container, text: String, action: Callable) -> Button:
 	var button := Button.new()
 	button.text = text
 	button.focus_mode = Control.FOCUS_NONE
@@ -143,12 +156,51 @@ func add_cash() -> void:
 	PlayerDataManager.add_money(CASH_BONUS)
 
 
+func give_effect_card(effect: CardEffect.Id) -> void:
+	var card := Card.new(randi_range(0, Card.Suit.CLUBS), randi_range(1, 9), Card.Owner.HUMAN, false, effect)
+	var gift: Array[Card] = [card.copy_for(Card.Owner.HUMAN)]
+	PlayerDataManager.add_to_collection(gift)
+	if GameManager.can_skip_round() and CardManager.hand_of(GameManager.HUMAN_ID) != null:
+		CardManager.give_card(GameManager.HUMAN_ID, card)
+	GameManager.message("Debug: got %s" % card.string_info())
+
+
+func open_stamp_shop() -> void:
+	var bar := _bar_screen()
+	if bar == null:
+		return
+	close()
+	if not bar.visible:
+		await bar.open()
+	if bar.visible:
+		bar.open_stamp_shop()
+
+
+func give_random_stamp() -> void:
+	var cards := PlayerDataManager.stampable_cards()
+	if cards.is_empty():
+		GameManager.message("Debug: no card can take a stamp")
+		return
+	var stamp := CardStamp.random_id()
+	var card: Card = cards.pick_random()
+	PlayerDataManager.apply_stamp(card, stamp)
+	GameManager.message("Debug: %s stamp on %s %d" % [CardStamp.display_name(stamp), Card.Suit.keys()[card.suit].capitalize(), card.printed_rank])
+
+
+func _bar_screen() -> BarScreen:
+	for node in get_tree().root.find_children("*", "CanvasLayer", true, false):
+		if node is BarScreen:
+			return node
+	return null
+
+
 func _on_new_match_started() -> void:
 	if unlocked:
 		unlock_all.call_deferred()
 
 
 func _refresh() -> void:
+	_matches_label.text = "Matches played: %d" % Profile.matches_played
 	var can_skip := GameManager.can_skip_round()
 	for button in _skip_buttons:
 		button.disabled = not can_skip
