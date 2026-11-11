@@ -96,25 +96,20 @@ const DEFAULT_TIPS := {
 }
 
 const TEXTS_PATH := "res://tutorial_popups.yaml"
-const DEFAULT_BUTTON := "Got it"
+const ARROW_ROOM := 4.0
+const CONTINUE_ARROW_INSET := Vector2(20, 16)
 
 static var _loaded := false
 static var _file_tips := {}
-static var _file_button := DEFAULT_BUTTON
 
 static func reload_texts() -> void:
 	_loaded = true
 	_file_tips = {}
-	_file_button = DEFAULT_BUTTON
 	var yaml := YamlLite.parse_file(TEXTS_PATH, ["id"])
 	if yaml.data.is_empty():
 		push_warning("TutorialPopups: no usable texts in %s, using built-in texts" % TEXTS_PATH)
 		return
 	for entry in yaml.data:
-		if entry is Dictionary and entry.get("id") == "button":
-			if entry.get("text") is String and entry.text != "":
-				_file_button = entry.text
-			continue
 		if not entry is Dictionary or not entry.get("id") is String or not DEFAULT_TIPS.has(entry.id):
 			push_warning("TutorialPopups: ignoring a tip entry without a known 'id' in %s" % TEXTS_PATH)
 			continue
@@ -134,11 +129,6 @@ static func tip_texts(key: String) -> Dictionary:
 		reload_texts()
 	return _file_tips.get(key, DEFAULT_TIPS[key])
 
-static func button_label() -> String:
-	if not _loaded:
-		reload_texts()
-	return _file_button
-
 static var instance: TutorialPopups
 static var shown: Array[String] = []
 
@@ -152,6 +142,7 @@ var _was_blocked := false
 var _paused_game := false
 var _pointer_parent: Node
 var _pointer_index := 0
+var _press_seen := false
 
 static func tip(key: String, target = null, urgent := false) -> void:
 	if instance != null and is_instance_valid(instance):
@@ -325,7 +316,11 @@ func _show_next() -> void:
 	_bubble.add_child(box)
 	box.add_child(_title(tip_data.title.replace("{player}", GameManager.player_name(GameManager.HUMAN_ID))))
 	box.add_child(_body(tip_data.text.replace("{player}", GameManager.player_name(GameManager.HUMAN_ID)).format({"min": Missions.DECK_MIN, "max": Missions.DECK_MAX, "drink_price": PlayerDataManager.DRINK_ROUND_PRICE}), minf(BUBBLE_WIDTH, get_viewport().get_visible_rect().size.x - 60.0)))
-	box.add_child(_button())
+	var arrow_room := Control.new()
+	arrow_room.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	arrow_room.custom_minimum_size = Vector2(0, ARROW_ROOM)
+	box.add_child(arrow_room)
+	_press_seen = false
 	add_child(_bubble)
 	_lift_pointer()
 	_side = Side.NONE
@@ -514,15 +509,21 @@ static func highlight(text: String) -> String:
 		last = found.get_end()
 	return result + text.substr(last)
 
-func _button() -> Button:
-	var button := Button.new()
-	button.text = button_label()
-	button.focus_mode = Control.FOCUS_NONE
-	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	if InteractionManager.is_phone:
-		button.custom_minimum_size = Vector2(120, 44)
-	button.pressed.connect(_dismiss)
-	return button
+func _input(event: InputEvent) -> void:
+	if _bubble == null:
+		return
+	if event is InputEventScreenTouch:
+		get_viewport().set_input_as_handled()
+		return
+	if not event is InputEventMouseButton:
+		return
+	get_viewport().set_input_as_handled()
+	if event.button_index != MOUSE_BUTTON_LEFT:
+		return
+	if event.pressed:
+		_press_seen = true
+	elif _press_seen and _bubble.modulate.a > 0.0:
+		_dismiss()
 
 class PointerBubble extends PanelContainer:
 	var tail_target := Vector2.ZERO
@@ -534,6 +535,7 @@ class PointerBubble extends PanelContainer:
 		queue_redraw()
 
 	func _draw() -> void:
+		SpeechBubble.draw_arrow(self, size - TutorialPopups.CONTINUE_ARROW_INSET, _time)
 		var anchor: Vector2
 		var angle := 0.0
 		match side:

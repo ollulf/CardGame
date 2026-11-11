@@ -1,7 +1,3 @@
-id: button
-	when: label of the button on every pop-up
-	text: Got it
-
 id: follow
 	when: your turn to play (first turn)
 	title: Your turn
