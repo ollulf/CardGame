@@ -11,7 +11,6 @@ const STAMPS_LOCKED_TEXT := "Stamps: between matches only"
 const STAMPS_LATER_TEXT := "Stamps: after match %d"
 const ROUND_ORDERED_TEXT := "Round ordered!"
 const SMOKES_TEXT := "Buy cigarettes (%d$)"
-const SMOKES_LOCKED_TEXT := "Machine out of order"
 const DRINKS_TEXT := "Round of drinks (%d$)"
 const MATCH_TEXT := "Match %d of %d"
 const DENY_COLOR := Color(1.0, 0.35, 0.3)
@@ -61,7 +60,6 @@ func _ready() -> void:
 	stamp_shop.closed.connect(_refresh_counter)
 	stamp_shop.stamp_applied.connect(_note_purchase.bind("bought_stamp").unbind(1))
 	PlayerDataManager.money_changed.connect(_on_money_changed)
-	PlayerDataManager.cig_machine_changed.connect(_refresh_counter.unbind(1))
 	PlayerDataManager.stamp_offers_changed.connect(_refresh_counter)
 	PlayerDataManager.booster_offers_changed.connect(_refresh_counter)
 	_refresh_cash()
@@ -119,8 +117,8 @@ func _refresh_counter() -> void:
 	counter.set_match_text(MATCH_TEXT % [match_number, Missions.matches.size()])
 	counter.show_stamps(PlayerDataManager.get_stamp_offers(), GameManager.match_active or not PlayerDataManager.are_stamps_available(), _stamps_locked_text())
 	counter.show_boosters(PlayerDataManager.get_booster_offers())
-	var cigs := PlayerDataManager.cig_machine_unlocked
-	counter.show_smokes(cigs, SMOKES_TEXT % PlayerDataManager.CIGARETTE_PACK_PRICE if cigs else SMOKES_LOCKED_TEXT)
+	var cigs := PlayerDataManager.is_cig_machine_available()
+	counter.show_smokes(cigs, SMOKES_TEXT % PlayerDataManager.CIGARETTE_PACK_PRICE)
 	var drink_text := ROUND_ORDERED_TEXT if _round_ordered else DRINKS_TEXT % PlayerDataManager.DRINK_ROUND_PRICE
 	counter.show_drinks(PlayerDataManager.is_round_of_drinks_available(), drink_text)
 	var screen := _deck_screen()
@@ -156,8 +154,7 @@ func _on_booster_clicked(index: int) -> void:
 
 
 func _on_smokes_clicked() -> void:
-	if not PlayerDataManager.cig_machine_unlocked:
-		counter.smokes.deny(SMOKES_LOCKED_TEXT)
+	if not PlayerDataManager.is_cig_machine_available():
 		return
 	if _machine_busy:
 		counter.smokes.deny(WAIT_TEXT)

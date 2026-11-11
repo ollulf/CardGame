@@ -41,6 +41,7 @@ const HOVER_BOB_SPEED := 3.0
 var stamp_items: Array[CigaretteMachine] = []
 var booster_items: Array[CigaretteMachine] = []
 var smokes: CigaretteMachine
+var _smokes_extras: Array[Label] = []
 var drinks: CigaretteMachine
 var match_label: Label
 var _stamp_tags: Array[Label] = []
@@ -122,7 +123,9 @@ func show_boosters(offers: Array[int]) -> void:
 
 
 func show_smokes(available: bool, label_text: String) -> void:
-	smokes.sprite.modulate = Color.WHITE if available else LOCKED
+	smokes.visible = available
+	for extra in _smokes_extras:
+		extra.visible = available
 	smokes.set_label_text(label_text)
 
 
@@ -265,8 +268,9 @@ func _build_smokes(center: Vector2) -> void:
 	smokes.sprite.pivot_offset = size_px * 0.5
 	smokes.sprite.rotation_degrees = 8.0
 	smokes.clicked.connect(smokes_clicked.emit)
-	_label("Smokes", center + Vector2(-80, 46), 15, TEXT, 160)
-	_tag(center + Vector2(0, 84)).text = "%d$" % PlayerDataManager.CIGARETTE_PACK_PRICE
+	_smokes_extras.append(_label("Smokes", center + Vector2(-80, 46), 15, TEXT, 160))
+	_smokes_extras.append(_tag(center + Vector2(0, 84)))
+	_smokes_extras[1].text = "%d$" % PlayerDataManager.CIGARETTE_PACK_PRICE
 
 
 func _build_drinks() -> void:
