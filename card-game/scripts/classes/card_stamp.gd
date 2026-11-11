@@ -117,6 +117,15 @@ static func random_id() -> int:
 	return all_ids().pick_random()
 
 
+static func random_ids(count: int) -> Array[int]:
+	var ids := all_ids()
+	ids.shuffle()
+	var picked: Array[int] = []
+	for i in mini(count, ids.size()):
+		picked.append(ids[i])
+	return picked
+
+
 static func price(id: int) -> int:
 	return PRICES.get(id, 0)
 
