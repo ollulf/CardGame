@@ -45,10 +45,6 @@ const DEFAULT_TIPS := {
 		"title": "Smoking cards",
 		"text": "[b]Smoking cards[/b] are always [b]trump[/b]. Each *cigarette* smoked gives them [b]+1[/b] this round, up to [b]+3[/b].",
 	},
-	"zero": {
-		"title": "Zero",
-		"text": "A [b]0[/b] beats a [b]9[/b] of the [b]same suit[/b], but never a 9 of another suit.",
-	},
 	"tie": {
 		"title": "Equal cards",
 		"text": "When two cards are [b]equal[/b], the one played [b]first[/b] wins.",
@@ -195,8 +191,6 @@ func _on_card_played(_player_id: int, card: Card) -> void:
 		request("smoke", visual, true)
 	elif card.suit == Card.Suit.ALK:
 		request("alk", visual, true)
-	if card.base_rank == 0:
-		request("zero", visual, true)
 	var tied := _tied_card(card)
 	if tied != null:
 		request("tie", _table_visual(tied), true)
@@ -259,7 +253,7 @@ func _table_visual(card: Card) -> CardVisual:
 
 func _tied_card(card: Card) -> Card:
 	var winner := CardManager.get_turn_winning_card()
-	if winner == null or winner == card or winner.rank != card.rank or CardManager.get_zero_beating_nine() != null:
+	if winner == null or winner == card or winner.rank != card.rank:
 		return null
 	if (winner.is_trump and card.is_trump) or (not winner.is_trump and not card.is_trump and winner.suit == card.suit):
 		return winner

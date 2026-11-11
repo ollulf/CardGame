@@ -6,8 +6,8 @@ signal closed
 const SPEECH_BUBBLE := preload("res://scenes/speech_bubble.tscn")
 const SEAT_COUNT := 3
 const SEAT_OFFSETS := [Vector2(-276, -18), Vector2(66, 0), Vector2(-66, 0)]
-const TRIGGERS := ["match_start", "round_start", "turn_start", "turn_end", "round_end", "match_won", "match_lost", "run_lost", "zero_beats_nine", "zero_played", "alk_played", "tie_played", "round_tie", "run_won", "first_smoke", "smoked", "first_drink", "round_by_you", "round_by_bernd", "round_by_manfred", "bought_cigs", "bought_booster", "bought_stamp", "sold_to_horst", "special_played", "stamp_played"]
-const ONCE_PER_MATCH_TRIGGERS := ["zero_beats_nine", "zero_played", "alk_played", "tie_played", "smoked"]
+const TRIGGERS := ["match_start", "round_start", "turn_start", "turn_end", "round_end", "match_won", "match_lost", "run_lost", "alk_played", "tie_played", "round_tie", "run_won", "first_smoke", "smoked", "first_drink", "round_by_you", "round_by_bernd", "round_by_manfred", "bought_cigs", "bought_booster", "bought_stamp", "sold_to_horst", "special_played", "stamp_played"]
+const ONCE_PER_MATCH_TRIGGERS := ["alk_played", "tie_played", "smoked"]
 const ONCE_PER_RUN_TRIGGERS := ["round_tie", "first_smoke", "first_drink"]
 const VARIANT_TRIGGERS := ["first_smoke", "smoked", "first_drink", "round_by_you", "round_by_bernd", "round_by_manfred", "bought_cigs", "bought_booster", "bought_stamp", "sold_to_horst", "special_played", "stamp_played"]
 const ROUND_TRIGGER_BY_SEAT := ["round_by_you", "round_by_bernd", "round_by_manfred"]
@@ -308,8 +308,6 @@ func _on_turn_started(turn_index: int, _starting_player_id: int) -> void:
 
 func _on_turn_completed(turn_index: int, _winner_id: int) -> void:
 	_fire("turn_end", _round, turn_index)
-	if CardManager.turn_won_by_zero():
-		_fire("zero_beats_nine")
 	if CardManager.turn_won_by_tie():
 		_fire("tie_played")
 
@@ -403,8 +401,6 @@ func _queue_lines(spoken_lines: Array) -> void:
 
 func _on_card_played(_player_id: int, card: Card) -> void:
 	if card != null and _match_running:
-		if card.base_rank == 0:
-			_fire("zero_played")
 		if card.suit == Card.Suit.ALK:
 			_fire("alk_played")
 	var due: Array = []
@@ -550,9 +546,10 @@ static func card_filter_id(kind: String, text: String) -> int:
 			if CardEffect.WORDS[id] == wanted or CardEffect.display_name(id).to_upper() == wanted:
 				return id
 		return -1
-	for i in CardStamp.Id.size():
-		if i > 0 and (CardStamp.Id.keys()[i] == wanted or CardStamp.display_name(i).to_upper() == wanted):
-			return i
+	for key in CardStamp.Id:
+		var id: int = CardStamp.Id[key]
+		if id != CardStamp.Id.NONE and (key == wanted or CardStamp.display_name(id).to_upper() == wanted):
+			return id
 	return -1
 
 static func _rows_to_lines(rows: Array):

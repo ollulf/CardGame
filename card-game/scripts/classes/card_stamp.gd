@@ -8,11 +8,11 @@ enum Id {
 	PLUS_2,
 	PLUS_3,
 	PLUS_4,
-	ZERO,
-	GAMBLE,
+	GAMBLE = 7,
 }
 
 const OFFERS_PER_MATCH := 3
+const RETIRED_ID := 6
 
 const PRICES := {
 	Id.COLORLESS: 6,
@@ -20,7 +20,6 @@ const PRICES := {
 	Id.PLUS_2: 4,
 	Id.PLUS_3: 6,
 	Id.PLUS_4: 8,
-	Id.ZERO: 5,
 	Id.GAMBLE: 3,
 }
 const NAMES := {
@@ -29,7 +28,6 @@ const NAMES := {
 	Id.PLUS_2: "Marked +2",
 	Id.PLUS_3: "Marked +3",
 	Id.PLUS_4: "Marked +4",
-	Id.ZERO: "Nobody",
 	Id.GAMBLE: "Sore Loser",
 }
 const DESCRIPTIONS := {
@@ -38,7 +36,6 @@ const DESCRIPTIONS := {
 	Id.PLUS_2: "Permanently +2 rank. Can go above 9.",
 	Id.PLUS_3: "Permanently +3 rank. Can go above 9.",
 	Id.PLUS_4: "Permanently +4 rank. Can go above 9.",
-	Id.ZERO: "Rank becomes 0, so it beats a 9 of its suit.",
 	Id.GAMBLE: "If this card does not win the trick, you get 1$.",
 }
 const COLORS := {
@@ -47,7 +44,6 @@ const COLORS := {
 	Id.PLUS_2: Color("e0b84f"),
 	Id.PLUS_3: Color("e08a3a"),
 	Id.PLUS_4: Color("d8483c"),
-	Id.ZERO: Color("8a5ad8"),
 	Id.GAMBLE: Color("5fbf6a"),
 }
 const GAMBLE_PAY := 1
@@ -59,12 +55,14 @@ const RANK_BONUS := {
 
 
 static func is_valid(id: int) -> bool:
-	return id >= 0 and id < Id.size()
+	return Id.values().has(id)
 
 
 static func all_ids() -> Array[int]:
 	var ids: Array[int] = []
-	for id in range(1, Id.size()):
+	for id in Id.values():
+		if id == Id.NONE:
+			continue
 		ids.append(id)
 	return ids
 
@@ -99,8 +97,6 @@ static func color(id: int) -> Color:
 
 
 static func apply_rank(id: int, printed_rank: int) -> int:
-	if id == Id.ZERO:
-		return 0
 	return printed_rank + RANK_BONUS.get(id, 0)
 
 

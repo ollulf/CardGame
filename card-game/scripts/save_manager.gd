@@ -173,6 +173,10 @@ static func cards_from_data(data):
 		var owner := _int(entry[2], -1) if entry.size() > 2 else Card.Owner.HUMAN
 		var effect := _int(entry[3], -1) if entry.size() > 3 else CardEffect.Id.NONE
 		var stamp := _int(entry[4], -1) if entry.size() > 4 else CardStamp.Id.NONE
+		if stamp == CardStamp.RETIRED_ID:
+			stamp = CardStamp.Id.NONE
+		if rank == 0:
+			rank = Missions.LOWEST_RANK
 		if suit < 0 or suit >= Card.Suit.size() or rank < 0 or rank > 9 or owner < 0 or owner >= Card.Owner.size() or not CardEffect.is_valid(effect) or not CardStamp.is_valid(stamp):
 			return null
 		cards.append(Card.new(suit, rank, owner, false, effect, stamp))

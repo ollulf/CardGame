@@ -575,10 +575,10 @@ func _suit_counts(cards: Array[Card]) -> Dictionary:
 
 func _rank_counts(cards: Array[Card]) -> Array[int]:
 	var counts: Array[int] = []
-	counts.resize(10)
+	counts.resize(10 - Missions.LOWEST_RANK)
 	counts.fill(0)
 	for card in cards:
-		counts[clampi(card.base_rank, 0, 9)] += 1
+		counts[clampi(card.base_rank, Missions.LOWEST_RANK, 9) - Missions.LOWEST_RANK] += 1
 	return counts
 
 
@@ -646,7 +646,7 @@ func _draw_histogram(target: Control, counts: Array[int], bar_area: float, show_
 			count_label.size = Vector2(slot, 12)
 			count_label.position = Vector2(slot * rank, top + bar_area - height - 14)
 			target.add_child(count_label)
-		var rank_label := _tiny_label(str(rank), MUTED_COLOR)
+		var rank_label := _tiny_label(str(rank + Missions.LOWEST_RANK), MUTED_COLOR)
 		rank_label.size = Vector2(slot, 12)
 		rank_label.position = Vector2(slot * rank, top + bar_area)
 		target.add_child(rank_label)

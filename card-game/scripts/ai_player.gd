@@ -31,7 +31,6 @@ const THINK_TIME_MAX := 1.5
 
 const TRUMP_COST := 10.0
 const SPECIAL_COST := 0.5
-const ZERO_COST := 1.5
 const PLAYERS_PER_TRICK := 3
 const ENDGAME_TRICKS := 2
 const SKILL_GENTLE := 0
@@ -472,8 +471,6 @@ func _other_players() -> Array:
 
 static func card_cost(card: Card) -> float:
 	var cost := float(card.rank)
-	if card.rank == 0:
-		cost = ZERO_COST
 	if card.is_trump:
 		cost += TRUMP_COST
 	if card.suit == Card.Suit.ALK or card.suit == Card.Suit.SMOKE:
@@ -496,10 +493,6 @@ static func trick_winner(table: Array) -> Card:
 		for card in table:
 			if card.matches_suit(lead) and card.rank > best.rank:
 				best = card
-	if best.rank >= CardManager.ZERO_BEATS_RANK:
-		for card in table:
-			if card.rank == 0 and card != best and (card.suit == best.suit or card.is_colorless()) and card.is_trump == best.is_trump:
-				return card
 	return best
 
 

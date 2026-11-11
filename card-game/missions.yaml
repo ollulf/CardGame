@@ -10,16 +10,16 @@ match: 2
 	ai_one_cigarettes: 6
 	ai_two_cigarettes: 4
 	ai_one_deck:
-		D: 7,6,5,1,0
-		H: 6,3,3,1,0
-		S: 7,4,4,0,0
+		D: 7,6,5,1,1
+		H: 6,3,3,1,1
+		S: 7,4,4,1,1
 		C: 8,8,7,5
 		SM: 5,4
 	ai_two_deck:
 		D: 9,8,8,4,2
 		H: 9,6,4,4,1
-		S: 8,3,3,2,0
-		C: 5,3,1,0 DRAW
+		S: 8,3,3,2,1
+		C: 5,3,1,1 DRAW
 		SM: 2,2
 match: 3
 	prize_money: 32

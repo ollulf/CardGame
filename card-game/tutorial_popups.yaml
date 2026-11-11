@@ -33,11 +33,6 @@ id: smoke
 	title: Smoking cards
 	text: [b]Smoking cards[/b] are always [b]trump[/b]. Each *cigarette* smoked gives them [b]+1[/b] this round, up to [b]+3[/b].
 
-id: zero
-	when: a 0 is in play
-	title: Zero
-	text: A [b]0[/b] beats a [b]9[/b] of the [b]same suit[/b], but never a 9 of another suit.
-
 id: tie
 	when: two equal cards are played
 	title: Equal cards

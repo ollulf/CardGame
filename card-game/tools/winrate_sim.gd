@@ -45,7 +45,7 @@ func player_deck(m: int) -> Array:
 
 func ai_deck(m: int, seat: int) -> Array:
 	var cards: Array = []
-	var min_rank := Missions.lowest_rank(m)
+	var min_rank := Missions.LOWEST_RANK
 	for entry in Missions.deck_cards(m, seat):
 		var suit: int = entry[0]
 		if suit == ALK and not Missions.allows_alk(m):
@@ -159,10 +159,6 @@ func _winner(table: Array) -> Dictionary:
 		for card in table:
 			if card["suit"] == best["suit"] and card["eff"] > best["eff"]:
 				best = card
-	if best["eff"] >= CardManager.ZERO_BEATS_RANK:
-		for card in table:
-			if card["eff"] == 0 and card != best and card["suit"] == best["suit"]:
-				return card
 	return best
 
 
@@ -180,8 +176,6 @@ func _legal(hand: Array, table: Array) -> Array:
 
 func _cost(card: Dictionary, seat: int) -> float:
 	var cost := float(_rank(card, seat))
-	if card["rank"] == 0:
-		cost = 4.0
 	if _is_trump(card):
 		cost += TRUMP_VALUE
 	if card["effect"] != CardEffect.Id.NONE:

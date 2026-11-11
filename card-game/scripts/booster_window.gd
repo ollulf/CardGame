@@ -169,8 +169,8 @@ static func roll(booster: Dictionary, match_number: int) -> Array[Card]:
 	return result
 
 
-static func lowest_rank(booster: Dictionary, match_number: int) -> int:
-	return clampi(maxi(int(booster.get("min_rank", MIN_RANK)), Missions.lowest_rank(match_number)), 0, MAX_RANK)
+static func lowest_rank(booster: Dictionary, _match_number: int = 0) -> int:
+	return clampi(int(booster.get("min_rank", MIN_RANK)), MIN_RANK, MAX_RANK)
 
 
 static func pack_suits(booster: Dictionary, match_number: int) -> Array[Card.Suit]:

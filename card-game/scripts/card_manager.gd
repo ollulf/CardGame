@@ -15,7 +15,6 @@ const CLEAR_STAGGER := 0.08
 const COLLECT_GATHER_TIME := 0.25
 const COLLECT_FLIP_TIME := 0.15
 const COLLECT_FLY_TIME := 0.45
-const ZERO_BEATS_RANK := 9
 const TIE_CARD_SCALE := 1.5
 const TIE_CARD_SPACING := 140.0
 const TIE_FLY_TIME := 0.4
@@ -165,7 +164,7 @@ func apply_buffs(player_id: int) -> void:
 
 func load_player_decks():
 	var match_number := DialogueManager.upcoming_match()
-	var min_rank := Missions.lowest_rank(match_number)
+	var min_rank := Missions.LOWEST_RANK
 	var player_cards: Array[Card]
 	if Missions.deck_cards(match_number, 0).is_empty() and PlayerDataManager.active_deck.is_empty():
 		PlayerDataManager.init_active_deck(PlayerDataManager.starter_deck())
@@ -179,9 +178,7 @@ func load_player_decks():
 	AI_2_deck = Deck.new(_mission_cards(match_number, 2, Card.Owner.AI_2))
 
 func _mission_cards(match_number: int, seat: int, owner: Card.Owner) -> Array[Card]:
-	var min_rank := Missions.lowest_rank(match_number)
-	if seat == 0:
-		min_rank = 1
+	var min_rank := Missions.LOWEST_RANK
 	var listed: Array = Missions.deck_cards(match_number, seat)
 	var cards := generate_cards(Missions.DECK_SIZE - listed.size(), owner, min_rank)
 	if listed.is_empty():
@@ -293,7 +290,7 @@ func lead_suit() -> int:
 		return -1
 	return leading_card.suit
 
-func generate_cards(amount: int, owner : Card.Owner, min_rank: int = 0) -> Array[Card]:
+func generate_cards(amount: int, owner : Card.Owner, min_rank: int = Missions.LOWEST_RANK) -> Array[Card]:
 	var cards: Array[Card] = []
 
 	var rng := RandomNumberGenerator.new()
@@ -482,12 +479,6 @@ func clear_all_cards() -> void:
 			hand.empty()
 
 func get_turn_winning_card() -> Card:
-	var zero := get_zero_beating_nine()
-	if zero != null:
-		return zero
-	return get_normal_winning_card()
-
-func get_normal_winning_card() -> Card:
 	var highest_trump = played_cards_turn.get_highest_trump_card()
 	if highest_trump != null:
 		return highest_trump
@@ -512,23 +503,9 @@ func highlight_turn_winner() -> CardVisual:
 func get_turn_winner() -> Card.Owner:
 	return get_turn_winning_card().owner
 
-func get_zero_beating_nine() -> Card:
-	var best := get_normal_winning_card()
-	if best == null or best.rank < ZERO_BEATS_RANK:
-		return null
-	for card in played_cards_turn.cards:
-		if card.rank == 0 and card != best and _same_color(card, best):
-			return card
-	return null
-
-func _same_color(card: Card, best: Card) -> bool:
-	if best.is_trump:
-		return card.is_trump and card.suit == best.suit
-	return not card.is_trump and card.matches_suit(lead_suit())
-
 func turn_won_by_tie() -> bool:
 	var winner := get_turn_winning_card()
-	if winner == null or get_zero_beating_nine() != null:
+	if winner == null:
 		return false
 	for card in played_cards_turn.cards:
 		if card == winner or card.rank != winner.rank:
@@ -539,9 +516,6 @@ func turn_won_by_tie() -> bool:
 		elif not card.is_trump and card.matches_suit(lead_suit()):
 			return true
 	return false
-
-func turn_won_by_zero() -> bool:
-	return get_zero_beating_nine() != null
 
 static func has_rank_at_least(cards: Array[Card], rank: int) -> bool:
 	for card in cards:

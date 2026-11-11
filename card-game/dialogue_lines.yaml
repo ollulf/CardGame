@@ -113,17 +113,6 @@ match: 2
 			1: Hope you packed some *smoking cards*, *{player}*.
 			2: Don't coach the competition, *Bernd*. We want to *win*.
 
-		when: zero_played
-		lines:
-			2: Learned that one from *{player}*. Careful with your *9s*, *Bernd*.
-			1: Don't start. I'm still not over the last one.
-			2: Best ten minutes of my life.
-
-		when: zero_beats_nine
-		lines:
-			1: Ugh, I knew it, and I still fell for it.
-			2: Every time, *Bernd*. Every single time.
-
 		when: match_won
 		lines:
 			1: Well. There goes the *pot*.
@@ -208,11 +197,6 @@ match: 4
 			1: Just this round. Then I'm switching to *water*.
 			2: He's been switching to water since 1998.
 			1: Water's for fish, *Manfred*.
-
-		when: zero_played
-		lines:
-			2: A *0*! *Bernd*, your *9s*...
-			1: Can't hear you. I'm *smoking*.
 
 		when: alk_played
 		lines:
@@ -674,10 +658,3 @@ match: any
 		lines:
 			1: That card's been to the *gym*.
 			2: Unlike you, *Bernd*.
-
-		when: stamp_played
-		seat: 0
-		stamp: ZERO
-		lines:
-			1: *Nobody*? Nobody beats my *9s*.
-			2: Exactly, *Bernd*. *Nobody* does.

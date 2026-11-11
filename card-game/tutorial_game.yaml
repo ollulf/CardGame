@@ -23,14 +23,3 @@
   ai_two: "SMOKE 2, CLUBS 8, SMOKE 6, SPADES 3, CLUBS 1"
   ai_one_plays: "DIAMONDS 5, HEARTS 3, HEARTS 6, auto, auto"
   ai_two_plays: "SMOKE 2, CLUBS 8, smoke + SMOKE 6, SPADES 3, auto"
-
-- match: 2
-  round: 1
-  trump: SPADES
-  starter: 1
-  you: "SPADES 7"
-  ai_one: "SPADES 9"
-  ai_two: "SPADES 0"
-  you_plays: "SPADES 7"
-  ai_one_plays: "SPADES 9"
-  ai_two_plays: "SPADES 0"
