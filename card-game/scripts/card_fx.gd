@@ -85,3 +85,11 @@ static func _layer_over(visual: CanvasItem) -> CanvasLayer:
 
 static func _center(visual: Control) -> Vector2:
 	return visual.get_global_transform_with_canvas() * (visual.size * 0.5)
+
+
+static func stamp_splat(visual: CardVisual, stamp: int) -> void:
+	if not is_instance_valid(visual) or not visual.is_inside_tree():
+		return
+	var layer := _layer_over(visual)
+	_burst(layer, _center(visual), CardStamp.color(stamp), SPLAT_COUNT, SPLAT_RADIUS * 1.3, SPLAT_TIME, FX_PIXEL * 3.0)
+	layer.get_tree().create_timer(SPLAT_TIME + 0.1, true).timeout.connect(layer.queue_free)
