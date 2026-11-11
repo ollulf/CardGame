@@ -73,11 +73,22 @@ match: 1
 			wait_for_cards_played: 1
 			2: Hold that thought, Bernd. This calls for a *cigarette*.
 
-		when: match_end
+		when: match_won
 		lines:
 			cue: show_purse
 			1: Well, this was the first match and I lost...
 			2: Let's count this as the *trial round*, hehe.
+
+		when: match_lost
+		lines:
+			1: Ha! I won one! Manfred, write it down.
+			2: Next to the other one. From 1994.
+
+		when: run_lost
+		lines:
+			1: Hey, no shame, *{player}*. First night at this table.
+			2: First night is free. After that we take it personally.
+			1: Grab a drink and sit back down. The chair's not going anywhere.
 
 match: 2
 	dialogues:
@@ -116,6 +127,24 @@ match: 2
 			1: Ugh, I knew it, and I still fell for it.
 			2: Every time, Bernd. Every single time.
 
+		when: match_won
+		lines:
+			1: Well. There goes the *pot*.
+			2: Into *{player}*'s pocket. Spend it wisely.
+			1: Spend it *here*, he means.
+
+		when: match_lost
+		lines:
+			2: And the money stays at the table. As it should.
+			1: Easy come, easy go, *{player}*.
+
+		when: run_lost
+		lines:
+			1: Don't look so sad. It's only money.
+			2: Says the man who owes the *cigarette machine* three euros.
+			1: Here, one for the road. Helps, trust me.
+			2: Everything helps, according to him.
+
 match: 3
 	dialogues:
 		when: match_start
@@ -129,11 +158,23 @@ match: 3
 		lines:
 			1: A *drinking card*! Somebody came thirsty.
 
-		when: match_end
+		when: match_won
 		lines:
 			1: Phew, my *hearts 7* looked like a *5* after those drinks.
 			2: The *boosters* have *drinking cards* now, {player}. Just saying.
 			1: He's recruiting. Don't listen to him.
+
+		when: match_lost
+		lines:
+			1: Out! Bartender, that one's on me!
+			2: Everything's on you, Bernd. That's why you're broke.
+
+		when: run_lost
+		lines:
+			2: Leaving already? The night's still young.
+			1: The night's always young in here. We're the ones who got old.
+			2: Go sleep it off, *{player}*. We'll save your glass.
+			1: Don't save it. I'll drink it.
 
 match: 4
 	dialogues:
@@ -181,11 +222,25 @@ match: 4
 			2: Now we're talking. *{player}*, that could be you.
 			1: Leave it, Manfred. ...Or don't.
 
-		when: match_end
+		when: match_won
 		lines:
 			2: Same time tomorrow?
 			1: Same time every day, Manfred. That's the problem.
 			1: Tomorrow's the big one, *{player}*. Bring your thirst.
+
+		when: match_lost
+		lines:
+			1: Out. Ha. Out...
+			2: Don't gloat, Bernd. Your hands are shaking.
+
+		when: run_lost
+		lines:
+			1: Wait, *{player}*. Sit. One more. Just one.
+			2: Leave it. They've got somewhere to be.
+			1: Somewhere. Huh. Remember having somewhere, Manfred?
+			2: No.
+			Bar: Same again, gentlemen?
+			2: Same again.
 
 match: 5
 	dialogues:
@@ -227,14 +282,29 @@ match: 5
 			1: Ahh, *drinking cards*. My people.
 			2: Your only people, Bernd.
 
-		when: match_end
+		when: match_won
 		lines:
 			1: Well... beaten by the new kid.
 			2: Thirty years at this table, and the kid takes the pot.
 
+		when: match_lost
+		lines:
+			2: That's it, then.
+			1: Pot stays here. Like us.
+
+		when: run_lost
+		lines:
+			Bar: That's you done, *{player}*. Go home.
+			1: Home? It's warm here. Stay. Watch, at least.
+			cue: ai_one_smokes
+			2: Look at them, Bernd. Halfway out the door.
+			1: We were like that once.
+			2: Same chair tomorrow, *{player}*. You know where.
+			1: Everybody comes back. That's the thing about this table.
+
 match: any
 	dialogues:
-		when: match_end
+		when: match_won
 		lines:
 
 		when: tie_played
