@@ -23,15 +23,15 @@ const BASIC_TIPS := ["follow", "trump", "bierdeckel", "deck", "lives"]
 const DEFAULT_TIPS := {
 	"follow": {
 		"title": "Your turn",
-		"text": "Play one card. The [b]highest card[/b] of the [b]first suit played[/b] wins the turn. The other players must [b]follow the first suit[/b] if they can.",
+		"text": "Play one card. The [b]highest card[/b] of the [b]first suit played[/b] takes the trick. The other players must [b]follow the first suit[/b] if they can.",
 	},
 	"trump": {
 		"title": "Trump",
 		"text": "[b]Trump[/b] beats every other suit. It is shown at the top and picked [b]at random[/b] each match.",
 	},
 	"bierdeckel": {
-		"title": "Won turns",
-		"text": "Each won turn gives a [b]Bierdeckel[/b]. After [b]5 turns[/b], the fewest loses the round.",
+		"title": "Won tricks",
+		"text": "Each trick you take gives a [b]Bierdeckel[/b]. After [b]5 tricks[/b], whoever has the fewest loses the round.",
 	},
 	"deck": {
 		"title": "New round",
@@ -55,7 +55,7 @@ const DEFAULT_TIPS := {
 	},
 	"tiebreak": {
 		"title": "Tie-break",
-		"text": "Tied for fewest turns? Each tied player draws a card. The [b]lowest number[/b] loses; suit and trump don't count.",
+		"text": "Tied for fewest tricks? Each tied player draws a card. The [b]lowest number[/b] loses; suit and trump don't count.",
 	},
 	"prize": {
 		"title": "Prize money",
@@ -67,7 +67,7 @@ const DEFAULT_TIPS := {
 	},
 	"wallet": {
 		"title": "Your money",
-		"text": "Winners share the [b]prize money[/b]. Spend it at the [b]bar[/b] on [b]boosters[/b] with new cards.",
+		"text": "Winners share the [b]prize money[/b]. Spend it at the [b]bar[/b]: [b]boosters[/b] with new cards, [b]stamps[/b], cigarettes.",
 	},
 	"deck_size": {
 		"title": "Your deck",
@@ -75,7 +75,7 @@ const DEFAULT_TIPS := {
 	},
 	"drinks": {
 		"title": "Round of drinks",
-		"text": "At the bar a [b]Round of Drinks[/b] costs [b]5$[/b]. Everyone drinks: drinking cards [b]+1[/b], all others [b]-1[/b] for the match.",
+		"text": "At the bar a [b]round of drinks[/b] costs [b]{drink_price}$[/b]. Everyone drinks: drinking cards [b]+1[/b], all others [b]-1[/b] for the match.",
 	},
 	"alk": {
 		"title": "Drinking cards",
@@ -309,7 +309,7 @@ func _show_next() -> void:
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_bubble.add_child(box)
 	box.add_child(_title(tip_data.title.replace("{player}", GameManager.player_name(GameManager.HUMAN_ID))))
-	box.add_child(_body(tip_data.text.replace("{player}", GameManager.player_name(GameManager.HUMAN_ID)).format({"min": Missions.DECK_MIN, "max": Missions.DECK_MAX}), minf(BUBBLE_WIDTH, get_viewport().get_visible_rect().size.x - 60.0)))
+	box.add_child(_body(tip_data.text.replace("{player}", GameManager.player_name(GameManager.HUMAN_ID)).format({"min": Missions.DECK_MIN, "max": Missions.DECK_MAX, "drink_price": PlayerDataManager.DRINK_ROUND_PRICE}), minf(BUBBLE_WIDTH, get_viewport().get_visible_rect().size.x - 60.0)))
 	box.add_child(_button())
 	add_child(_bubble)
 	_lift_pointer()

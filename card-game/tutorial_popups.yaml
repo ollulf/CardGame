@@ -5,7 +5,7 @@ id: button
 id: follow
 	when: your turn to play (first turn)
 	title: Your turn
-	text: Play one card. The [b]highest card[/b] of the [b]first suit played[/b] wins the turn. The other players must [b]follow the first suit[/b] if they can.
+	text: Play one card. The [b]highest card[/b] of the [b]first suit played[/b] takes the trick. The other players must [b]follow the first suit[/b] if they can.
 
 id: trump
 	when: right after "follow", points at the trump card
@@ -13,9 +13,9 @@ id: trump
 	text: [b]Trump[/b] beats every other suit. It is shown at the top and picked [b]at random[/b] each match.
 
 id: bierdeckel
-	when: after the first turn is won
-	title: Won turns
-	text: Each won turn gives a [b]Bierdeckel[/b]. After [b]5 turns[/b], the fewest loses the round.
+	when: after the first trick is won
+	title: Won tricks
+	text: Each trick you take gives a [b]Bierdeckel[/b]. After [b]5 tricks[/b], whoever has the fewest loses the round.
 
 id: deck
 	when: a new round deals new cards
@@ -30,7 +30,7 @@ id: lives
 id: smoke
 	when: first smoking card is played
 	title: Smoking cards
-	text: [b]Smoking cards[/b] are always trump. Each cigarette smoked gives them [b]+1[/b] this round.
+	text: [b]Smoking cards[/b] are always trump. Each cigarette smoked gives them [b]+1[/b] this round, up to [b]+3[/b].
 
 id: zero
 	when: a 0 is in play
@@ -43,9 +43,9 @@ id: tie
 	text: When two cards are [b]equal[/b], the one played [b]first[/b] wins.
 
 id: tiebreak
-	when: players tie for fewest turns
+	when: players tie for fewest tricks
 	title: Tie-break
-	text: Tied for fewest turns? Each tied player draws a card. The [b]lowest number[/b] loses; suit and trump don't count.
+	text: Tied for fewest tricks? Each tied player draws a card. The [b]lowest number[/b] loses; suit and trump don't count.
 
 id: prize
 	when: the match ends and the prize is paid
@@ -55,12 +55,12 @@ id: prize
 id: cigs
 	when: cigarettes become available
 	title: Cigarettes
-	text: Tap your [b]pack[/b] to take a cigarette, then the [b]lighter[/b] to smoke it. Smoking cards get [b]+1[/b] per cigarette this round.
+	text: Tap your [b]pack[/b] to take a cigarette, then the [b]lighter[/b] to smoke it. Smoking cards get [b]+1[/b] per cigarette this round, up to [b]+3[/b].
 
 id: wallet
 	when: you first earn money
 	title: Your money
-	text: Winners share the [b]prize money[/b]. Spend it at the [b]bar[/b] on [b]boosters[/b] with new cards.
+	text: Winners share the [b]prize money[/b]. Spend it at the [b]bar[/b]: [b]boosters[/b] with new cards, [b]stamps[/b], cigarettes.
 
 id: deck_size
 	when: in the deck editor ({min} and {max} are the deck size limits)
@@ -68,9 +68,9 @@ id: deck_size
 	text: A deck needs [b]{min} to {max} cards[/b]. Click cards to move them in or out.
 
 id: drinks
-	when: first visit to the bar
+	when: first visit to the bar ({drink_price} is the price of a round)
 	title: Round of drinks
-	text: At the bar a [b]Round of Drinks[/b] costs [b]5$[/b]. Everyone drinks: drinking cards [b]+1[/b], all others [b]-1[/b] for the match.
+	text: At the bar a [b]round of drinks[/b] costs [b]{drink_price}$[/b]. Everyone drinks: drinking cards [b]+1[/b], all others [b]-1[/b] for the match.
 
 id: alk
 	when: first drinking card is played

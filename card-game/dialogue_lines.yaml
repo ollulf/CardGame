@@ -251,6 +251,8 @@ match: 5
 			2: Big pot tonight. Bernd's whole *pension*.
 			1: Half of it. The other half is in that *ashtray*.
 			cue: ai_two_smokes
+			1: You used to tell me to leave the new one alone, Manfred.
+			2: I used to do a lot of things.
 			2: *{player}*, one with us. For luck. One won't kill you.
 			1: Won't kill you *fast*, anyway.
 			cue: give_player_cigs 3
@@ -326,3 +328,208 @@ match: any
 			cue: ai_one_smokes
 			2: ...Same table tomorrow, *{player}*?
 			1: We'll be here. We're always here.
+
+match: 2
+	dialogues:
+		when: first_smoke
+		lines:
+			1: There it is. Welcome to the club, *{player}*.
+			2: The club has two members and a cough.
+
+		when: bought_booster
+		lines:
+			1: New cards? Manfred, they're taking this seriously.
+			2: Good. Somebody at this table should.
+
+		when: bought_cigs
+		lines:
+			1: Your own pack! Look, Manfred, they grow up so fast.
+			2: Don't cry on the cards, Bernd.
+
+match: 3
+	dialogues:
+		when: first_smoke
+		lines:
+			1: Ha! Took you long enough.
+			2: Careful. He'll start charging rent on your lungs.
+
+		when: first_drink
+		lines:
+			2: *Prost*, *{player}*! First one's the hardest.
+			1: First one's the easiest. It's the twentieth that's hard.
+
+		when: round_by_you
+		lines:
+			1: *{player}* is buying! I like this one, Manfred.
+			2: You like everybody who's buying.
+
+		when: bought_booster
+		lines:
+			2: More cards. Any good ones in there?
+			1: He means *drinking cards*. He always means drinking cards.
+
+		when: bought_cigs
+		lines:
+			2: Machine took your money? It takes his every night.
+			1: We have an understanding, the machine and me.
+
+match: 4
+	dialogues:
+		when: first_smoke
+		lines:
+			1: Finally. I was starting to feel judged.
+			2: You were judged, Bernd. You still are.
+
+		when: first_drink
+		lines:
+			2: Look who finally joined us.
+			1: Don't make a fuss, Manfred. ...*Prost*!
+
+		when: bought_booster
+		lines:
+			1: Spending it all on cardboard? Spend it on us.
+			2: He means on *drinks*.
+
+		when: bought_cigs
+		lines:
+			1: Ooh. Lend us one? I'll pay you back.
+			2: He won't.
+
+match: 5
+	dialogues:
+		when: first_smoke
+		lines:
+			2: ...Huh. Tonight of all nights.
+			1: Don't look at it like that, Manfred. Look at it like *family*.
+
+		when: smoked
+		lines:
+			1: Good. Good. Now we're a proper table.
+			2: Three ashtrays and a deck of cards. Proper.
+
+		when: first_drink
+		lines:
+			2: There. Warmer, isn't it?
+			1: Manfred...
+			2: What? I'm being *friendly*.
+
+		when: round_by_you
+		lines:
+			2: That's the spirit. See, Bernd? I said they'd come round.
+			1: You said a lot of things, Manfred.
+
+		when: round_by_bernd
+		lines:
+			1: One more *round*. For... for the road.
+			2: You don't have a road, Bernd.
+
+		when: round_by_manfred
+		lines:
+			2: *Round*. Don't count them, Bernd.
+			1: Somebody has to.
+
+		when: bought_booster
+		lines:
+			2: Buying cards. Like that'll help.
+			1: Let them, Manfred. Everybody needs something to hold on to.
+
+		when: bought_cigs
+		lines:
+			1: Good. Keep them close. You'll want them later.
+			2: He'll want them later. He's out by ten.
+
+		when: bought_stamp
+		lines:
+			1: Stamping cards. On a night like this.
+			2: Let them, Bernd. Some of us still plan ahead.
+
+match: any
+	dialogues:
+		when: first_smoke
+		lines:
+			1: Look at that, Manfred. One of us.
+			2: Don't sound so happy about it.
+
+		when: smoked
+		lines:
+			1: Another one? Now you're getting it.
+			2: Getting what, Bernd?
+			1: ...It.
+
+		when: smoked
+		lines:
+			2: Bernd, they smoke faster than you now.
+			1: Nobody smokes faster than me. ...Give me a second.
+
+		when: smoked
+		lines:
+			1: Pass the *lighter* when you're done. Mine's... somewhere.
+			2: In your other hand.
+
+		when: first_drink
+		lines:
+			2: *Prost*. Welcome to the table. The real one.
+
+		when: round_by_you
+		lines:
+			1: A *round* from *{player}*? *Prost*, everybody!
+			2: Finally somebody with manners.
+
+		when: round_by_you
+		lines:
+			2: *{player}*'s buying! Bernd, act surprised.
+			1: I'm not surprised. I'm *thirsty*.
+
+		when: round_by_you
+		lines:
+			1: Look at that, Manfred. Generosity.
+			2: Don't get used to it.
+			1: Too late.
+
+		when: round_by_bernd
+		lines:
+			1: Bartender! A *round* for the whole table! Everybody drinks!
+
+		when: round_by_bernd
+		lines:
+			1: *Round*'s on me. Don't tell my wife.
+			2: She left in '03, Bernd.
+			1: Then don't tell her anything.
+
+		when: round_by_bernd
+		lines:
+			1: *Prost*! Bottoms up, all of you!
+			2: He's paying with my money, by the way.
+
+		when: round_by_manfred
+		lines:
+			2: This *round* is on me. Bottoms up.
+
+		when: round_by_manfred
+		lines:
+			2: Bartender. Same again, for everyone.
+			1: Thirty years and he's never once said "something else".
+
+		when: round_by_manfred
+		lines:
+			2: A *round*. For my health.
+			1: Your *what*?
+
+		when: bought_booster
+		lines:
+			1: New cards. Shuffle them well, they're shy.
+
+		when: bought_cigs
+		lines:
+			1: Fresh pack? Best sound in the world, that crinkle.
+			2: Second best. After the cork.
+
+		when: bought_stamp
+		lines:
+			2: Stamped your cards? Bernd marks his with ash.
+			1: It's a system.
+
+		when: bought_stamp
+		lines:
+			1: Fancy. In my day we just bent the corners.
+			2: You still do. We all know which one's your *9*.

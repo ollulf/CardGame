@@ -46,6 +46,7 @@ var horst_shop: HorstShop
 var _cash_tween: Tween
 var _machine_busy := false
 var _round_ordered := false
+var _bought: Array[String] = []
 var _stand_arrow: GuideArrow
 var _mess_level := 1
 var _flicker_left := 0.0
@@ -71,6 +72,7 @@ func _ready() -> void:
 	booster_window = BoosterWindow.new()
 	add_child(booster_window)
 	PlayerDataManager.booster_bought.connect(booster_window.open)
+	PlayerDataManager.booster_bought.connect(_note_purchase.bind("bought_booster").unbind(1))
 	booster_window.finished.connect(PlayerDataManager.mark_booster_collected)
 	booster_window.finished.connect(_on_booster_window_finished)
 	stamp_stand.set_label_text("Stamp Stand")
@@ -87,6 +89,8 @@ func _ready() -> void:
 	horst_shop.denied.connect(_flash_cash.bind(Color(1.0, 0.35, 0.3)))
 	horst_shop.closed.connect(_refresh_horst)
 	PlayerDataManager.horst_changed.connect(_refresh_horst)
+	horst_shop.sold.connect(_note_purchase.bind("sold_to_horst"))
+	stamp_shop.stamp_applied.connect(_note_purchase.bind("bought_stamp").unbind(1))
 	PlayerDataManager.money_changed.connect(_on_money_changed)
 	PlayerDataManager.cig_machine_changed.connect(_on_cig_machine_changed)
 	_on_cig_machine_changed(PlayerDataManager.cig_machine_unlocked)
@@ -132,6 +136,8 @@ func close() -> void:
 	InteractionManager.skip_next_double_click()
 	get_tree().paused = false
 	closed.emit()
+	DialogueManager.play_bar_purchases(_bought)
+	_bought.clear()
 	_serve_ordered_round()
 
 
@@ -155,10 +161,16 @@ func _on_machine_clicked() -> void:
 		_flash_cash(Color(1.0, 0.35, 0.3))
 		return
 	_machine_busy = true
+	_note_purchase("bought_cigs")
 	var length := Sfx.play_cig_machine()
 	await get_tree().create_timer(length, true).timeout
 	PlayerDataManager.deliver_cigarettes()
 	_machine_busy = false
+
+
+func _note_purchase(trigger: String) -> void:
+	if not trigger in _bought:
+		_bought.append(trigger)
 
 
 func _refresh_drinks_tap() -> void:
