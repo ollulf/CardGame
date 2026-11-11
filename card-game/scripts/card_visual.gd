@@ -9,6 +9,7 @@ var dragging: bool = false
 const RANK_INCREASED_COLOR := Color(0.4, 1.0, 0.45)
 const RANK_DECREASED_COLOR := Color(1.0, 0.4, 0.4)
 const LOCKED_COLOR := Color(0.5, 0.5, 0.5)
+const MATCH_OUTLINE_COLOR := Color(0.45, 0.9, 1.0)
 const COLORLESS_SUIT_TINT := Color(0.35, 0.35, 0.38, 0.75)
 const CARD_BACK := preload("res://sprites/card_backside.png")
 const CARD_FACE_SIZE := Vector2(60, 90)
@@ -83,6 +84,20 @@ func set_playable(playable: bool) -> void:
 
 func set_locked(locked: bool) -> void:
 	modulate = LOCKED_COLOR if locked else Color.WHITE
+
+func set_match_highlight(active: bool) -> void:
+	var outline := get_node_or_null("MatchOutline")
+	if not active:
+		if outline != null:
+			outline.queue_free()
+		return
+	if outline == null:
+		outline = $PlayableOutline.duplicate()
+		outline.name = "MatchOutline"
+		outline.material = outline.material.duplicate()
+		outline.material.set_shader_parameter("outline_color", MATCH_OUTLINE_COLOR)
+		add_child(outline)
+	outline.visible = true
 
 func set_winner(active: bool) -> void:
 	var outline := get_node_or_null("WinnerOutline")
