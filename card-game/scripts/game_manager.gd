@@ -445,10 +445,9 @@ func _end_round(loosers: Array[int]) -> void:
 
 func _show_match_loser(looser_id: int) -> void:
 	var life_ui = get_tree().get_first_node_in_group(WON_ROUNDS_UI_GROUP)
-	var seat = life_ui.get_node_or_null("Player_%d" % looser_id) if life_ui else null
-	if seat == null:
+	if life_ui == null:
 		return
-	await MatchLoserBanner.show_for(life_ui, looser_id, seat)
+	await MatchLoserBanner.show_for(life_ui, looser_id)
 
 func retry_match() -> void:
 	_restore_state(_match_start_state)
