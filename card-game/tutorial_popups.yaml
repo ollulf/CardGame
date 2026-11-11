@@ -67,6 +67,11 @@ id: wallet
 	title: Your money
 	text: Winners share the [b]prize money[/b]. Spend it at the [b]bar[/b] on [b]boosters[/b] with new cards. More opens up later.
 
+id: boosters
+	when: first bar visit, points at the first booster pack
+	title: Boosters
+	text: A [b]booster[/b] is a pack of new cards. Buy one, rip it open, and the cards go into your [b]collection[/b]. Hover a pack to see what's inside.
+
 id: deck_size
 	when: in the deck editor ({min} and {max} are the deck size limits)
 	title: Your deck

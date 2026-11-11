@@ -8,7 +8,6 @@ const NOT_ENOUGH_MONEY_TEXT := "Not enough money"
 const WAIT_TEXT := "Wait..."
 const NO_CARD_TEXT := "No card can take it"
 const STAMPS_LOCKED_TEXT := "Stamps: between matches only"
-const STAMPS_LATER_TEXT := "Stamps: after match %d"
 const ROUND_ORDERED_TEXT := "Round ordered!"
 const SMOKES_TEXT := "Buy cigarettes (%d$)"
 const DRINKS_TEXT := "Round of drinks (%d$)"
@@ -85,6 +84,9 @@ func _show_bar() -> void:
 	_refresh_counter()
 	show()
 	$PostFX.show()
+	var first_pack := counter.first_booster_sprite()
+	if first_pack != null:
+		TutorialPopups.tip("boosters", first_pack)
 	if counter.drinks.visible:
 		TutorialPopups.tip("drinks", counter.drinks)
 	if PlayerDataManager.are_stamps_available() and not GameManager.match_active and not counter.stamp_items.is_empty():
@@ -115,7 +117,10 @@ func _hide_bar() -> void:
 func _refresh_counter() -> void:
 	var match_number := DialogueManager.upcoming_match()
 	counter.set_match_text(MATCH_TEXT % [match_number, Missions.matches.size()])
-	counter.show_stamps(PlayerDataManager.get_stamp_offers(), GameManager.match_active or not PlayerDataManager.are_stamps_available(), _stamps_locked_text())
+	var stamp_offers: Array[int] = []
+	if PlayerDataManager.are_stamps_available():
+		stamp_offers = PlayerDataManager.get_stamp_offers()
+	counter.show_stamps(stamp_offers, GameManager.match_active, STAMPS_LOCKED_TEXT)
 	counter.show_boosters(PlayerDataManager.get_booster_offers())
 	var cigs := PlayerDataManager.is_cig_machine_available()
 	counter.show_smokes(cigs, SMOKES_TEXT % PlayerDataManager.CIGARETTE_PACK_PRICE)
@@ -125,16 +130,10 @@ func _refresh_counter() -> void:
 	deck_button.visible = screen != null and screen.can_edit_deck()
 
 
-func _stamps_locked_text() -> String:
-	if not PlayerDataManager.are_stamps_available():
-		return STAMPS_LATER_TEXT % (PlayerDataManager.STAMPS_FROM_MATCH - 1)
-	return STAMPS_LOCKED_TEXT
-
-
 func _on_stamp_clicked(index: int) -> void:
 	var item := counter.stamp_items[index]
-	if GameManager.match_active or not PlayerDataManager.are_stamps_available():
-		item.deny(_stamps_locked_text())
+	if GameManager.match_active:
+		item.deny(STAMPS_LOCKED_TEXT)
 		return
 	if not PlayerDataManager.has_stampable_card():
 		item.deny(NO_CARD_TEXT)

@@ -15,7 +15,7 @@ const SCREEN_MARGIN := 8.0
 const TAIL_GAP := 30.0
 const POINT_PAD := 36.0
 const MIN_TARGET_SIZE := 4.0
-const BASIC_TIPS := ["follow", "trump", "enemy_suits", "bierdeckel", "deck", "lives"]
+const BASIC_TIPS := ["follow", "trump", "enemy_suits", "bierdeckel", "deck", "lives", "boosters"]
 
 const DEFAULT_TIPS := {
 	"follow": {
@@ -69,6 +69,10 @@ const DEFAULT_TIPS := {
 	"wallet": {
 		"title": "Your money",
 		"text": "Winners share the [b]prize money[/b]. Spend it at the [b]bar[/b] on [b]boosters[/b] with new cards. More opens up later.",
+	},
+	"boosters": {
+		"title": "Boosters",
+		"text": "A [b]booster[/b] is a pack of new cards. Buy one, rip it open, and the cards go into your [b]collection[/b]. Hover a pack to see what's inside.",
 	},
 	"deck_size": {
 		"title": "Your deck",

@@ -36,6 +36,8 @@ const HOVER_BORDER_PAD := 7.0
 const HOVER_SHADOW_LIFT := 8.0
 const HOVER_BOB := 3.0
 const HOVER_BOB_SPEED := 3.0
+const SOLD_OUT_TEXT := "SOLD OUT"
+const SOLD_OUT_SIZE := Vector2(84, 60)
 
 var stamp_items: Array[CigaretteMachine] = []
 var booster_items: Array[CigaretteMachine] = []
@@ -55,6 +57,9 @@ var _hovered: CigaretteMachine
 var _hover_tweens := {}
 var _hover_time := 0.0
 var shop_tooltip: ShopTooltip
+var _booster_signs: Array[Control] = []
+var _stamps_sign: Control
+var _items_sign: Control
 
 static var _slip_cache := {}
 
@@ -79,6 +84,10 @@ func _ready() -> void:
 		_build_booster_slot(i)
 	_build_smokes(ITEM_SLOTS[0])
 	_build_drinks()
+	for i in BOOSTER_SLOTS.size():
+		_booster_signs.append(_sold_out_sign(BOOSTER_SLOTS[i], BOOSTER_TILT[i]))
+	_stamps_sign = _sold_out_sign(STAMP_MAT.get_center() + Vector2(0, 10), STAMP_TILT[0])
+	_items_sign = _sold_out_sign(ITEM_SLOTS[0], -4.0)
 	shop_tooltip = ShopTooltip.new()
 	add_child(shop_tooltip)
 
@@ -89,6 +98,7 @@ func set_match_text(text: String) -> void:
 
 func show_stamps(offers: Array[int], locked: bool, locked_text: String) -> void:
 	_stamps_locked_text = locked_text if locked else ""
+	_stamps_sign.visible = offers.is_empty()
 	for i in stamp_items.size():
 		var has_offer := i < offers.size()
 		stamp_items[i].visible = has_offer
@@ -111,6 +121,7 @@ func show_boosters(offers: Array[int]) -> void:
 		booster_items[i].visible = has_offer
 		_booster_tags[i].visible = has_offer
 		_booster_offers[i] = index
+		_booster_signs[i].visible = not has_offer
 		if not has_offer:
 			_end_hover_if(booster_items[i])
 			continue
@@ -123,6 +134,7 @@ func show_boosters(offers: Array[int]) -> void:
 
 func show_smokes(available: bool, label_text: String) -> void:
 	smokes.visible = available
+	_items_sign.visible = not available
 	for extra in _smokes_extras:
 		extra.visible = available
 	smokes.set_label_text(label_text)
@@ -370,6 +382,19 @@ func _label(text: String, pos: Vector2, font_size: int, color: Color, width := 0
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	add_child(label)
 	return label
+
+
+func _sold_out_sign(center: Vector2, tilt: float) -> Control:
+	var sign := _tag(center)
+	sign.text = SOLD_OUT_TEXT
+	sign.size = SOLD_OUT_SIZE
+	sign.position = center - SOLD_OUT_SIZE * 0.5
+	sign.autowrap_mode = TextServer.AUTOWRAP_WORD
+	sign.add_theme_font_size_override("font_size", 16)
+	sign.pivot_offset = SOLD_OUT_SIZE * 0.5
+	sign.rotation_degrees = tilt
+	sign.visible = false
+	return sign
 
 
 func _tag(center: Vector2) -> Label:
