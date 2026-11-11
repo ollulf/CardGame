@@ -392,11 +392,25 @@ func _finish_turn() -> void:
 	start_new_turn(owner_to_id(winner))
 
 func _wait_for_continue(anchor: Control, winner: Card.Owner) -> void:
+	var dir := Vector2.DOWN
+	if winner == Card.Owner.AI_1:
+		dir = Vector2.LEFT
+	elif winner == Card.Owner.AI_2:
+		dir = Vector2.RIGHT
+	await _wait_for_click(anchor, dir)
+
+func _wait_for_tie_click(anchor: Control) -> bool:
+	var token := round_token
+	await _wait_for_click(anchor, Vector2.RIGHT)
+	return token == round_token
+
+func _wait_for_click(anchor: Control, dir: Vector2) -> void:
 	if Engine.get_write_movie_path() != "" or DisplayServer.get_name() == "headless" or anchor == null:
 		await get_tree().create_timer(TURN_WINNER_SHOW_TIME, false).timeout
 		return
 	var token := round_token
 	await DialogueManager.wait_until_idle()
+	await TutorialPopups.wait_idle()
 	if token != round_token or not is_instance_valid(anchor):
 		return
 	_free_continue_arrow()
@@ -405,11 +419,6 @@ func _wait_for_continue(anchor: Control, winner: Card.Owner) -> void:
 	get_tree().current_scene.add_child(arrow)
 	var rect := anchor.get_global_rect()
 	var center := rect.get_center()
-	var dir := Vector2.DOWN
-	if winner == Card.Owner.AI_1:
-		dir = Vector2.LEFT
-	elif winner == Card.Owner.AI_2:
-		dir = Vector2.RIGHT
 	arrow.angle = dir.angle() - PI * 0.5
 	var edge := minf(rect.size.x * 0.5 / maxf(absf(dir.x), 0.001), rect.size.y * 0.5 / maxf(absf(dir.y), 0.001)) + 20.0
 	arrow.global_position = center + dir * edge - Vector2(5.0, 3.0)
@@ -417,9 +426,11 @@ func _wait_for_continue(anchor: Control, winner: Card.Owner) -> void:
 	_free_continue_arrow()
 
 func _free_continue_arrow() -> void:
-	if is_instance_valid(_continue_arrow):
-		_continue_arrow.queue_free()
+	var arrow := _continue_arrow
 	_continue_arrow = null
+	if is_instance_valid(arrow):
+		arrow.clicked.emit()
+		arrow.queue_free()
 
 func _end_round(loosers: Array[int]) -> void:
 	last_round_loosers = loosers
@@ -649,7 +660,7 @@ func resolve_tie(loosers: Array[int]) -> Array[int]:
 		for id in loosers:
 			if tie_rank(draws[id]) == lowest:
 				next.append(id)
-		await CardManager.show_tie_break(draws, next)
+		await CardManager.show_tie_break(draws, next, _wait_for_tie_click)
 		if token != round_token:
 			return next
 		loosers = next
