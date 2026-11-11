@@ -369,17 +369,31 @@ func pick(card: Card, cell: Control = null) -> bool:
 		_hint_label.text = PICK_CONFIRM_HINT
 		_hint_label.modulate = SELECTED_COLOR
 		return false
-	if not PlayerDataManager.apply_stamp(card, pending_stamp):
+	var stamp := pending_stamp
+	if not PlayerDataManager.apply_stamp(card, stamp):
 		return false
 	pending_stamp = CardStamp.Id.NONE
 	stamp_applied.emit(card)
+	var stamped_cell := cell if cell != null else _picked_cell
+	var visual: CardVisual = null
+	if stamped_cell != null and is_instance_valid(stamped_cell) and stamped_cell.get_child_count() > 0:
+		visual = stamped_cell.get_child(0) as CardVisual
+	if visual != null:
+		visual.update_stamp_badge()
+		CardFx.stamp_thump(visual, stamp)
 	if close_after_pick:
 		close_after_pick = false
-		hide()
-		closed.emit()
+		get_tree().create_timer(CardFx.STAMP_LENGTH if visual != null else 0.0, true).timeout.connect(_finish_pick)
 		return true
 	_show_offers()
 	return true
+
+
+func _finish_pick() -> void:
+	if not visible:
+		return
+	hide()
+	closed.emit()
 
 
 func _mark_cell(cell: Control, active: bool) -> void:
