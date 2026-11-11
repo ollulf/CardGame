@@ -6,12 +6,12 @@ signal closed
 const SPEECH_BUBBLE := preload("res://scenes/speech_bubble.tscn")
 const SEAT_COUNT := 3
 const SEAT_OFFSETS := [Vector2(-276, -18), Vector2(66, 0), Vector2(-66, 0)]
-const TRIGGERS := ["match_start", "round_start", "turn_start", "turn_end", "round_end", "match_end", "zero_beats_nine", "zero_played", "alk_played", "tie_played", "round_tie", "run_won"]
+const TRIGGERS := ["match_start", "round_start", "turn_start", "turn_end", "round_end", "match_won", "match_lost", "run_lost", "zero_beats_nine", "zero_played", "alk_played", "tie_played", "round_tie", "run_won"]
 const ONCE_PER_MATCH_TRIGGERS := ["zero_beats_nine", "zero_played", "alk_played", "tie_played"]
 const ONCE_PER_RUN_TRIGGERS := ["round_tie"]
 const ROUND_TRIGGERS := ["round_start", "turn_start", "turn_end", "round_end"]
 const TURN_TRIGGERS := ["turn_start", "turn_end"]
-const TRIGGER_ALIASES := {"start": "match_start", "end": "match_end"}
+const TRIGGER_ALIASES := {"start": "match_start", "end": "match_won", "match_end": "match_won"}
 const ANY := 0
 const NO_SEAT := -1
 const BAR_SPEAKER := 3
@@ -141,7 +141,7 @@ func clear_waiting() -> void:
 	_drop_waiting()
 
 func play_match_end() -> void:
-	_fire("match_end")
+	_fire("match_won")
 
 func play_run_won() -> void:
 	_fire("run_won")
@@ -296,7 +296,11 @@ func _on_match_lost(_looser_id: int) -> void:
 		return
 	_match_running = false
 	_drop_waiting()
-	_fire("match_end")
+	if GameManager.get_total_loosers().has(GameManager.HUMAN_ID):
+		_fire("match_lost")
+		_fire("run_lost")
+	else:
+		_fire("match_won")
 
 func _fire(trigger: String, round_number := ANY, turn_number := ANY) -> void:
 	if trigger in ONCE_PER_MATCH_TRIGGERS:
