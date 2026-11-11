@@ -16,6 +16,8 @@ class_name CigPack
 
 @onready var sprite: Sprite2D = $Sprite2D
 
+const PACK_BOTTOM := 16.0
+
 var _base_position: Vector2
 
 func _ready() -> void:
@@ -27,7 +29,7 @@ func _ready() -> void:
 	InteractionManager.grow_touch_shape($CollisionShape2D, Vector2(84, 100))
 
 	if normal_texture != null:
-		sprite.texture = normal_texture
+		_set_texture(normal_texture)
 
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
@@ -40,14 +42,21 @@ func _ready() -> void:
 
 func _on_mouse_entered() -> void:
 	if hover_texture != null:
-		sprite.texture = hover_texture
+		_set_texture(hover_texture)
 	sprite.position = _base_position + hover_offset
 
 
 func _on_mouse_exited() -> void:
 	if normal_texture != null:
-		sprite.texture = normal_texture
+		_set_texture(normal_texture)
 	sprite.position = _base_position
+
+
+func _set_texture(texture: Texture2D) -> void:
+	sprite.texture = texture
+	var w := texture.get_width()
+	var h := texture.get_height()
+	sprite.offset = Vector2((w % 2) * 0.5, PACK_BOTTOM - h * 0.5)
 
 
 func _input_event(_viewport: Viewport, event: InputEvent, _shape_idx: int) -> void:

@@ -18,7 +18,6 @@ const PANEL_BG := Color(0.09, 0.086, 0.11, 0.92)
 const PANEL_BORDER := Color("6b6390")
 const TIP_BG := Color(0.0901961, 0.0862745, 0.109804, 0.96)
 const LOCKED := Color(0.55, 0.55, 0.55)
-const SMOKES_TINT := Color(0.85, 0.32, 0.26)
 const STAMP_SLOTS := [Vector2(420, 150), Vector2(580, 150), Vector2(740, 150)]
 const BOOSTER_SLOTS := [Vector2(420, 390), Vector2(580, 390), Vector2(740, 390)]
 const STAMP_TILT := [-3.0, 2.0, -1.5]
@@ -262,9 +261,8 @@ func _process(delta: float) -> void:
 func _build_smokes(center: Vector2) -> void:
 	var tex: Texture2D = preload("res://sprites/Cigarettes_icon.png")
 	var size_px := tex.get_size() * 3.0
-	smokes = _item(size_px, center - size_px * 0.5 + Vector2(0, -10))
+	smokes = _item(size_px, (center - size_px * 0.5).floor() + Vector2(0, -10))
 	smokes.sprite.texture = tex
-	smokes.sprite.self_modulate = SMOKES_TINT
 	smokes.sprite.pivot_offset = size_px * 0.5
 	smokes.sprite.rotation_degrees = 8.0
 	smokes.clicked.connect(smokes_clicked.emit)
