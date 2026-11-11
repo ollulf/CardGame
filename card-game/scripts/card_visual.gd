@@ -113,9 +113,8 @@ func set_winner(active: bool) -> void:
 	outline.visible = true
 	var rest := scale
 	var pulse := create_tween()
-	pulse.tween_property(self, "scale", rest * CardJuice.WIN_POP_SCALE, 0.12).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	pulse.tween_property(self, "scale", rest, 0.38).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
-	CardJuice.shake(self, CardJuice.WIN_SHAKE_PX, CardJuice.WIN_SHAKE_TIME)
+	pulse.tween_property(self, "scale", rest * CardJuice.WIN_POP_SCALE, CardJuice.WIN_POP_TIME).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	pulse.tween_property(self, "scale", rest, CardJuice.WIN_SETTLE_TIME).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 func destroy():
 	queue_free()
