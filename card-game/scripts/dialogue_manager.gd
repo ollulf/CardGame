@@ -178,7 +178,15 @@ func rewind_to_match(match_number: int) -> void:
 		_used_variants.clear()
 
 func _input(event: InputEvent) -> void:
-	if not is_open() or not event is InputEventMouse or InteractionManager.is_table_blocked():
+	if not is_open() or InteractionManager.is_table_blocked():
+		return
+	if event.is_action_pressed("ui_accept", false, true):
+		get_viewport().set_input_as_handled()
+		if _bubble.is_typed and _speaking_seat != NO_SEAT and not _running_cue:
+			Sfx.play_dialogue_next()
+		_advance()
+		return
+	if not event is InputEventMouse:
 		return
 	if event is InputEventMouseButton and not event.pressed:
 		return

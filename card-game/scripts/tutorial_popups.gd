@@ -509,6 +509,11 @@ static func highlight(text: String) -> String:
 func _input(event: InputEvent) -> void:
 	if _bubble == null or _overlay_open():
 		return
+	if event.is_action_pressed("ui_accept", false, true):
+		get_viewport().set_input_as_handled()
+		if _bubble.modulate.a > 0.0:
+			_dismiss()
+		return
 	if event is InputEventScreenTouch:
 		get_viewport().set_input_as_handled()
 		return

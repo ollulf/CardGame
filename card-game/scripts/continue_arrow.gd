@@ -19,7 +19,8 @@ func _draw() -> void:
 	SpeechBubble.draw_arrow(self, Vector2(-5.0, -3.0), _time)
 
 func _input(event: InputEvent) -> void:
-	if not event is InputEventMouseButton or not event.pressed or event.button_index != MOUSE_BUTTON_LEFT:
+	var is_click: bool = event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT
+	if not is_click and not event.is_action_pressed("ui_accept", false, true):
 		return
 	get_viewport().set_input_as_handled()
 	InteractionManager.skip_next_double_click()
