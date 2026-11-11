@@ -12,6 +12,11 @@ id: trump
 	title: Trump
 	text: [b]Trump[/b] beats every other suit. It is shown at the top and picked [b]at random[/b] each match.
 
+id: enemy_suits
+	when: right after "trump", points at Bernd's hand
+	title: Their cards
+	text: You can see the [b]suit[/b] on the back of every card your opponents hold. Use it to guess who can [b]follow[/b] and who has [b]trump[/b].
+
 id: bierdeckel
 	when: after the first trick is won
 	title: Won tricks
