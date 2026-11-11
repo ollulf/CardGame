@@ -60,7 +60,7 @@ id: cigs
 id: wallet
 	when: you first earn money
 	title: Your money
-	text: Winners share the [b]prize money[/b]. Spend it at the [b]bar[/b]: [b]boosters[/b] with new cards, [b]stamps[/b], cigarettes.
+	text: Winners share the [b]prize money[/b]. Spend it at the [b]bar[/b] on [b]boosters[/b] with new cards. More opens up later.
 
 id: deck_size
 	when: in the deck editor ({min} and {max} are the deck size limits)
@@ -81,3 +81,8 @@ id: horst
 	when: first visit to the bar with Horst (from match 2)
 	title: Horst
 	text: Horst buys [b]3 cards[/b] from your collection for [b]1$[/b], once per visit. A special card counts as 3.
+
+id: stamps
+	when: first bar visit where stamps are on sale (after match 3)
+	title: Stamps
+	text: A [b]stamp[/b] changes one card [b]for good[/b]. Buy one, then pick the card. A card with a stamp or an effect can't take another.

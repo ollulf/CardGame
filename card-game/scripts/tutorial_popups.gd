@@ -67,7 +67,7 @@ const DEFAULT_TIPS := {
 	},
 	"wallet": {
 		"title": "Your money",
-		"text": "Winners share the [b]prize money[/b]. Spend it at the [b]bar[/b]: [b]boosters[/b] with new cards, [b]stamps[/b], cigarettes.",
+		"text": "Winners share the [b]prize money[/b]. Spend it at the [b]bar[/b] on [b]boosters[/b] with new cards. More opens up later.",
 	},
 	"deck_size": {
 		"title": "Your deck",
@@ -76,6 +76,10 @@ const DEFAULT_TIPS := {
 	"drinks": {
 		"title": "Round of drinks",
 		"text": "At the bar a [b]round of drinks[/b] costs [b]{drink_price}$[/b]. Everyone drinks: drinking cards [b]+1[/b], all others [b]-1[/b] for the match.",
+	},
+	"stamps": {
+		"title": "Stamps",
+		"text": "A [b]stamp[/b] changes one card [b]for good[/b]. Buy one, then pick the card. A card with a stamp or an effect can't take another.",
 	},
 	"alk": {
 		"title": "Drinking cards",
