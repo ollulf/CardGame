@@ -154,10 +154,6 @@ func run_cue(cue: String) -> void:
 				cigs_ui.reveal_drinks()
 		"show_drink_round":
 			await _show_drink_round()
-		"unlock_cig_automat":
-			PlayerDataManager.unlock_cig_machine()
-		"ai_1_buys_cigarettes":
-			Missions.add_cigarettes(1, PlayerDataManager.CIGARETTES_PER_PACK)
 		"show_won_turns", "show_life_cards":
 			var ui = get_tree().get_first_node_in_group(WON_ROUNDS_UI_GROUP)
 			if ui:

@@ -7,7 +7,6 @@ signal booster_bought(booster: Dictionary)
 signal collection_changed
 signal deck_changed
 signal buttons_unlock_changed
-signal cig_machine_changed(unlocked: bool)
 signal stamp_offers_changed
 signal booster_offers_changed
 signal stamp_applied(card: Card)
@@ -41,6 +40,7 @@ const DRINK_BONUS_PER_DRINK := 1
 const DRINK_ROUND_PRICE := 5
 const DRINK_ROUND_FROM_MATCH := 3
 const STAMPS_FROM_MATCH := 4
+const SMOKES_FROM_MATCH := 3
 const ALK_BOOSTER_CARDS_FROM_MATCH := 4
 const HORST_FROM_MATCH := 2
 const HORST_CARDS_PER_DEAL := 3
@@ -73,7 +73,6 @@ var drinking_levels := {
 var player_name := ""
 var money := 0
 var starting_money_granted := false
-var cig_machine_unlocked := false
 var smoke_unlocked := false
 
 var collection: Array[Card] = []
@@ -196,17 +195,11 @@ func spend(price: int) -> bool:
 	set_money(money - price)
 	return true
 
-func unlock_cig_machine() -> void:
-	set_cig_machine_unlocked(true)
-
-func set_cig_machine_unlocked(value: bool) -> void:
-	if cig_machine_unlocked == value:
-		return
-	cig_machine_unlocked = value
-	cig_machine_changed.emit(value)
+func is_cig_machine_available() -> bool:
+	return DialogueManager.upcoming_match() >= SMOKES_FROM_MATCH
 
 func buy_cigarettes() -> bool:
-	if not cig_machine_unlocked or InteractionManager.cigPack == null or not spend(CIGARETTE_PACK_PRICE):
+	if not is_cig_machine_available() or InteractionManager.cigPack == null or not spend(CIGARETTE_PACK_PRICE):
 		return false
 	return true
 
@@ -446,7 +439,6 @@ func capture_state() -> Dictionary:
 		"horst_offer_used": horst_offer_used,
 		"money": money,
 		"starting_money_granted": starting_money_granted,
-		"cig_machine_unlocked": cig_machine_unlocked,
 		"smoke_unlocked": smoke_unlocked,
 		"collection": collection.duplicate(),
 		"active_deck": active_deck.duplicate(),
@@ -457,7 +449,6 @@ func restore_state(state: Dictionary) -> void:
 	starting_money_granted = state.get("starting_money_granted", false)
 	smoke_unlocked = state.get("smoke_unlocked", false)
 	set_money(state.get("money", 0))
-	set_cig_machine_unlocked(state.get("cig_machine_unlocked", false))
 	collection.assign(state.get("collection", []))
 	active_deck.assign(state.get("active_deck", []))
 	_top_up_active_deck()

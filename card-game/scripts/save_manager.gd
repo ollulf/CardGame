@@ -102,7 +102,6 @@ static func state_from_data(data: Dictionary):
 	var state := {
 		"money": maxi(0, _int(data.get("money"), 0)),
 		"starting_money_granted": data.get("starting_money_granted") == true,
-		"cig_machine_unlocked": data.get("cig_machine_unlocked") == true,
 		"smoke_unlocked": data.get("smoke_unlocked") == true,
 		"match": maxi(1, _int(data.get("match"), 1)),
 		"cigarettes": maxi(0, _int(data.get("cigarettes"), 0)),
