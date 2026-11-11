@@ -15,6 +15,7 @@ const CARD_SCALE := 1.0
 const GRID_COLUMNS := 11
 const GRID_GAP := 12
 const BADGE_PIXEL := 6.0
+const TOOL_PIXEL := 5.0
 const BG_COLOR := Color("17161c")
 const BORDER_COLOR := Color("6b6390")
 const TEXT_COLOR := Color("ffffff")
@@ -200,9 +201,19 @@ func _build_entry(stamp: int) -> PanelContainer:
 	box.add_theme_constant_override("separation", 8)
 	entry.add_child(box)
 
-	var holder := CenterContainer.new()
+	var holder := HBoxContainer.new()
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.alignment = BoxContainer.ALIGNMENT_CENTER
+	holder.add_theme_constant_override("separation", 14)
 	box.add_child(holder)
+	var tool := TextureRect.new()
+	tool.texture = StampArt.tool(stamp)
+	tool.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	tool.stretch_mode = TextureRect.STRETCH_SCALE
+	tool.custom_minimum_size = Vector2(StampArt.TOOL_SIZE) * TOOL_PIXEL
+	tool.size_flags_vertical = Control.SIZE_SHRINK_END
+	tool.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	holder.add_child(tool)
 	holder.add_child(StampBadge.create(stamp, BADGE_PIXEL))
 
 	box.add_child(_centered(_label(CardStamp.display_name(stamp), 22, CardStamp.color(stamp).lightened(0.25))))

@@ -50,56 +50,6 @@ const RANK_BONUS := {
 	Id.PLUS_3: 3,
 	Id.PLUS_4: 4,
 }
-const GLYPHS := {
-	Id.COLORLESS: [
-		"..www..",
-		".w...w.",
-		"w..w..w",
-		"w.www.w",
-		"w..w..w",
-		".w...w.",
-		"..www..",
-	],
-	Id.DRAW_FIRST: [
-		"...w...",
-		"..www..",
-		".wwwww.",
-		"...w...",
-		"...w...",
-		".wwwww.",
-		".......",
-	],
-	Id.PLUS_2: [
-		"....www",
-		".w....w",
-		"www.www",
-		".w..w..",
-		"....www",
-	],
-	Id.PLUS_3: [
-		"....www",
-		".w....w",
-		"www.www",
-		".w....w",
-		"....www",
-	],
-	Id.PLUS_4: [
-		"....w.w",
-		".w..w.w",
-		"www.www",
-		".w....w",
-		"......w",
-	],
-	Id.ZERO: [
-		"..www..",
-		".w...w.",
-		".w..ww.",
-		".w.w.w.",
-		".ww..w.",
-		".w...w.",
-		"..www..",
-	],
-}
 
 
 static func is_valid(id: int) -> bool:
@@ -140,10 +90,6 @@ static func description(id: int) -> String:
 
 static func color(id: int) -> Color:
 	return COLORS.get(id, Color.WHITE)
-
-
-static func glyph(id: int) -> Array:
-	return GLYPHS.get(id, [])
 
 
 static func apply_rank(id: int, printed_rank: int) -> int:
