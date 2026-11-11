@@ -23,7 +23,6 @@ var _indicator_time := 0.0
 var _typing := false
 var _last_chars := 0
 var _letters_seen := 0
-var type_plays := 0
 
 func _ready() -> void:
 	visible = false
@@ -41,22 +40,29 @@ static func format_text(text: String) -> String:
 	var last := 0
 	for m in highlight.search_all(text):
 		result += text.substr(last, m.get_start() - last)
-		result += "[wave amp=12 freq=8][color=%s]%s[/color][/wave]" % [HIGHLIGHT_COLOR, m.get_string(1)]
+		result += keyword(m.get_string(1))
 		last = m.get_end()
 	return result + text.substr(last)
 
-func _type_sounds() -> void:
-	var shown := label.visible_characters
-	var parsed := label.get_parsed_text()
-	for i in range(_last_chars, mini(shown, parsed.length())):
+static func keyword(text: String, color: String = HIGHLIGHT_COLOR) -> String:
+	return "[wave amp=12 freq=8][color=%s]%s[/color][/wave]" % [color, text]
+
+static func type_sounds(text_label: RichTextLabel, from_chars: int, letters_seen: int, voice_pitch: float) -> int:
+	var shown := text_label.visible_characters
+	var parsed := text_label.get_parsed_text()
+	for i in range(from_chars, mini(shown, parsed.length())):
 		var c := parsed[i]
 		if c.to_upper() == c.to_lower() and not c.is_valid_int():
 			continue
-		_letters_seen += 1
-		if _letters_seen % TYPE_EVERY == 1:
-			type_plays += 1
-			Sfx.play_type(pitch)
-	_last_chars = maxi(_last_chars, shown)
+		letters_seen += 1
+		if letters_seen % TYPE_EVERY == 1:
+			Sfx.play_type(voice_pitch)
+	return letters_seen
+
+func _type_sounds() -> void:
+	var seen := SpeechBubble.type_sounds(label, _last_chars, _letters_seen, pitch)
+	_letters_seen = seen
+	_last_chars = maxi(_last_chars, label.visible_characters)
 
 func show_line(text: String) -> void:
 	_typing = true
