@@ -9,6 +9,9 @@ const INNER_BG := Color(0.27, 0.26, 0.3)
 const NUMBER := "f2a94a"
 const SPECIAL := "a98bff"
 const LOCKED := "ff7a6b"
+const TEXT := Color(0.95, 0.94, 0.9)
+const TITLE_FONT_SIZE := 17
+const BODY_FONT_SIZE := 15
 const SUIT_ICON_SIZE := 18
 const NO_BREAK := "\u00a0"
 const ICON_GAP := "\u202f"
@@ -31,19 +34,19 @@ func _ready() -> void:
 	z_index = 20
 	visible = false
 	custom_minimum_size.x = WIDTH
-	add_theme_stylebox_override("panel", _box(BG, 3, 8, 12))
+	add_theme_stylebox_override("panel", outer_style())
 	var column := VBoxContainer.new()
 	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	column.add_theme_constant_override("separation", 8)
 	add_child(column)
 	_title = Label.new()
 	_title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_title.add_theme_font_size_override("font_size", 17)
+	_title.add_theme_font_size_override("font_size", TITLE_FONT_SIZE)
 	_title.add_theme_color_override("font_color", Color.WHITE)
 	column.add_child(_title)
 	var inner := PanelContainer.new()
 	inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	inner.add_theme_stylebox_override("panel", _box(INNER_BG, 2, 6, 10))
+	inner.add_theme_stylebox_override("panel", inner_style())
 	column.add_child(inner)
 	_body = RichTextLabel.new()
 	_body.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -52,8 +55,8 @@ func _ready() -> void:
 	_body.fit_content = true
 	_body.scroll_active = false
 	_body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_body.add_theme_font_size_override("normal_font_size", 15)
-	_body.add_theme_color_override("default_color", Color(0.95, 0.94, 0.9))
+	_body.add_theme_font_size_override("normal_font_size", BODY_FONT_SIZE)
+	_body.add_theme_color_override("default_color", TEXT)
 	inner.add_child(_body)
 
 
@@ -105,6 +108,14 @@ static func _number(text: String) -> String:
 
 static func _special(text: String) -> String:
 	return "[color=#%s]%s[/color]" % [SPECIAL, text]
+
+
+static func outer_style() -> StyleBoxFlat:
+	return _box(BG, 3, 8, 12)
+
+
+static func inner_style() -> StyleBoxFlat:
+	return _box(INNER_BG, 2, 6, 10)
 
 
 static func _box(bg: Color, border: int, radius: int, margin: int) -> StyleBoxFlat:
