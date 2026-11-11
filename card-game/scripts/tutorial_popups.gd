@@ -43,7 +43,7 @@ const DEFAULT_TIPS := {
 	},
 	"smoke": {
 		"title": "Smoking cards",
-		"text": "[b]Smoking cards[/b] are always [b]trump[/b]. Each *cigarette* smoked gives them [b]+1[/b] this round, up to [b]+3[/b].",
+		"text": "[b]Smoking cards[/b] are always [b]trump[/b]. Each *cigarette* smoked gives them [b]+1[/b] this round. No limit.",
 	},
 	"tie": {
 		"title": "Equal cards",

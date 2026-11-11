@@ -35,6 +35,7 @@ const STARTING_MONEY := 16
 const CIGARETTE_PACK_PRICE := 6
 const CIGARETTES_PER_PACK := 6
 const MAX_SMOKE_BONUS := 3
+const PLAYER_SMOKE_ROOM := 999
 const DRINK_PENALTY_PER_ROUND := 1
 const DRINK_BONUS_PER_DRINK := 1
 const DRINK_ROUND_PRICE := 5
@@ -118,6 +119,8 @@ func get_smoking(player_id: int) -> int:
 	return total
 
 func smoke_room(player_id: int) -> int:
+	if player_id == 0:
+		return PLAYER_SMOKE_ROOM
 	return maxi(0, MAX_SMOKE_BONUS - get_smoking(player_id))
 
 func cigarettes_until_cap(player_id: int) -> int:

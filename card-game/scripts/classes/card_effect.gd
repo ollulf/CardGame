@@ -146,7 +146,7 @@ static func copied_rank(card: Card, player_id: int) -> int:
 		return -1
 	var rank := last.rank
 	for part in last.buff_parts:
-		if part.get("kind") in ["drink_penalty", "drink_bonus"]:
+		if part.get("kind") in ["drink_penalty", "drink_bonus", "smoke", "suit_up"]:
 			rank -= int(part.get("amount", 0))
 	return CardStamp.apply_rank(card.stamp, rank)
 

@@ -3,6 +3,7 @@ extends  Node
 signal trump_chosen(suit: Card.Suit)
 signal card_played(player_id: int, card: Card)
 signal special_played(card: Card, seat: int)
+signal suit_bonus_changed(player_id: int)
 
 const PLAY_ZONE_OFFSET := Vector2(-330, -350)
 const PLAY_ZONE_SIZE := Vector2(660, 400)
@@ -56,13 +57,21 @@ func add_suit_bonus(player_id: int, suit: Card.Suit, amount: int) -> void:
 	var owned: Dictionary = suit_bonuses.get(player_id, {})
 	owned[suit] = owned.get(suit, 0) + amount
 	suit_bonuses[player_id] = owned
+	suit_bonus_changed.emit(player_id)
 	apply_buffs(player_id)
+
+func _clear_match_buffs() -> void:
+	last_played_by.clear()
+	var seats := suit_bonuses.keys()
+	suit_bonuses.clear()
+	for seat in seats:
+		suit_bonus_changed.emit(seat)
 
 func _ready() -> void:
 	PlayerDataManager.stats_changed.connect(apply_buffs)
 	trump_chosen.connect(_on_trump_chosen)
 	GameManager.round_finished.connect(_discard_leftover_hands)
-	GameManager.new_match_started.connect(func(): last_played_by.clear(); suit_bonuses.clear())
+	GameManager.new_match_started.connect(_clear_match_buffs)
 
 func _discard_leftover_hands(_loosers) -> void:
 	var pairs := [[player_hand, player_deck, Card.Owner.HUMAN], [AI_1_hand, AI_1_deck, Card.Owner.AI_1], [AI_2_hand, AI_2_deck, Card.Owner.AI_2]]
@@ -139,7 +148,7 @@ func apply_buffs(player_id: int) -> void:
 		var copied := CardEffect.copied_rank(card, player_id)
 		var target := card.base_rank if copied < 0 else copied
 		var floor_rank := mini(target, 1)
-		if copied < 0 and card.suit == Card.Suit.SMOKE and smoke_bonus != 0:
+		if card.suit == Card.Suit.SMOKE and smoke_bonus != 0:
 			target += smoke_bonus
 			parts.append({"kind": "smoke", "amount": smoke_bonus, "count": cigarettes})
 		if card.suit == Card.Suit.ALK:
@@ -151,11 +160,10 @@ func apply_buffs(player_id: int) -> void:
 			if drink_penalty != 0 and target > 0:
 				parts.append({"kind": "drink_penalty", "amount": lowered - target, "count": drink_rounds, "capped": lowered - target != -drink_penalty, "floor": floor_rank})
 			target = lowered
-		if copied < 0:
-			var suit_extra := suit_bonus(player_id, card.suit)
-			if suit_extra != 0:
-				parts.append({"kind": "suit_up", "amount": suit_extra, "count": suit_extra})
-			target = CardEffect.modify_rank(card, target, player_id)
+		var suit_extra := suit_bonus(player_id, card.suit)
+		if suit_extra != 0:
+			parts.append({"kind": "suit_up", "amount": suit_extra, "count": suit_extra})
+		target = CardEffect.modify_rank(card, target, player_id)
 		var changed := card.rank != target or card.buff_parts != parts
 		card.buff_parts = parts
 		if changed:
