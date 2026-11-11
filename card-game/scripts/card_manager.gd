@@ -166,6 +166,8 @@ func load_player_decks():
 	var match_number := DialogueManager.upcoming_match()
 	var min_rank := Missions.lowest_rank(match_number)
 	var player_cards: Array[Card]
+	if Missions.deck_cards(match_number, 0).is_empty() and PlayerDataManager.active_deck.is_empty():
+		PlayerDataManager.init_active_deck(PlayerDataManager.starter_deck())
 	if Missions.deck_cards(match_number, 0).is_empty() and PlayerDataManager.has_active_deck():
 		player_cards = _lock_suits(_raise_low_ranks(PlayerDataManager.active_deck_copy(), min_rank), match_number)
 	else:
