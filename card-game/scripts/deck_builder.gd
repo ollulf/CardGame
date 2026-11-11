@@ -37,6 +37,7 @@ const MUTED_COLOR := Color("d6d1e6")
 const ACCENT_COLOR := Color("ffcf6e")
 const NEW_COLOR := Color("7ed2a0")
 const WARN_COLOR := Color("e5735e")
+const SPECIAL_COLOR := Color("a98bff")
 
 const SUIT_COLORS := {
 	Card.Suit.HEARTS: Color("ff6f91"),
@@ -56,6 +57,7 @@ var _deck_row: Control
 var _deck_counter: Label
 var _rows: VBoxContainer
 var _card_info: Label
+var _card_boxes: VBoxContainer
 var _preview_holder: CenterContainer
 var _close_button: Button
 var _pending_rebuild := false
@@ -129,7 +131,13 @@ func _build() -> void:
 	_card_info = _label("", 14, FG_COLOR)
 	_card_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_card_info.custom_minimum_size = Vector2(info.size.x, 0)
+	_card_info.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	info.add_child(_card_info)
+	_card_boxes = VBoxContainer.new()
+	_card_boxes.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_card_boxes.custom_minimum_size = Vector2(info.size.x, 0)
+	_card_boxes.add_theme_constant_override("separation", 6)
+	info.add_child(_card_boxes)
 	_preview_holder = CenterContainer.new()
 	_preview_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_preview_holder.custom_minimum_size = Vector2(info.size.x, 0)
@@ -476,28 +484,51 @@ func _is_left_click(event: InputEvent) -> bool:
 
 func _show_card(card: Card) -> void:
 	_clear(_preview_holder)
+	_clear(_card_boxes)
 	if card == null:
 		if InteractionManager.uses_touch():
 			_card_info.text = "Tap a card to see it here.\nTap it again to move it between your deck and your cards."
 		else:
 			_card_info.text = "Hover a card to see it here.\nClick a card to move it between your deck and your cards."
 		return
-	var lines: Array[String] = ["%s %d" % [SUIT_NAMES[card.suit], card.base_rank]]
+	_card_info.text = "%s %d" % [SUIT_NAMES[card.suit], card.base_rank]
 	match card.suit:
 		Card.Suit.SMOKE:
-			lines.append(("Never trump (colorless). " if card.is_colorless() else "Always trump. ") + "Gains +1 rank per cigarette smoked.")
+			_add_info_box("Never trump" if card.is_colorless() else "Always trump", ("Colorless. " if card.is_colorless() else "") + "Gains +1 rank per cigarette smoked.", _suit_color(card.suit))
 		Card.Suit.ALK:
-			lines.append("Never trump (colorless)." if card.is_colorless() else "Always trump.")
+			_add_info_box("Never trump" if card.is_colorless() else "Always trump", "Colorless." if card.is_colorless() else "", _suit_color(card.suit))
 	if card.has_effect():
-		lines.append("%s: %s" % [CardEffect.display_name(card.effect), CardEffect.description(card.effect)])
+		_add_info_box(CardEffect.display_name(card.effect), CardEffect.description(card.effect), SPECIAL_COLOR)
 	if card.has_stamp():
-		lines.append("%s stamp: %s" % [CardStamp.display_name(card.stamp), CardStamp.description(card.stamp)])
+		_add_info_box("%s stamp" % CardStamp.display_name(card.stamp), CardStamp.description(card.stamp), ACCENT_COLOR)
 	var holder := Control.new()
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	holder.custom_minimum_size = CARD_SIZE * PREVIEW_SCALE
 	_preview_holder.add_child(holder)
 	_add_card_visual(holder, card, PREVIEW_SCALE)
-	_card_info.text = "\n".join(lines)
+
+
+func _add_info_box(heading: String, text: String, color: Color) -> void:
+	var box := PanelContainer.new()
+	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var style := _box(PANEL_COLOR_2, Color(color, 0.6))
+	style.set_corner_radius_all(4)
+	style.set_content_margin_all(6)
+	box.add_theme_stylebox_override("panel", style)
+	var column := VBoxContainer.new()
+	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	column.add_theme_constant_override("separation", 2)
+	box.add_child(column)
+	var head := _label(heading, 13, color)
+	head.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	column.add_child(head)
+	if text != "":
+		var body := _label(text, 12, FG_COLOR)
+		body.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		body.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		body.custom_minimum_size = Vector2(_card_boxes.custom_minimum_size.x - 16, 0)
+		column.add_child(body)
+	_card_boxes.add_child(box)
 
 
 func _count_same(cards: Array[Card], card: Card) -> int:
