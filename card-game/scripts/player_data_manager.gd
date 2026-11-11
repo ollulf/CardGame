@@ -48,6 +48,7 @@ const HORST_DEALS_PER_VISIT := 1
 const HORST_OFFER_FROM_MATCH := 4
 const HORST_OFFER_PRICE := 4
 const BOOSTER_OFFERS_PER_MATCH := 3
+const BOOSTER_OFFER_WEIGHTS: Array[int] = [60, 40]
 const BOOSTERS: Array[Dictionary] = [
 	{"name": "Kiosk Pack", "price": 5, "cards": 9, "min_rank": 0, "max_rank": 9, "special_min": 0, "special_max": 0, "rare_min": 1, "rare_max": 2, "filler": "common", "alk_from_match": ALK_BOOSTER_CARDS_FROM_MATCH, "tint": Color(0.78, 0.88, 1.0, 1), "contents": "1-2 rare trump cards + common suits"},
 	{"name": "Back-Room Pack", "price": 8, "cards": 3, "min_rank": 0, "max_rank": 9, "special_min": 0, "special_max": 1, "filler": "rare", "alk_from_match": ALK_BOOSTER_CARDS_FROM_MATCH, "tint": Color(1.0, 0.8, 0.4, 1), "contents": "0-1 special effect card + rare trump cards"},
@@ -222,15 +223,38 @@ func get_booster_offers() -> Array[int]:
 	var match_number := DialogueManager.upcoming_match()
 	if booster_offers_match != match_number:
 		booster_offers_match = match_number
-		booster_offers.clear()
-		var pool: Array[int] = []
-		for i in BOOSTERS.size():
-			if is_booster_available(BOOSTERS[i]):
-				pool.append(i)
-		for i in BOOSTER_OFFERS_PER_MATCH:
-			booster_offers.append(pool.pick_random() if not pool.is_empty() else -1)
+		booster_offers.assign(roll_booster_offers())
 		booster_offers_changed.emit()
 	return booster_offers
+
+func roll_booster_offers() -> Array[int]:
+	var pool: Array[int] = []
+	for i in BOOSTERS.size():
+		if is_booster_available(BOOSTERS[i]):
+			pool.append(i)
+	var offers: Array[int] = []
+	for i in BOOSTER_OFFERS_PER_MATCH:
+		if pool.is_empty():
+			offers.append(-1)
+		elif i == 0:
+			offers.append(pool[0])
+		else:
+			offers.append(_weighted_booster(pool))
+	return offers
+
+func _weighted_booster(pool: Array[int]) -> int:
+	var total := 0
+	for i in pool:
+		total += _offer_weight(i)
+	var roll := randi_range(1, maxi(total, 1))
+	for i in pool:
+		roll -= _offer_weight(i)
+		if roll <= 0:
+			return i
+	return pool[0]
+
+func _offer_weight(index: int) -> int:
+	return BOOSTER_OFFER_WEIGHTS[index] if index < BOOSTER_OFFER_WEIGHTS.size() else 1
 
 func buy_booster_offer(index: int) -> bool:
 	var offers := get_booster_offers()
