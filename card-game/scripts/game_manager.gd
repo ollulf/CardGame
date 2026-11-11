@@ -33,6 +33,8 @@ const DECK_PILE_GROUP := "deck_piles"
 const WON_PILE_GROUP := "won_piles"
 const WON_ROUNDS_UI_GROUP := "won_rounds_ui"
 const PRIZE_POT_GROUP := "prize_pot"
+const COIN_POP_RISE := 40.0
+const COIN_POP_TIME := 0.9
 
 # --- State ---
 var current_turn := 0
@@ -367,6 +369,7 @@ func _finish_turn() -> void:
 	var winner_visual := CardManager.highlight_turn_winner()
 
 	message(_message_name(owner_to_id(winner)) + " won the trick")
+	_pay_gamble_stamps(winner)
 
 	await _wait_for_continue(winner_visual, winner)
 	if token != round_token:
@@ -701,3 +704,36 @@ func owner_to_id(owner: Card.Owner) -> int:
 func message(text: String) -> void:
 	send_message.emit(text)
 	
+
+
+func _pay_gamble_stamps(winner: Card.Owner) -> void:
+	for visual in CardManager.played_visuals():
+		var card: Card = visual.card
+		if card.stamp != CardStamp.Id.GAMBLE or card.owner == winner:
+			continue
+		var seat := owner_to_id(card.owner)
+		if seat == HUMAN_ID:
+			PlayerDataManager.add_money(CardStamp.GAMBLE_PAY)
+		else:
+			Missions.add_budget(seat, CardStamp.GAMBLE_PAY)
+		Sfx.play_coin_drop()
+		_coin_pop(visual, "+%d$" % CardStamp.GAMBLE_PAY)
+
+
+func _coin_pop(visual: CardVisual, text: String) -> void:
+	var pop := Label.new()
+	pop.text = text
+	pop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	pop.z_index = 50
+	pop.add_theme_font_size_override("font_size", InteractionManager.font_px(22))
+	pop.add_theme_color_override("font_color", Color("#" + ShopTooltip.NUMBER))
+	pop.add_theme_color_override("font_outline_color", Color(0.1, 0.08, 0.07))
+	pop.add_theme_constant_override("outline_size", 6)
+	visual.get_parent().add_child(pop)
+	pop.reset_size()
+	var card_rect := Rect2(visual.global_position, visual.size * visual.get_global_transform().get_scale())
+	pop.global_position = card_rect.get_center() - pop.size * 0.5
+	var tween := pop.create_tween()
+	tween.tween_property(pop, "global_position:y", pop.global_position.y - COIN_POP_RISE, COIN_POP_TIME).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	tween.parallel().tween_property(pop, "modulate:a", 0.0, COIN_POP_TIME).set_ease(Tween.EASE_IN)
+	tween.tween_callback(pop.queue_free)

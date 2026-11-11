@@ -80,6 +80,10 @@ func budget(match_number: int, seat: int) -> int:
 func budget_left(seat: int) -> int:
 	return maxi(0, budget(DialogueManager.upcoming_match(), seat) - _budget_spent.get(seat, 0))
 
+func add_budget(seat: int, amount: int) -> void:
+	_budget_spent[seat] = _budget_spent.get(seat, 0) - amount
+	budget_changed.emit(seat)
+
 func spend_budget(seat: int, amount: int) -> bool:
 	if amount < 0 or budget_left(seat) < amount:
 		return false
