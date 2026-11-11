@@ -118,22 +118,26 @@ func _build() -> void:
 
 	var info_box := _panel(Rect2(LEFT_RECT.position + Vector2(0, 66), Vector2(LEFT_RECT.size.x, LEFT_RECT.size.y - 132)))
 	var info := VBoxContainer.new()
-	info.position = Vector2(12, 10)
-	info.size = info_box.size - Vector2(24, 20)
-	info.add_theme_constant_override("separation", 14)
-	info_box.add_child(info)
+	var info_scroll := ScrollContainer.new()
+	info_scroll.position = Vector2(12, 10)
+	info_scroll.size = info_box.size - Vector2(24, 20)
+	info_scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	info_box.add_child(info_scroll)
+	info.size = Vector2(info_scroll.size.x - 10, 0)
+	info.add_theme_constant_override("separation", 4)
+	info_scroll.add_child(info)
 	_card_info = _label("", 14, FG_COLOR)
 	_card_info.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_card_info.custom_minimum_size = Vector2(info.size.x, 0)
 	info.add_child(_card_info)
 	_preview_holder = CenterContainer.new()
 	_preview_holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_preview_holder.custom_minimum_size = Vector2(info.size.x, CARD_SIZE.y * PREVIEW_SCALE)
+	_preview_holder.custom_minimum_size = Vector2(info.size.x, 0)
 	info.add_child(_preview_holder)
 	_stats_panel = VBoxContainer.new()
 	_stats_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_stats_panel.custom_minimum_size = Vector2(info.size.x, 0)
-	_stats_panel.add_theme_constant_override("separation", 6)
+	_stats_panel.add_theme_constant_override("separation", 2)
 	info.add_child(_stats_panel)
 
 	_close_button = Button.new()

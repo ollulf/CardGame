@@ -301,16 +301,16 @@ vertical_alignment = 1
 [node name="StampStand" type="Control" parent="Room"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 270.0
-offset_top = 318.0
-offset_right = 414.0
+offset_left = 264.0
+offset_top = 264.0
+offset_right = 426.0
 offset_bottom = 414.0
 script = ExtResource("2_machine")
 
 [node name="Sprite" type="TextureRect" parent="Room/StampStand"]
 layout_mode = 0
-offset_right = 24.0
-offset_bottom = 16.0
+offset_right = 27.0
+offset_bottom = 25.0
 scale = Vector2(6, 6)
 mouse_filter = 2
 
@@ -318,9 +318,9 @@ mouse_filter = 2
 visible = false
 z_index = 10
 layout_mode = 0
-offset_left = -28.0
+offset_left = -22.0
 offset_top = -40.0
-offset_right = 172.0
+offset_right = 178.0
 offset_bottom = -8.0
 mouse_filter = 2
 theme_override_font_sizes/font_size = 13
