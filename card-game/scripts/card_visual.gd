@@ -147,6 +147,7 @@ func update_effect_badge() -> void:
 			move_child(badge, back.get_index())
 	else:
 		badge.set_effect(card.effect)
+	badge.set_ring(CardStamp.color(card.stamp) if card.has_stamp() else Color.TRANSPARENT)
 	badge.position = ((CARD_FACE_SIZE - badge.size) * 0.5).round()
 
 func update_stamp_badge() -> void:
@@ -154,7 +155,7 @@ func update_stamp_badge() -> void:
 	$SuitIcon.modulate = tint
 	$SuitIcon2.modulate = tint
 	var badge := get_node_or_null("StampBadge") as StampBadge
-	if not card.has_stamp():
+	if not card.has_stamp() or card.has_effect():
 		if badge != null:
 			badge.queue_free()
 		return

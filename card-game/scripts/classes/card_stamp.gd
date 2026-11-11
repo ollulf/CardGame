@@ -99,4 +99,4 @@ static func apply_rank(id: int, printed_rank: int) -> int:
 
 
 static func can_stamp(card: Card) -> bool:
-	return card != null and not card.has_stamp() and not card.has_effect()
+	return card != null and not card.has_stamp()

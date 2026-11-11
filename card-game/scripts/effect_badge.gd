@@ -5,6 +5,8 @@ const PIXEL := 2.0
 const BORDER_COLOR := Color(0.1, 0.08, 0.07)
 const PAPER_COLOR := Color(0.97, 0.95, 0.9)
 const INK_COLOR := Color(0.1, 0.08, 0.07)
+const RING_GAP := 0.5
+const RING_WIDTH := 1.5
 const TEXTURES := {
 	CardEffect.Id.DRAW: preload("res://sprites/draw_icon.png"),
 	CardEffect.Id.COPY: preload("res://sprites/copy_icon.png"),
@@ -14,6 +16,7 @@ const TEXTURES := {
 
 var effect := CardEffect.Id.NONE
 var pixel := PIXEL
+var ring_color := Color.TRANSPARENT
 
 
 static func create(effect_id: int, pixel_size: float = PIXEL) -> EffectBadge:
@@ -44,6 +47,8 @@ func set_effect(effect_id: int) -> void:
 
 
 func _draw() -> void:
+	if ring_color.a > 0.0:
+		_draw_ring()
 	if TEXTURES.has(effect):
 		draw_texture_rect(TEXTURES[effect], Rect2(Vector2.ZERO, size), false)
 		return
@@ -65,3 +70,21 @@ func _draw() -> void:
 				_:
 					continue
 			draw_rect(Rect2(Vector2(x, y) * pixel, Vector2.ONE * pixel), color)
+
+
+func set_ring(color: Color) -> void:
+	ring_color = color
+	queue_redraw()
+
+
+func _draw_ring() -> void:
+	var cells := size / pixel
+	var center := cells * 0.5
+	var radius := maxf(cells.x, cells.y) * 0.5 + RING_GAP
+	for y in range(floori(center.y - radius - RING_WIDTH), ceili(center.y + radius + RING_WIDTH)):
+		for x in range(floori(center.x - radius - RING_WIDTH), ceili(center.x + radius + RING_WIDTH)):
+			var distance := Vector2(x + 0.5, y + 0.5).distance_to(center)
+			if distance >= radius and distance < radius + RING_WIDTH:
+				draw_rect(Rect2(Vector2(x, y) * pixel, Vector2.ONE * pixel), ring_color)
+			elif distance >= radius + RING_WIDTH and distance < radius + RING_WIDTH + 1.0:
+				draw_rect(Rect2(Vector2(x, y) * pixel, Vector2.ONE * pixel), BORDER_COLOR)

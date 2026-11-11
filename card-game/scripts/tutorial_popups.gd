@@ -83,7 +83,7 @@ const DEFAULT_TIPS := {
 	},
 	"stamps": {
 		"title": "Stamps",
-		"text": "A [b]stamp[/b] changes one card [b]for good[/b]. Buy one, then pick the card. A card with a stamp or an effect can't take another.",
+		"text": "A [b]stamp[/b] changes one card [b]for good[/b]. Buy one, then pick the card. Each card takes one stamp, specials too.",
 	},
 	"alk": {
 		"title": "Drinking cards",

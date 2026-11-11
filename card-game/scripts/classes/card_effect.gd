@@ -147,7 +147,7 @@ static func copied_rank(card: Card, player_id: int) -> int:
 	for part in last.buff_parts:
 		if part.get("kind") in ["drink_penalty", "drink_bonus"]:
 			rank -= int(part.get("amount", 0))
-	return rank
+	return CardStamp.apply_rank(card.stamp, rank)
 
 
 static func ai_discount(card: Card, player_id: int) -> float:
