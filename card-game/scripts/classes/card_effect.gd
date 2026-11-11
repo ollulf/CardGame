@@ -84,6 +84,7 @@ const ICONS := {
 		".#########.",
 	],
 }
+const AI_SUIT_CARD_BONUS := 1.0
 const AI_COST_DISCOUNT := {
 	Id.DRAW: 1.5,
 	Id.SUIT_UP: 1.0,
@@ -155,4 +156,21 @@ static func ai_discount(card: Card, player_id: int) -> float:
 		var deck := CardManager.deck_of(player_id)
 		if deck == null or deck.cards.is_empty():
 			return 0.0
+	if card.effect == Id.TRUMP:
+		if card.is_trump or card.suit == Card.Suit.SMOKE or card.suit == Card.Suit.ALK:
+			return 0.0
+		return AI_COST_DISCOUNT[Id.TRUMP] + AI_SUIT_CARD_BONUS * _same_suit_in_hand(card, player_id)
+	if card.effect == Id.SUIT_UP:
+		return AI_COST_DISCOUNT[Id.SUIT_UP] + AI_SUIT_CARD_BONUS * _same_suit_in_hand(card, player_id)
 	return AI_COST_DISCOUNT.get(card.effect, 0.0)
+
+
+static func _same_suit_in_hand(card: Card, player_id: int) -> int:
+	var hand := CardManager.hand_of(player_id)
+	if hand == null:
+		return 0
+	var count := 0
+	for other in hand.cards:
+		if other != card and other.suit == card.suit:
+			count += 1
+	return count
