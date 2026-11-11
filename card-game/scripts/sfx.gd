@@ -61,6 +61,34 @@ const MATCH_LOST_SOUND := preload("res://sounds/stinger_match_lost.wav")
 const MATCH_LOST_DB := 0.0
 const RUN_WON_SOUND := preload("res://sounds/stinger_run_won.wav")
 const RUN_WON_DB := 0.0
+const COIN_DROP_SOUND := preload("res://sounds/coin_drop.ogg")
+const COIN_DROP_DB := -9.0
+const COIN_DROP_PITCH_VARIATION := 0.12
+const COIN_DROP_INTERVAL_MSEC := 45
+const COINS_PAYOUT_SOUND := preload("res://sounds/coins_payout.ogg")
+const COINS_PAYOUT_DB := -6.0
+const STAMP_SOUND := preload("res://sounds/stamp.ogg")
+const STAMP_DB := -3.0
+const GLASS_CLINK_SOUND := preload("res://sounds/glass_clink.ogg")
+const GLASS_CLINK_DB := -6.0
+const GLASS_DOWN_SOUND := preload("res://sounds/glass_down.ogg")
+const GLASS_DOWN_DB := -8.0
+const TABLE_KNOCK_SOUND := preload("res://sounds/table_knock.ogg")
+const TABLE_KNOCK_DB := -5.0
+const CHAIR_SCRAPE_SOUND := preload("res://sounds/chair_scrape.ogg")
+const CHAIR_SCRAPE_DB := -12.0
+const LAST_CALL_SOUND := preload("res://sounds/last_call_bell.ogg")
+const LAST_CALL_DB := -8.0
+const COUGH_SOUNDS := [
+	preload("res://sounds/cough_light.ogg"),
+	preload("res://sounds/cough_mid.ogg"),
+	preload("res://sounds/cough_heavy.ogg"),
+]
+const COUGH_DB := -10.0
+const COUGH_DELAY := 0.4
+const COUGH_BASE_CHANCE := 0.08
+const COUGH_CHANCE_PER_MATCH := 0.18
+
 const DUCK_DB := -14.0
 const DUCK_IN_TIME := 0.15
 const DUCK_OUT_TIME := 0.8
@@ -83,6 +111,7 @@ var _started_msec := {}
 var _protected := {}
 var _duck_tween: Tween
 var _duck_until_msec := 0
+var _last_coin_msec := -1000
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -104,6 +133,8 @@ func _ready() -> void:
 	GameManager.round_finished.connect(_on_round_finished)
 	GameManager.match_lost.connect(_on_match_lost)
 	GameManager.run_won.connect(play_run_won)
+	GameManager.new_match_started.connect(_on_new_match_started)
+	PlayerDataManager.stamp_applied.connect(play_stamp.unbind(1))
 
 func play_card_move(delay: float = 0.0) -> void:
 	if delay > 0.0:
@@ -276,6 +307,53 @@ func play_button() -> void:
 	play(BUTTON_SOUND, 0.05)
 
 
+func play_coin_drop() -> void:
+	var now := Time.get_ticks_msec()
+	if now - _last_coin_msec < COIN_DROP_INTERVAL_MSEC:
+		return
+	_last_coin_msec = now
+	play(COIN_DROP_SOUND, COIN_DROP_PITCH_VARIATION, COIN_DROP_DB)
+
+func play_coins_payout() -> void:
+	play(COINS_PAYOUT_SOUND, 0.04, COINS_PAYOUT_DB)
+
+func play_stamp() -> void:
+	play(STAMP_SOUND, 0.04, STAMP_DB)
+
+func play_drink_round() -> void:
+	play(GLASS_CLINK_SOUND, 0.05, GLASS_CLINK_DB)
+
+func play_glass_down() -> void:
+	play(GLASS_DOWN_SOUND, 0.06, GLASS_DOWN_DB)
+
+func play_table_knock() -> void:
+	play(TABLE_KNOCK_SOUND, 0.03, TABLE_KNOCK_DB)
+
+func play_chair_scrape() -> void:
+	play(CHAIR_SCRAPE_SOUND, 0.08, CHAIR_SCRAPE_DB)
+
+func play_last_call() -> void:
+	play(LAST_CALL_SOUND, 0.0, LAST_CALL_DB, true)
+
+func play_cough(match_number: int) -> void:
+	var level := clampi(match_number - 1, 0, 4)
+	var index := clampi(roundi((level + randf_range(-1.0, 1.0)) / 2.0), 0, COUGH_SOUNDS.size() - 1)
+	play(COUGH_SOUNDS[index], 0.06, COUGH_DB)
+
+
+func _on_new_match_started() -> void:
+	if Missions.is_last_match(GameManager.current_match()):
+		play_last_call()
+
+
+func _on_smoke_burned_out() -> void:
+	var match_number := GameManager.current_match()
+	if randf() > COUGH_BASE_CHANCE + COUGH_CHANCE_PER_MATCH * (match_number - 1):
+		return
+	await get_tree().create_timer(COUGH_DELAY, false).timeout
+	play_cough(match_number)
+
+
 func play_round_lost() -> void:
 	_play_stinger(ROUND_LOST_SOUND, ROUND_LOST_DB)
 
@@ -329,3 +407,5 @@ func _hook_tree(node: Node) -> void:
 func _hook_node(node: Node) -> void:
 	if node is BaseButton and not node.pressed.is_connected(play_button):
 		node.pressed.connect(play_button)
+	elif node is AiSmoke and not node.burned_out.is_connected(_on_smoke_burned_out):
+		node.burned_out.connect(_on_smoke_burned_out)

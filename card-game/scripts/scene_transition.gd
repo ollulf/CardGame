@@ -35,6 +35,7 @@ func play(midpoint: Callable, reverse := false) -> void:
 		return
 	_running = true
 	_set_active(true)
+	Sfx.play_chair_scrape()
 	var size := _blocker.get_viewport_rect().size
 	var dir := -1.0 if reverse else 1.0
 	_bar.size = Vector2(size.x + 2.0, size.y)

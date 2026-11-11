@@ -62,6 +62,7 @@ func pay_out(winner_ids: Array[int]) -> void:
 	amount = 0
 	_label.visible = false
 	var last: Tween = null
+	Sfx.play_coins_payout()
 	for i in flights.size():
 		last = _fly_to_winner(flights[i][0], flights[i][1], i * COIN_DELAY)
 	if last != null:
@@ -85,6 +86,7 @@ func _drop_coin(start: Vector2, slot: int, delay: float) -> Tween:
 	tween.tween_interval(delay)
 	tween.tween_property(coin, "modulate:a", 1.0, 0.05)
 	tween.tween_method(func(t: float): coin.position = from.lerp(target, t) + Vector2(0, -ARC_HEIGHT * sin(t * PI)), 0.0, 1.0, DROP_TIME).set_ease(Tween.EASE_IN)
+	tween.tween_callback(Sfx.play_coin_drop)
 	tween.tween_property(coin, "scale", LAND_SQUASH * COIN_SCALE, 0.05)
 	tween.tween_property(coin, "scale", Vector2.ONE * COIN_SCALE, 0.08)
 	return tween

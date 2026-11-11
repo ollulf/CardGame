@@ -178,6 +178,7 @@ func run_cue(cue: String) -> void:
 				await _pay_prize(DialogueManager.PAY_CUES[words[0]], amount)
 
 func _show_drink_round() -> void:
+	Sfx.play_drink_round()
 	var glass = get_tree().get_first_node_in_group(DrinkGlass.GROUP)
 	if glass:
 		glass.drink_round(true)
@@ -190,6 +191,7 @@ func _show_drink_round() -> void:
 func serve_round_of_drinks(buyer: int) -> void:
 	var speaker := buyer if buyer != HUMAN_ID else 1
 	DialogueManager.say(speaker, ROUND_ORDER_LINES[buyer])
+	Sfx.play_drink_round()
 	var glass = get_tree().get_first_node_in_group(DrinkGlass.GROUP)
 	var servings: Array = []
 	for seat in PlayerDataManager.PLAYERS:
@@ -283,6 +285,7 @@ func reveal_trump() -> void:
 	_trump_revealed = true
 	CardManager.set_trump_suit(match_trump)
 	if first_reveal:
+		Sfx.play_table_knock()
 		await get_tree().create_timer(TRUMP_REVEAL_TIME, false).timeout
 
 func _pick_match_trump() -> void:
