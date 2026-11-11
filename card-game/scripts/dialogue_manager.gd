@@ -6,14 +6,15 @@ signal closed
 const SPEECH_BUBBLE := preload("res://scenes/speech_bubble.tscn")
 const SEAT_COUNT := 3
 const SEAT_OFFSETS := [Vector2(-276, -18), Vector2(66, 0), Vector2(-66, 0)]
-const TRIGGERS := ["match_start", "round_start", "turn_start", "turn_end", "round_end", "match_won", "match_lost", "run_lost", "zero_beats_nine", "zero_played", "alk_played", "tie_played", "round_tie", "run_won", "first_smoke", "smoked", "first_drink", "round_by_you", "round_by_bernd", "round_by_manfred", "bought_cigs", "bought_booster", "bought_stamp", "sold_to_horst"]
+const TRIGGERS := ["match_start", "round_start", "turn_start", "turn_end", "round_end", "match_won", "match_lost", "run_lost", "zero_beats_nine", "zero_played", "alk_played", "tie_played", "round_tie", "run_won", "first_smoke", "smoked", "first_drink", "round_by_you", "round_by_bernd", "round_by_manfred", "bought_cigs", "bought_booster", "bought_stamp", "sold_to_horst", "special_played", "stamp_played"]
 const ONCE_PER_MATCH_TRIGGERS := ["zero_beats_nine", "zero_played", "alk_played", "tie_played", "smoked"]
 const ONCE_PER_RUN_TRIGGERS := ["round_tie", "first_smoke", "first_drink"]
-const VARIANT_TRIGGERS := ["first_smoke", "smoked", "first_drink", "round_by_you", "round_by_bernd", "round_by_manfred", "bought_cigs", "bought_booster", "bought_stamp", "sold_to_horst"]
+const VARIANT_TRIGGERS := ["first_smoke", "smoked", "first_drink", "round_by_you", "round_by_bernd", "round_by_manfred", "bought_cigs", "bought_booster", "bought_stamp", "sold_to_horst", "special_played", "stamp_played"]
 const ROUND_TRIGGER_BY_SEAT := ["round_by_you", "round_by_bernd", "round_by_manfred"]
 const PURCHASE_TRIGGERS := ["bought_cigs", "sold_to_horst", "bought_stamp", "bought_booster"]
 const ROUND_TRIGGERS := ["round_start", "turn_start", "turn_end", "round_end"]
 const TURN_TRIGGERS := ["turn_start", "turn_end"]
+const CARD_TRIGGER_FILTERS := {"special_played": "effect", "stamp_played": "stamp"}
 const TRIGGER_ALIASES := {"start": "match_start", "end": "match_won", "match_end": "match_won"}
 const ANY := 0
 const NO_SEAT := -1
@@ -67,6 +68,7 @@ func _ready() -> void:
 	GameManager.match_lost.connect(_on_match_lost)
 	GameManager.new_match_started.connect(_drop_waiting)
 	CardManager.card_played.connect(_on_card_played)
+	CardManager.special_played.connect(_on_special_played)
 	PlayerDataManager.stats_changed.connect(_on_stats_changed)
 
 	_check_lines()
@@ -406,6 +408,36 @@ func _on_card_played(_player_id: int, card: Card) -> void:
 		_waiting.erase(waiting)
 		_queue_lines(waiting.lines)
 
+func _on_special_played(card: Card, seat: int) -> void:
+	if card == null or not _match_running:
+		return
+	if card.has_effect():
+		_fire_card("special_played", seat, card.effect)
+	if card.has_stamp():
+		_fire_card("stamp_played", seat, card.stamp)
+
+func _fire_card(trigger: String, seat: int, card_id: int) -> void:
+	var key := "%s:%d:%d" % [trigger, seat, card_id]
+	if key in _fired_this_match:
+		return
+	var pool: Array = []
+	for entry in lines:
+		if entry.when != trigger or not _matches(entry.match_number, _match):
+			continue
+		if entry.seat != NO_SEAT and entry.seat != seat:
+			continue
+		if entry.card_id != 0 and entry.card_id != card_id:
+			continue
+		pool.append(entry)
+	if pool.size() > 1:
+		pool = pool.filter(func(entry): return entry.line != _last_variant.get(trigger, -1))
+	if pool.is_empty():
+		return
+	_fired_this_match.append(key)
+	var picked: Dictionary = pool.pick_random()
+	_last_variant[trigger] = picked.line
+	_queue_entry(picked)
+
 func _drop_waiting() -> void:
 	_waiting.clear()
 
@@ -455,8 +487,8 @@ static func _clean_row(raw, line: int, match_number: int, yaml: YamlLite):
 		push_error("DialogueLines line %d: dialogue needs a list of 'lines'" % line)
 		return null
 	for key in raw.keys():
-		if not key in ["when", "round", "turn", "lines"]:
-			push_error("DialogueLines line %d: unknown key '%s' in a dialogue (allowed: when, round, turn, lines)" % [line, key])
+		if not key in ["when", "round", "turn", "lines", "seat", "effect", "stamp"]:
+			push_error("DialogueLines line %d: unknown key '%s' in a dialogue (allowed: when, round, turn, seat, effect, stamp, lines)" % [line, key])
 	var row := {"when": raw.when, "match_number": match_number, "round": ANY, "turn": ANY, "line": line, "lines": []}
 	for filter in ["round", "turn"]:
 		if not raw.has(filter):
@@ -470,11 +502,50 @@ static func _clean_row(raw, line: int, match_number: int, yaml: YamlLite):
 			push_error("DialogueLines line %d: '%s' must be a whole number of 1 or more" % [line, filter])
 			return null
 		row[filter] = raw[filter]
+	if not _clean_card_filters(raw, row, line):
+		return null
 	var spoken_lines = _rows_to_lines(raw.lines.rows) if raw.lines is Dictionary else _items_to_lines(raw.lines, line, yaml)
 	if spoken_lines == null:
 		return null
 	row.lines = spoken_lines
 	return row
+
+static func _clean_card_filters(raw: Dictionary, row: Dictionary, line: int) -> bool:
+	row["seat"] = NO_SEAT
+	row["card_id"] = 0
+	var id_key: String = CARD_TRIGGER_FILTERS.get(raw.when, "")
+	for key in ["seat", "effect", "stamp"]:
+		if not raw.has(key):
+			continue
+		if id_key == "" or (key != "seat" and key != id_key):
+			var allowed := "seat, effect (when: special_played), stamp (when: stamp_played)"
+			push_error("DialogueLines line %d: '%s' does not work with when: %s (allowed: %s)" % [line, key, raw.when, allowed])
+			return false
+	if raw.has("seat"):
+		if not raw.seat is int or raw.seat < 0 or raw.seat >= SEAT_COUNT:
+			push_error("DialogueLines line %d: 'seat' must be 0, 1 or 2" % line)
+			return false
+		row.seat = raw.seat
+	if id_key != "" and raw.has(id_key):
+		var id := card_filter_id(id_key, str(raw[id_key]))
+		if id <= 0:
+			var names := CardEffect.WORDS.values() if id_key == "effect" else CardStamp.Id.keys().slice(1)
+			push_error("DialogueLines line %d: unknown %s '%s' (allowed: %s)" % [line, id_key, raw[id_key], ", ".join(names)])
+			return false
+		row.card_id = id
+	return true
+
+static func card_filter_id(kind: String, text: String) -> int:
+	var wanted := text.strip_edges().to_upper()
+	if kind == "effect":
+		for id in CardEffect.WORDS:
+			if CardEffect.WORDS[id] == wanted or CardEffect.display_name(id).to_upper() == wanted:
+				return id
+		return -1
+	for i in CardStamp.Id.size():
+		if i > 0 and (CardStamp.Id.keys()[i] == wanted or CardStamp.display_name(i).to_upper() == wanted):
+			return i
+	return -1
 
 static func _rows_to_lines(rows: Array):
 	var spoken_lines: Array = []
