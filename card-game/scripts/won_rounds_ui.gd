@@ -1,7 +1,7 @@
 extends CanvasLayer
 
 const PILE_OFFSETS := {
-	Card.Owner.HUMAN: Vector2(72, 62),
+	Card.Owner.HUMAN: Vector2(-45, -88),
 	Card.Owner.AI_1: Vector2(70, 125),
 	Card.Owner.AI_2: Vector2(-70, 125),
 }
