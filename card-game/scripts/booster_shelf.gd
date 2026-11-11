@@ -4,10 +4,11 @@ class_name BoosterShelf
 signal closed
 signal denied
 
-const PANEL_RECT := Rect2(106, 84, 940, 490)
-const ENTRY_SIZE := Vector2(380, 300)
-const ENTRY_GAP := 18.0
+const PANEL_WIDTH := 940.0
+const ENTRY_WIDTH := 380.0
+const ENTRY_GAP := 18
 const ENTRY_PADDING := Vector2(18, 16)
+const PANEL_PADDING := Vector2(24, 18)
 const BG_COLOR := Color("17161c")
 const BORDER_COLOR := Color("6b6390")
 const TEXT_COLOR := Color("ffffff")
@@ -33,7 +34,6 @@ var _deny_tween: Tween
 var _cash_label: Label
 var _hint_label: Label
 var _close_button: Button
-var _panel: Panel
 var show_hint := false
 
 
@@ -52,88 +52,91 @@ func _build() -> void:
 	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(dim)
 
-	_panel = Panel.new()
-	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_panel.position = PANEL_RECT.position
-	_panel.size = PANEL_RECT.size
-	_panel.add_theme_stylebox_override("panel", _box_style(BORDER_COLOR))
-	add_child(_panel)
+	var center := CenterContainer.new()
+	center.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	center.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	add_child(center)
+
+	var panel := PanelContainer.new()
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	panel.custom_minimum_size = Vector2(PANEL_WIDTH, 0)
+	var panel_style := _box_style(BORDER_COLOR)
+	panel_style.content_margin_left = PANEL_PADDING.x
+	panel_style.content_margin_right = PANEL_PADDING.x
+	panel_style.content_margin_top = PANEL_PADDING.y
+	panel_style.content_margin_bottom = PANEL_PADDING.y
+	panel.add_theme_stylebox_override("panel", panel_style)
+	center.add_child(panel)
+
+	var column := VBoxContainer.new()
+	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	column.add_theme_constant_override("separation", 14)
+	panel.add_child(column)
+
+	var header := Control.new()
+	header.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	header.custom_minimum_size = Vector2(0, 48)
+	column.add_child(header)
 
 	var title := HeadlineLabel.new()
 	title.text = "Booster Shelf"
 	title.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	title.position = PANEL_RECT.position + Vector2(0, 18)
-	title.size = Vector2(PANEL_RECT.size.x, 44)
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	add_child(title)
+	title.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	header.add_child(title)
 
 	_cash_label = _label("", 22, PRICE_COLOR)
-	_cash_label.position = PANEL_RECT.position + Vector2(PANEL_RECT.size.x - 140, 20)
-	_cash_label.size = Vector2(120, 32)
 	_cash_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	add_child(_cash_label)
+	_cash_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	_cash_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	header.add_child(_cash_label)
 	PlayerDataManager.money_changed.connect(_on_money_changed)
 	_on_money_changed(PlayerDataManager.money)
 
-	_hint_label = _centered(_label(HINT_TEXT, 15, PRICE_COLOR))
-	_hint_label.position = PANEL_RECT.position + Vector2(0, 390)
-	_hint_label.size = Vector2(PANEL_RECT.size.x, 28)
-	_hint_label.hide()
-	add_child(_hint_label)
-
+	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.alignment = BoxContainer.ALIGNMENT_CENTER
+	row.add_theme_constant_override("separation", ENTRY_GAP)
+	column.add_child(row)
 	for i in PlayerDataManager.BOOSTERS.size():
 		var entry := _build_entry(PlayerDataManager.BOOSTERS[i], pack_tint(PlayerDataManager.BOOSTERS[i]))
-		add_child(entry)
+		row.add_child(entry)
 		entries.append(entry)
+
+	_hint_label = _centered(_label(HINT_TEXT, 15, PRICE_COLOR))
+	_hint_label.hide()
+	column.add_child(_hint_label)
 
 	_close_button = Button.new()
 	_close_button.text = "Close"
 	_close_button.focus_mode = Control.FOCUS_NONE
-	_close_button.size = Vector2(110, 32)
+	_close_button.custom_minimum_size = Vector2(110, 32)
+	_close_button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	_close_button.pressed.connect(close)
-	add_child(_close_button)
+	column.add_child(_close_button)
 	_layout_entries()
 
 
 func _layout_entries() -> void:
-	var shown: Array[PanelContainer] = []
+	var shown := 0
 	for i in entries.size():
 		_rank_labels[i].text = rank_text(PlayerDataManager.BOOSTERS[i], DialogueManager.upcoming_match())
 		entries[i].visible = PlayerDataManager.is_booster_available(PlayerDataManager.BOOSTERS[i])
 		if entries[i].visible:
-			shown.append(entries[i])
-	var top := PANEL_RECT.position.y + 70
-	var height := 0.0
-	if not shown.is_empty():
-		var fit_width := (PANEL_RECT.size.x - (shown.size() + 1) * ENTRY_GAP) / shown.size()
-		var width := minf(ENTRY_SIZE.x, fit_width)
-		var row_width := shown.size() * width + (shown.size() - 1) * ENTRY_GAP
-		var left := PANEL_RECT.get_center().x - row_width / 2.0
-		for entry in shown:
-			entry.custom_minimum_size = Vector2(width, 0)
-			entry.size = Vector2(width, 0)
-		for entry in shown:
-			height = maxf(height, entry.get_combined_minimum_size().y)
-		for i in shown.size():
-			var entry_size := Vector2(width, height)
-			shown[i].custom_minimum_size = entry_size
-			shown[i].size = entry_size
-			shown[i].pivot_offset = entry_size / 2.0
-			shown[i].position = Vector2(left + i * (width + ENTRY_GAP), top)
-	var below := top + height + 10.0
-	_hint_label.position = Vector2(PANEL_RECT.position.x, below)
-	_hint_label.size = Vector2(PANEL_RECT.size.x, 28)
-	var hint_height := 34.0 if _hint_label.visible else 0.0
-	_close_button.position = Vector2(PANEL_RECT.get_center().x - 55, below + hint_height + 6.0)
-	_panel.size.y = maxf(PANEL_RECT.size.y, _close_button.position.y + 32.0 + 16.0 - PANEL_RECT.position.y)
+			shown += 1
+	if shown == 0:
+		return
+	var inner := PANEL_WIDTH - PANEL_PADDING.x * 2.0
+	var width := minf(ENTRY_WIDTH, (inner - (shown - 1) * ENTRY_GAP) / shown)
+	for entry in entries:
+		entry.custom_minimum_size = Vector2(width, 0)
 
 
 func _build_entry(booster: Dictionary, pack_color: Color) -> PanelContainer:
 	var entry := PanelContainer.new()
 	entry.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	entry.custom_minimum_size = ENTRY_SIZE
-	entry.size = ENTRY_SIZE
-	entry.pivot_offset = ENTRY_SIZE / 2.0
+	entry.custom_minimum_size = Vector2(ENTRY_WIDTH, 0)
+	entry.resized.connect(func() -> void: entry.pivot_offset = entry.size / 2.0)
 	var style := _box_style(BORDER_COLOR)
 	style.bg_color = BG_COLOR.lightened(0.06)
 	style.content_margin_left = ENTRY_PADDING.x
@@ -145,7 +148,6 @@ func _build_entry(booster: Dictionary, pack_color: Color) -> PanelContainer:
 
 	var box := VBoxContainer.new()
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	box.alignment = BoxContainer.ALIGNMENT_CENTER
 	box.add_theme_constant_override("separation", 6)
 	entry.add_child(box)
 
@@ -172,6 +174,7 @@ func _build_entry(booster: Dictionary, pack_color: Color) -> PanelContainer:
 	_rank_labels.append(rank_label)
 	var footer := _centered(_label("", 18, SELECTED_COLOR))
 	footer.custom_minimum_size = Vector2(0, 26)
+	footer.size_flags_vertical = Control.SIZE_EXPAND | Control.SIZE_SHRINK_END
 	box.add_child(footer)
 	_footers.append(footer)
 	return entry
@@ -219,7 +222,6 @@ func open() -> void:
 	_hint_label.visible = show_hint
 	_layout_entries()
 	show()
-	_layout_entries.call_deferred()
 
 
 func close() -> void:
@@ -233,12 +235,12 @@ func close() -> void:
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		accept_event()
-		click_at(event.position)
+		click_at(get_global_transform() * event.position)
 
 
 func click_at(point: Vector2) -> void:
 	for i in entries.size():
-		if entries[i].visible and entries[i].get_rect().has_point(point):
+		if entries[i].visible and entries[i].get_global_rect().has_point(point):
 			Sfx.play_button()
 			select(i)
 			return
