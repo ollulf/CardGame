@@ -9,6 +9,7 @@ enum Id {
 	PLUS_3,
 	PLUS_4,
 	ZERO,
+	GAMBLE,
 }
 
 const OFFERS_PER_MATCH := 3
@@ -20,6 +21,7 @@ const PRICES := {
 	Id.PLUS_3: 6,
 	Id.PLUS_4: 8,
 	Id.ZERO: 5,
+	Id.GAMBLE: 3,
 }
 const NAMES := {
 	Id.COLORLESS: "Joker",
@@ -28,6 +30,7 @@ const NAMES := {
 	Id.PLUS_3: "Marked +3",
 	Id.PLUS_4: "Marked +4",
 	Id.ZERO: "Nobody",
+	Id.GAMBLE: "Sore Loser",
 }
 const DESCRIPTIONS := {
 	Id.COLORLESS: "Can always be played, never follows suit rules. Never trump.",
@@ -36,6 +39,7 @@ const DESCRIPTIONS := {
 	Id.PLUS_3: "Permanently +3 rank. Can go above 9.",
 	Id.PLUS_4: "Permanently +4 rank. Can go above 9.",
 	Id.ZERO: "Rank becomes 0, so it beats a 9 of its suit.",
+	Id.GAMBLE: "If this card does not win the trick, you get 1$.",
 }
 const COLORS := {
 	Id.COLORLESS: Color("b8b8c4"),
@@ -44,7 +48,9 @@ const COLORS := {
 	Id.PLUS_3: Color("e08a3a"),
 	Id.PLUS_4: Color("d8483c"),
 	Id.ZERO: Color("8a5ad8"),
+	Id.GAMBLE: Color("5fbf6a"),
 }
+const GAMBLE_PAY := 1
 const RANK_BONUS := {
 	Id.PLUS_2: 2,
 	Id.PLUS_3: 3,

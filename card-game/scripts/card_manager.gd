@@ -386,6 +386,15 @@ func turn_clean_up() -> void:
 	
 	played_cards_turn.empty()
 
+func played_visuals() -> Array[CardVisual]:
+	var visuals: Array[CardVisual] = []
+	if table_root == null:
+		return visuals
+	for child in table_root.get_children():
+		if child is CardVisual and played_cards_turn.cards.has(child.card):
+			visuals.append(child)
+	return visuals
+
 func clear_table() -> void:
 	if table_root == null:
 		return
