@@ -150,10 +150,26 @@ func layout_hand_cards(snap: bool = false) -> void:
 func _slot_position(index: int, count: int) -> Vector2:
 	if count <= 1:
 		return Vector2.ZERO
-	var gap = min(card_space / float(count - 1), MAX_GAP)
+	var gap = min(card_space / float(count - 1), MAX_GAP, _max_gap_for_deck(count))
 	var start_x = -gap * float(count - 1) * 0.5
 	var from_center := float(index) - float(count - 1) * 0.5
 	return Vector2(start_x + gap * float(index), roundf(from_center * from_center * CardJuice.FAN_DROP_PX))
+
+
+func _max_gap_for_deck(count: int) -> float:
+	var limit := _right_limit()
+	if limit <= 0.0:
+		return MAX_GAP
+	var vs := get_viewport().get_visible_rect().size
+	var span := 2.0 * (limit - vs.x * 0.5 - card_half_width * 2.0)
+	return maxf(span / float(count - 1), 8.0)
+
+
+func _right_limit() -> float:
+	for deck_pile in get_tree().get_nodes_in_group(GameManager.DECK_PILE_GROUP):
+		if deck_pile.deck_owner == Card.Owner.HUMAN:
+			return deck_pile.position.x - 32.0 - 14.0
+	return 0.0
 
 
 func _slot_rotation(index: int, count: int) -> float:
