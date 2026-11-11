@@ -6,7 +6,6 @@ signal finished
 enum State { HIDDEN, CLOSED, OPENING, REVEAL, COLLECTING }
 
 const CARD_SCENE := preload("res://scenes/Card.tscn")
-const RIP_SOUND := preload("res://sounds/booster_rip.wav")
 const MAX_ROW_CARDS := 5
 const COLLECT_DELAY := 2.0
 const NORMAL_SUITS: Array[Card.Suit] = [Card.Suit.DIAMONDS, Card.Suit.HEARTS, Card.Suit.SPADES, Card.Suit.CLUBS]
@@ -220,7 +219,7 @@ func click_at(point: Vector2) -> void:
 	match state:
 		State.CLOSED:
 			if Rect2(_pack.position, PACK_SIZE).has_point(point):
-				Sfx.play(RIP_SOUND, 0.05)
+				Sfx.play_booster_rip()
 				_rip_open()
 		State.REVEAL:
 			for i in card_visuals.size():

@@ -2,7 +2,7 @@ extends Node
 
 const POOL_SIZE := 8
 const MAX_POOL_SIZE := 12
-const CIG_MACHINE_SOUND := preload("res://sounds/cig_machine.wav")
+const CIG_MACHINE_SOUND := preload("res://sounds/cig_machine.ogg")
 const CARD_DRAW_SOUND := preload("res://sounds/card_draw.wav")
 const CARD_MOVE_INTERVAL_MSEC := 60
 const CARD_MOVE_PITCH_VARIATION := 0.08
@@ -35,8 +35,8 @@ const BIERDECKEL_MOVE_DB := -6.0
 const BIERDECKEL_MOVE_PITCH_VARIATION := 0.06
 const BIERDECKEL_MOVE_INTERVAL_MSEC := 90
 
-const AMBIENT_SOUND := preload("res://sounds/bar_ambient.mp3")
-const AMBIENT_VOLUME_DB := -24.0
+const AMBIENT_SOUND := preload("res://sounds/ambience_pub.ogg")
+const AMBIENT_VOLUME_DB := -20.0
 const AMBIENT_SILENT_DB := -60.0
 const AMBIENT_FADE_TIME := 2.0
 
@@ -45,22 +45,33 @@ const SMOKE_LOOP_SOUND := preload("res://sounds/smoking_loop.wav")
 const SMOKE_LOOP_DB := -18.0
 const LOOP_FADE_TIME := 0.4
 
-const MUSIC_SOUND := preload("res://sounds/jazz_track.mp3")
+const MUSIC_SOUND := preload("res://sounds/music_jazz.ogg")
 const MUSIC_VOLUME_DB := -17.0
 const MUSIC_SILENT_DB := -60.0
 const MUSIC_FADE_TIME := 3.0
+const LATE_MUSIC_SOUND := preload("res://sounds/music_late_piano.ogg")
+const LATE_MUSIC_VOLUME_DB := -18.0
+const LATE_MUSIC_FROM_MATCH := 4
+const MUSIC_SWAP_FADE_TIME := 2.0
+
+const CROWD_SOUND := preload("res://sounds/ambience_crowd.ogg")
+const MOOD_CROWD_DB := [-60.0, -30.0, -26.0, -23.0, -21.0]
+const MOOD_LOWPASS_HZ := [20000.0, 14000.0, 8000.0, 4500.0, 2800.0]
+const MOOD_MUSIC_PITCH := [1.0, 1.0, 0.99, 0.98, 0.97]
+const MOOD_FADE_TIME := 4.0
+const BOOSTER_RIP_SOUND := preload("res://sounds/booster_rip.wav")
 
 const MUSIC_BUS := &"Music"
 const AMBIENCE_BUS := &"Ambience"
 const SFX_BUS := &"SFX"
 const LONG_SOUND_SEC := 1.5
 
-const ROUND_LOST_SOUND := preload("res://sounds/stinger_round_lost.wav")
-const ROUND_LOST_DB := -1.0
-const MATCH_LOST_SOUND := preload("res://sounds/stinger_match_lost.wav")
-const MATCH_LOST_DB := 0.0
-const RUN_WON_SOUND := preload("res://sounds/stinger_run_won.wav")
-const RUN_WON_DB := 0.0
+const ROUND_LOST_SOUND := preload("res://sounds/stinger_round_lost.ogg")
+const ROUND_LOST_DB := -2.0
+const MATCH_LOST_SOUND := preload("res://sounds/stinger_match_lost.ogg")
+const MATCH_LOST_DB := -2.0
+const RUN_WON_SOUND := preload("res://sounds/stinger_run_won.ogg")
+const RUN_WON_DB := -2.0
 const COIN_DROP_SOUND := preload("res://sounds/coin_drop.ogg")
 const COIN_DROP_DB := -9.0
 const COIN_DROP_PITCH_VARIATION := 0.12
@@ -112,6 +123,9 @@ var _protected := {}
 var _duck_tween: Tween
 var _duck_until_msec := 0
 var _last_coin_msec := -1000
+var _crowd: AudioStreamPlayer
+var _mood_tween: Tween
+var _mood_level := -1
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -127,13 +141,20 @@ func _ready() -> void:
 	_music = AudioStreamPlayer.new()
 	_music.bus = MUSIC_BUS
 	add_child(_music)
-	play_music(MUSIC_SOUND, MUSIC_VOLUME_DB)
+	_crowd = AudioStreamPlayer.new()
+	_crowd.bus = AMBIENCE_BUS
+	_crowd.stream = CROWD_SOUND
+	_crowd.volume_db = AMBIENT_SILENT_DB
+	add_child(_crowd)
+	_crowd.play()
+	_apply_mood.call_deferred()
 	get_tree().node_added.connect(_hook_node)
 	_hook_tree(get_tree().root)
 	GameManager.round_finished.connect(_on_round_finished)
 	GameManager.match_lost.connect(_on_match_lost)
 	GameManager.run_won.connect(play_run_won)
 	GameManager.new_match_started.connect(_on_new_match_started)
+	GameManager.round_started.connect(_apply_mood)
 	PlayerDataManager.stamp_applied.connect(play_stamp.unbind(1))
 
 func play_card_move(delay: float = 0.0) -> void:
@@ -303,6 +324,9 @@ func play_booster_cheer() -> void:
 	play(BOOSTER_CHEER_SOUNDS.pick_random(), 0.03, BOOSTER_CHEER_DB)
 	_cheer_player = _last_played
 
+func play_booster_rip() -> void:
+	play(BOOSTER_RIP_SOUND, 0.05)
+
 func play_button() -> void:
 	play(BUTTON_SOUND, 0.05)
 
@@ -342,8 +366,53 @@ func play_cough(match_number: int) -> void:
 
 
 func _on_new_match_started() -> void:
+	_apply_mood()
 	if Missions.is_last_match(GameManager.current_match()):
 		play_last_call()
+
+
+func _apply_mood() -> void:
+	var match_number := GameManager.current_match()
+	_set_music_track(match_number)
+	var level := clampi(match_number - 1, 0, MOOD_CROWD_DB.size() - 1)
+	if level == _mood_level:
+		return
+	_mood_level = level
+	if _mood_tween:
+		_mood_tween.kill()
+	_mood_tween = create_tween().set_parallel()
+	_mood_tween.tween_property(_crowd, "volume_db", MOOD_CROWD_DB[level], MOOD_FADE_TIME)
+	_mood_tween.tween_property(_music, "pitch_scale", MOOD_MUSIC_PITCH[level], MOOD_FADE_TIME)
+	var lowpass := _music_lowpass()
+	if lowpass != null:
+		_mood_tween.tween_property(lowpass, "cutoff_hz", MOOD_LOWPASS_HZ[level], MOOD_FADE_TIME)
+
+
+func _set_music_track(match_number: int) -> void:
+	var late := match_number >= LATE_MUSIC_FROM_MATCH or Missions.is_last_match(match_number)
+	var stream: AudioStream = LATE_MUSIC_SOUND if late else MUSIC_SOUND
+	var volume_db := LATE_MUSIC_VOLUME_DB if late else MUSIC_VOLUME_DB
+	if _music.stream == stream and _music.playing:
+		return
+	if not _music.playing:
+		play_music(stream, volume_db)
+		return
+	if _music_tween:
+		_music_tween.kill()
+	_music_tween = create_tween()
+	_music_tween.tween_property(_music, "volume_db", MUSIC_SILENT_DB, MUSIC_SWAP_FADE_TIME)
+	_music_tween.tween_callback(play_music.bind(stream, volume_db))
+
+
+func _music_lowpass() -> AudioEffectLowPassFilter:
+	var bus := AudioServer.get_bus_index(MUSIC_BUS)
+	if bus < 0:
+		return null
+	for i in AudioServer.get_bus_effect_count(bus):
+		var effect := AudioServer.get_bus_effect(bus, i)
+		if effect is AudioEffectLowPassFilter:
+			return effect
+	return null
 
 
 func _on_smoke_burned_out() -> void:

@@ -8,7 +8,6 @@ const SPLIT_TILT_DEGREES := 5.0
 const SPLIT_DURATION := 0.3
 const RIP_DISTANCE := 5.0
 const RIP_TILT_DEGREES := 14.0
-const RIP_SOUND := preload("res://sounds/booster_rip.wav")
 const LOSS_SCALE := 3.0
 const LOSS_Z_INDEX := 100
 const LOSS_FLY_DURATION := 0.9
@@ -66,7 +65,7 @@ func restore() -> void:
 	_stop_loss()
 
 func _rip() -> void:
-	Sfx.play(RIP_SOUND, 0.05)
+	Sfx.play_booster_rip()
 	split(RIP_DISTANCE, RIP_TILT_DEGREES)
 
 func _stop_loss() -> void:
