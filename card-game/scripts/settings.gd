@@ -98,6 +98,8 @@ func toggle_fullscreen() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not enabled or not can_fullscreen():
 		return
-	if event is InputEventKey and event.pressed and not event.echo and event.alt_pressed and (event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER):
+	if not event is InputEventKey or not event.pressed or event.echo:
+		return
+	if event.keycode == KEY_F11 or (event.alt_pressed and (event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER)):
 		get_viewport().set_input_as_handled()
 		toggle_fullscreen()
