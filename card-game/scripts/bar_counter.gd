@@ -27,7 +27,9 @@ const BOOSTER_MAT := Rect2(300, 290, 560, 250)
 const LEFT_PANEL := Rect2(24, 40, 230, 470)
 const ITEMS_MAT := Rect2(880, 40, 248, 500)
 const ITEM_SLOTS := [Vector2(1004, 150), Vector2(1004, 390)]
-const DRINKS_POS := Vector2(150, 360)
+const COASTER_OFFSET := Vector2(0, 22)
+const DRINKS_TITLE := "Round of drinks"
+const DRINKS_DESCRIPTION := "Everyone at the table drinks: drinking cards +1, all others -1 for the match."
 const PACK_SIZE := Vector2(64, 120)
 const SLIP_SIZE := Vector2i(46, 52)
 const HOVER_LIFT := Vector2(0, -10)
@@ -47,7 +49,7 @@ var match_label: Label
 var _stamp_tags: Array[Label] = []
 var _booster_tags: Array[Label] = []
 var _coaster: TextureRect
-var _drinks_name: Label
+var _drinks_note := ""
 var _drinks_tag: Label
 var _booster_offers: Array[int] = []
 var _stamp_offers: Array[int] = []
@@ -82,7 +84,7 @@ func _ready() -> void:
 	for i in BOOSTER_SLOTS.size():
 		_build_booster_slot(i)
 	_build_smokes(ITEM_SLOTS[0])
-	_build_drinks()
+	_build_drinks(ITEM_SLOTS[1])
 	for i in BOOSTER_SLOTS.size():
 		_booster_signs.append(_sold_out_sign(BOOSTER_SLOTS[i], BOOSTER_TILT[i]))
 	_stamps_sign = _sold_out_sign(STAMP_MAT.get_center() + Vector2(0, 10), STAMP_TILT[0])
@@ -139,12 +141,15 @@ func show_smokes(available: bool, label_text: String) -> void:
 	smokes.set_label_text(label_text)
 
 
-func show_drinks(available: bool, label_text: String) -> void:
+func show_drinks(available: bool, label_text: String, ordered := false) -> void:
 	drinks.visible = available
 	_coaster.visible = available
-	_drinks_name.visible = available
 	_drinks_tag.visible = available
 	drinks.set_label_text(label_text)
+	_drinks_note = label_text if ordered else ""
+	if not available:
+		_end_hover_if(drinks)
+	_refresh_hover_tip()
 
 
 func first_booster_sprite() -> CanvasItem:
@@ -282,7 +287,7 @@ func _build_smokes(center: Vector2) -> void:
 	_smokes_extras[1].text = "%d$" % PlayerDataManager.CIGARETTE_PACK_PRICE
 
 
-func _build_drinks() -> void:
+func _build_drinks(center: Vector2) -> void:
 	_coaster = TextureRect.new()
 	_coaster.texture = preload("res://sprites/Bierdeckel.png")
 	_coaster.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -290,16 +295,28 @@ func _build_drinks() -> void:
 	_coaster.scale = Vector2(3, 3)
 	_coaster.pivot_offset = Vector2(12, 12)
 	_coaster.rotation_degrees = -8.0
-	_coaster.position = DRINKS_POS + Vector2(-96, 6)
+	_coaster.position = center + COASTER_OFFSET - _coaster.pivot_offset
 	add_child(_coaster)
 	TableShadow.add_to(_coaster)
 	var tex: Texture2D = preload("res://sprites/bar/bar_beer_tap.png")
-	drinks = _item(tex.get_size() * ART_SCALE, DRINKS_POS)
+	var size_px := tex.get_size() * ART_SCALE
+	drinks = _item(size_px, (center - size_px * 0.5).floor() + Vector2(0, -10))
 	drinks.sprite.texture = tex
+	drinks.sprite.pivot_offset = size_px * 0.5
 	drinks.clicked.connect(drinks_clicked.emit)
-	_drinks_name = _label("Round of drinks", Vector2(LEFT_PANEL.position.x, 446), 15, MUTED, LEFT_PANEL.size.x)
-	_drinks_tag = _tag(Vector2(LEFT_PANEL.get_center().x, 484))
+	_add_hover(drinks, 0.0, _drinks_tip)
+	_drinks_tag = _tag(center + Vector2(0, 84))
 	_drinks_tag.text = "%d$" % PlayerDataManager.DRINK_ROUND_PRICE
+
+
+func _drinks_tip() -> Array:
+	if not drinks.visible:
+		return []
+	var body := ShopTooltip.highlight_numbers(DRINKS_DESCRIPTION)
+	if _drinks_note != "":
+		body += "
+[color=#%s]%s[/color]" % [ShopTooltip.LOCKED, _drinks_note]
+	return [DRINKS_TITLE, body]
 
 
 func _item(size_px: Vector2, pos: Vector2) -> CigaretteMachine:
