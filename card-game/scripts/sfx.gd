@@ -16,7 +16,8 @@ const CARD_FLIP_DB := 0.0
 const CARD_FLIP_PITCH_VARIATION := 0.1
 const BOOSTER_CHEER_SOUNDS := [
 	preload("res://sounds/booster_cheer_aww.wav"),
-	preload("res://sounds/booster_cheer_haha.wav"),
+	preload("res://sounds/booster_whistle_long.ogg"),
+	preload("res://sounds/booster_whistle_short.ogg"),
 	preload("res://sounds/booster_cheer_oooh.wav"),
 ]
 const BOOSTER_CHEER_DB := -4.0
