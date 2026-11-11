@@ -125,7 +125,7 @@ func _refresh_counter() -> void:
 	var cigs := PlayerDataManager.is_cig_machine_available()
 	counter.show_smokes(cigs, SMOKES_TEXT % PlayerDataManager.CIGARETTE_PACK_PRICE)
 	var drink_text := ROUND_ORDERED_TEXT if _round_ordered else DRINKS_TEXT % PlayerDataManager.DRINK_ROUND_PRICE
-	counter.show_drinks(PlayerDataManager.is_round_of_drinks_available(), drink_text)
+	counter.show_drinks(PlayerDataManager.is_round_of_drinks_available(), drink_text, _round_ordered)
 	var screen := _deck_screen()
 	deck_button.visible = screen != null and screen.can_edit_deck()
 
