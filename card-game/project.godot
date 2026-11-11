@@ -17,6 +17,7 @@ config/icon="res://icon.svg"
 
 [autoload]
 
+Settings="*res://scripts/settings.gd"
 GameManager="*res://scripts/game_manager.gd"
 PlayerDataManager="*res://scripts/player_data_manager.gd"
 InteractionManager="*res://scripts/interaction_manager.gd"
@@ -27,6 +28,11 @@ TutorialScript="*res://scripts/tutorial_script.gd"
 Missions="*res://scripts/missions.gd"
 SaveManager="*res://scripts/save_manager.gd"
 SceneTransition="*res://scripts/scene_transition.gd"
+PauseMenu="*res://scripts/pause_menu.gd"
+
+[audio]
+
+buses/default_bus_layout="res://default_bus_layout.tres"
 
 [display]
 
