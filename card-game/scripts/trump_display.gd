@@ -13,6 +13,8 @@ const DROP_DISTANCE := 40.0
 const REVEAL_TIME := 0.5
 const SPIN_HALF_TIMES := [0.07, 0.08, 0.09, 0.11, 0.14, 0.18, 0.23, 0.3]
 const LAND_HALF_TIME := 0.4
+const SWAP_POP_SCALE := 1.15
+const SWAP_POP_TIME := 0.15
 
 var _root: Control
 var _holder: Control
@@ -67,6 +69,9 @@ func _clear_trump() -> void:
 
 func show_trump(suit: Card.Suit) -> void:
 	if _card_visual != null and _root.visible and _final_suit == suit:
+		return
+	if _card_visual != null and _root.visible:
+		_swap_instantly(suit)
 		return
 	_final_suit = suit
 	if _card_visual != null:
@@ -124,6 +129,20 @@ func _play_reveal() -> void:
 	spin.tween_callback(Sfx.play_trump_land)
 	spin.tween_property(_holder, "scale:x", 1.0, LAND_HALF_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	_spin_tween = spin
+
+func _swap_instantly(suit: Card.Suit) -> void:
+	if _tween != null and _tween.is_valid():
+		_tween.kill()
+	if _spin_tween != null and _spin_tween.is_valid():
+		_spin_tween.kill()
+	_final_suit = suit
+	_holder.position.y = TOP_MARGIN
+	_holder.modulate.a = 1.0
+	_label.modulate.a = 1.0
+	_set_face(suit)
+	_holder.scale = Vector2.ONE * SWAP_POP_SCALE
+	_tween = create_tween()
+	_tween.tween_property(_holder, "scale", Vector2.ONE, SWAP_POP_TIME).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 func _set_face(suit: Card.Suit) -> void:
 	if _card_visual == null or _card_visual.card == null:
