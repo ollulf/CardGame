@@ -6,7 +6,7 @@ signal closed
 const SPEECH_BUBBLE := preload("res://scenes/speech_bubble.tscn")
 const SEAT_COUNT := 3
 const SEAT_OFFSETS := [Vector2(-276, -18), Vector2(66, 0), Vector2(-66, 0)]
-const TRIGGERS := ["match_start", "round_start", "turn_start", "turn_end", "round_end", "match_end", "zero_beats_nine", "zero_played", "alk_played", "tie_played", "round_tie"]
+const TRIGGERS := ["match_start", "round_start", "turn_start", "turn_end", "round_end", "match_end", "zero_beats_nine", "zero_played", "alk_played", "tie_played", "round_tie", "run_won"]
 const ONCE_PER_MATCH_TRIGGERS := ["zero_beats_nine", "zero_played", "alk_played", "tie_played"]
 const ONCE_PER_RUN_TRIGGERS := ["round_tie"]
 const ROUND_TRIGGERS := ["round_start", "turn_start", "turn_end", "round_end"]
@@ -142,6 +142,10 @@ func clear_waiting() -> void:
 
 func play_match_end() -> void:
 	_fire("match_end")
+
+func play_run_won() -> void:
+	_fire("run_won")
+	await wait_until_idle()
 
 func play_round_tie() -> void:
 	if _match_running:
