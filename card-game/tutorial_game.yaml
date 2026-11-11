@@ -9,10 +9,10 @@
 
 - round: 2
   starter: 2
-  you: "HEARTS 8, HEARTS 5, DIAMONDS 0, SPADES 7, SPADES 4"
+  you: "HEARTS 8, HEARTS 5, DIAMONDS 1, SPADES 7, SPADES 4"
   ai_one: "CLUBS 7, CLUBS 5, CLUBS 3, CLUBS 2, CLUBS 1"
   ai_two: "DIAMONDS 9, HEARTS 9, HEARTS 2, DIAMONDS 1, SPADES 2"
-  you_plays: "DIAMONDS 0, auto, auto, auto, auto"
+  you_plays: "DIAMONDS 1, auto, auto, auto, auto"
   ai_one_plays: "auto, auto, auto, auto, auto"
   ai_two_plays: "DIAMONDS 9, auto, auto, auto, auto"
 
