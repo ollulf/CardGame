@@ -11,7 +11,6 @@ const BORDER_COLOR := Color(0.85, 0.75, 0.5)
 const TOOLTIP_LAYER := 90
 const GAP := 8.0
 const SCREEN_MARGIN := 6.0
-const FADE_TIME := 0.1
 const ICON_SIZE := Vector2(18, 18)
 const TEXT_WIDTH := 190.0
 
@@ -20,7 +19,6 @@ static var _instance: BuffTooltip
 var _target: CardVisual
 var _box: Control
 var _key := ""
-var _fade: Tween
 
 
 static func show_for(card_visual: CardVisual, on_layer: int = TOOLTIP_LAYER) -> void:
@@ -98,8 +96,6 @@ func _should_show() -> bool:
 
 
 func _clear() -> void:
-	if _fade != null and _fade.is_valid():
-		_fade.kill()
 	if _box != null:
 		_box.queue_free()
 	_box = null
@@ -107,16 +103,11 @@ func _clear() -> void:
 
 
 func _rebuild() -> void:
-	var fresh := _box == null
 	if _box != null:
 		_box.queue_free()
 	_box = _build_pill(_target.card)
 	add_child(_box)
 	_box.reset_size()
-	if fresh:
-		_box.modulate.a = 0.0
-		_fade = create_tween()
-		_fade.tween_property(_box, "modulate:a", 1.0, FADE_TIME)
 
 
 func _place() -> void:

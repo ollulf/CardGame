@@ -8,7 +8,6 @@ enum Side { ABOVE, BELOW, RIGHT, LEFT, NONE }
 const POPUP_LAYER := 115
 const SHOW_DELAY := 0.45
 const URGENT_DELAY := 0.35
-const FADE_TIME := 0.15
 const AUTO_HOLD := 2.5
 const BUBBLE_WIDTH := 270.0
 const SCREEN_MARGIN := 8.0
@@ -153,10 +152,6 @@ var _was_blocked := false
 var _paused_game := false
 var _pointer_parent: Node
 var _pointer_index := 0
-var _text: RichTextLabel
-var _type_tween: Tween
-var _typed_chars := 0
-var _letters_seen := 0
 
 static func tip(key: String, target = null, urgent := false) -> void:
 	if instance != null and is_instance_valid(instance):
@@ -324,8 +319,6 @@ func _show_next() -> void:
 	_bubble = PointerBubble.new()
 	_bubble.add_theme_stylebox_override("panel", _panel_style())
 	_bubble.mouse_filter = Control.MOUSE_FILTER_STOP
-	_bubble.gui_input.connect(_on_bubble_input)
-	_blocker.gui_input.connect(_on_bubble_input)
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 8)
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -342,10 +335,9 @@ func _show_next() -> void:
 		return
 	_bubble.reset_size()
 	_place()
-	create_tween().tween_property(_bubble, "modulate:a", 1.0, FADE_TIME)
-	var bubble := _bubble
-	await _start_typing()
-	if DialogueManager.auto_advance and _bubble == bubble:
+	_bubble.modulate.a = 1.0
+	if DialogueManager.auto_advance:
+		var bubble := _bubble
 		await get_tree().create_timer(AUTO_HOLD, true).timeout
 		if _bubble == bubble:
 			_dismiss()
@@ -358,9 +350,6 @@ func _show_after_dialogue() -> void:
 func _process(_delta: float) -> void:
 	if _bubble != null and _bubble.modulate.a > 0.0:
 		_place()
-	if is_typing() and _text != null:
-		_letters_seen = SpeechBubble.type_sounds(_text, _typed_chars, _letters_seen, 1.0)
-		_typed_chars = maxi(_typed_chars, _text.visible_characters)
 
 func _place() -> void:
 	var view := get_viewport().get_visible_rect().size
@@ -427,8 +416,6 @@ func _target_rect():
 func _dismiss() -> void:
 	if _bubble == null:
 		return
-	_finish_typing()
-	_text = null
 	_bubble.queue_free()
 	_bubble = null
 	_target = null
@@ -506,44 +493,10 @@ func _body(text: String, width: float) -> PanelContainer:
 	label.add_theme_color_override("default_color", ShopTooltip.TEXT)
 	label.add_theme_font_size_override("normal_font_size", InteractionManager.font_px(ShopTooltip.BODY_FONT_SIZE))
 	label.add_theme_font_size_override("bold_font_size", InteractionManager.font_px(ShopTooltip.BODY_FONT_SIZE))
-	label.visible_characters_behavior = TextServer.VC_CHARS_AFTER_SHAPING
 	label.text = highlight(text)
-	label.visible_characters = 0
-	_text = label
 	inner.add_child(label)
 	return inner
 
-func _start_typing() -> void:
-	if _text == null:
-		return
-	_typed_chars = 0
-	_letters_seen = 0
-	var total := _text.get_total_character_count()
-	_type_tween = create_tween()
-	_type_tween.tween_property(_text, "visible_characters", total, total / SpeechBubble.CHARS_PER_SECOND)
-	while is_typing():
-		await get_tree().process_frame
-
-func is_typing() -> bool:
-	return _type_tween != null and _type_tween.is_valid()
-
-func _finish_typing() -> void:
-	if is_typing():
-		_type_tween.kill()
-	_type_tween = null
-	if _text != null:
-		_text.visible_characters = -1
-
-func _on_bubble_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT and is_typing():
-		_finish_typing()
-		get_viewport().set_input_as_handled()
-
-func _on_button_pressed() -> void:
-	if is_typing():
-		_finish_typing()
-		return
-	_dismiss()
 
 static func highlight(text: String) -> String:
 	var pattern := RegEx.create_from_string("\\[b\\](.*?)\\[/b\\]|\\*([^*]+)\\*|\\bspecial(?: cards?)?\\b")
@@ -556,8 +509,8 @@ static func highlight(text: String) -> String:
 			inner = found.get_string(1)
 		elif found.get_start(2) >= 0:
 			inner = found.get_string(2)
-		var color := ShopTooltip.SPECIAL if "special" in inner.to_lower() else ShopTooltip.NUMBER
-		result += SpeechBubble.keyword(inner, "#" + color)
+		var color := "#" + ShopTooltip.SPECIAL if "special" in inner.to_lower() else SpeechBubble.HIGHLIGHT_COLOR
+		result += SpeechBubble.keyword(inner, color)
 		last = found.get_end()
 	return result + text.substr(last)
 
@@ -568,7 +521,7 @@ func _button() -> Button:
 	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	if InteractionManager.is_phone:
 		button.custom_minimum_size = Vector2(120, 44)
-	button.pressed.connect(_on_button_pressed)
+	button.pressed.connect(_dismiss)
 	return button
 
 class PointerBubble extends PanelContainer:
