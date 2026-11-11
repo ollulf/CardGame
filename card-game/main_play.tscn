@@ -86,7 +86,7 @@ texture = ExtResource("6_r2isv")
 
 [node name="Wallet" type="Area2D" parent="."]
 visible = false
-position = Vector2(1096, 592)
+position = Vector2(1088, 584)
 script = ExtResource("wallet_script")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Wallet"]
@@ -125,7 +125,7 @@ vertical_alignment = 1
 
 [node name="CigPack" type="Area2D" parent="."]
 visible = false
-position = Vector2(878, 608)
+position = Vector2(878, 590)
 scale = Vector2(3, 3)
 script = ExtResource("3_el7dg")
 normal_texture = ExtResource("4_555rj")
