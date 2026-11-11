@@ -18,12 +18,12 @@ const SCREEN_MARGIN := 8.0
 const TAIL_GAP := 30.0
 const POINT_PAD := 36.0
 const MIN_TARGET_SIZE := 4.0
-const BASIC_TIPS := ["follow", "trump", "bierdeckel", "deck", "lives", "smoke"]
+const BASIC_TIPS := ["follow", "trump", "bierdeckel", "deck", "lives"]
 
-const TIPS := {
+const DEFAULT_TIPS := {
 	"follow": {
 		"title": "Your turn",
-		"text": "Play one card. The [b]highest card[/b] of the [b]first suit played[/b] wins the turn. Follow that suit if you can.",
+		"text": "Play one card. The [b]highest card[/b] of the [b]first suit played[/b] wins the turn. The other players must [b]follow the first suit[/b] if they can.",
 	},
 	"trump": {
 		"title": "Trump",
@@ -75,13 +75,57 @@ const TIPS := {
 	},
 	"drinks": {
 		"title": "Round of drinks",
-		"text": "At the bar a [b]Round of Drinks[/b] costs [b]$5[/b]. Everyone drinks: drinking cards [b]+1[/b], all others [b]-1[/b] for the match.",
+		"text": "At the bar a [b]Round of Drinks[/b] costs [b]5$[/b]. Everyone drinks: drinking cards [b]+1[/b], all others [b]-1[/b] for the match.",
 	},
 	"alk": {
 		"title": "Drinking cards",
 		"text": "[b]Drinking cards[/b] are always trump and get [b]+1[/b] for every drink.",
 	},
 }
+
+const TEXTS_PATH := "res://tutorial_popups.yaml"
+const DEFAULT_BUTTON := "Got it"
+
+static var _loaded := false
+static var _file_tips := {}
+static var _file_button := DEFAULT_BUTTON
+
+static func reload_texts() -> void:
+	_loaded = true
+	_file_tips = {}
+	_file_button = DEFAULT_BUTTON
+	var yaml := YamlLite.parse_file(TEXTS_PATH, ["id"])
+	if yaml.data.is_empty():
+		push_warning("TutorialPopups: no usable texts in %s, using built-in texts" % TEXTS_PATH)
+		return
+	for entry in yaml.data:
+		if entry is Dictionary and entry.get("id") == "button":
+			if entry.get("text") is String and entry.text != "":
+				_file_button = entry.text
+			continue
+		if not entry is Dictionary or not entry.get("id") is String or not DEFAULT_TIPS.has(entry.id):
+			push_warning("TutorialPopups: ignoring a tip entry without a known 'id' in %s" % TEXTS_PATH)
+			continue
+		var tip_data: Dictionary = DEFAULT_TIPS[entry.id].duplicate()
+		for field in ["title", "text"]:
+			if entry.get(field) is String and entry[field] != "":
+				tip_data[field] = entry[field]
+			else:
+				push_warning("TutorialPopups: tip '%s' has no '%s' in %s, using the built-in one" % [entry.id, field, TEXTS_PATH])
+		_file_tips[entry.id] = tip_data
+	for key in DEFAULT_TIPS:
+		if not _file_tips.has(key):
+			push_warning("TutorialPopups: tip '%s' is missing in %s, using the built-in text" % [key, TEXTS_PATH])
+
+static func tip_texts(key: String) -> Dictionary:
+	if not _loaded:
+		reload_texts()
+	return _file_tips.get(key, DEFAULT_TIPS[key])
+
+static func button_label() -> String:
+	if not _loaded:
+		reload_texts()
+	return _file_button
 
 static var instance: TutorialPopups
 static var shown: Array[String] = []
@@ -117,13 +161,14 @@ static func load_shown(keys) -> void:
 	shown.clear()
 	if keys is Array:
 		for key in keys:
-			if key is String and TIPS.has(key) and not key in shown:
+			if key is String and DEFAULT_TIPS.has(key) and not key in shown:
 				shown.append(key)
 
 func _init() -> void:
 	layer = POPUP_LAYER
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	instance = self
+	_loaded = false
 
 func _ready() -> void:
 	GameManager.request_play_card.connect(_on_request_play_card)
@@ -140,6 +185,7 @@ func _exit_tree() -> void:
 func _on_request_play_card(player_id: int) -> void:
 	if player_id == GameManager.HUMAN_ID:
 		request("follow", GameManager.human_player)
+		request("trump", _trump_anchor())
 
 func _on_card_played(_player_id: int, card: Card) -> void:
 	if card == null:
@@ -149,8 +195,6 @@ func _on_card_played(_player_id: int, card: Card) -> void:
 		request("smoke", visual, true)
 	elif card.suit == Card.Suit.ALK:
 		request("alk", visual, true)
-	elif card.is_trump and card != CardManager.leading_card:
-		request("trump", visual, true)
 	if card.base_rank == 0:
 		request("zero", visual, true)
 	var tied := _tied_card(card)
@@ -158,7 +202,7 @@ func _on_card_played(_player_id: int, card: Card) -> void:
 		request("tie", _table_visual(tied), true)
 
 func _on_turn_completed(_turn_index: int, winner_id: int) -> void:
-	request("bierdeckel", CardManager.won_pile_of(winner_id as Card.Owner))
+	request("bierdeckel", _won_turns_anchor(winner_id))
 
 func _on_round_started() -> void:
 	if _round_number() > 1:
@@ -166,8 +210,6 @@ func _on_round_started() -> void:
 	var match_number := DialogueManager.upcoming_match()
 	if DialogueManager.match_pays_prize(match_number):
 		request("prize", get_tree().get_first_node_in_group(GameManager.PRIZE_POT_GROUP))
-	if DialogueManager.match_uses_cue("show_drinks"):
-		request("drinks", get_tree().get_first_node_in_group("wallet"))
 
 func _on_round_finished(loosers) -> void:
 	var ui = get_tree().get_first_node_in_group(GameManager.WON_ROUNDS_UI_GROUP)
@@ -182,6 +224,18 @@ func _on_match_lost(looser_id: int) -> void:
 
 func _round_number() -> int:
 	return DialogueManager._round
+
+func _trump_anchor():
+	var display = get_tree().get_first_node_in_group(TrumpDisplay.GROUP)
+	return display.anchor() if display != null else null
+
+func _won_turns_anchor(winner_id: int):
+	var pile := CardManager.won_pile_of(Card.Owner.AI_1)
+	if pile == null or pile.count <= 0:
+		pile = CardManager.won_pile_of(winner_id as Card.Owner)
+	if pile == null:
+		return null
+	return pile.coaster(0)
 
 func _human_deck_pile():
 	for pile in get_tree().get_nodes_in_group(GameManager.DECK_PILE_GROUP):
@@ -206,12 +260,13 @@ func _tied_card(card: Card) -> Card:
 	return null
 
 func request(key: String, target = null, urgent := false) -> void:
-	if key in shown or not TIPS.has(key):
+	if key in shown or not DEFAULT_TIPS.has(key):
 		return
 	shown.append(key)
 	if urgent:
 		_pending.push_front([key, target])
 		await get_tree().create_timer(URGENT_DELAY, false).timeout
+		await DialogueManager.wait_until_idle()
 		if _bubble == null:
 			_show_next()
 	else:
@@ -231,8 +286,11 @@ func _schedule() -> void:
 func _show_next() -> void:
 	if _pending.is_empty() or _bubble != null:
 		return
+	if DialogueManager.is_open():
+		_show_after_dialogue()
+		return
 	var entry: Array = _pending.pop_front()
-	var tip_data: Dictionary = TIPS[entry[0]]
+	var tip_data: Dictionary = tip_texts(entry[0])
 	_target = entry[1]
 	_pause_game()
 	_blocker = Control.new()
@@ -246,8 +304,8 @@ func _show_next() -> void:
 	box.add_theme_constant_override("separation", 4)
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_bubble.add_child(box)
-	box.add_child(_title(tip_data.title))
-	box.add_child(_body(tip_data.text.format({"min": Missions.DECK_MIN, "max": Missions.DECK_MAX}),minf(BUBBLE_WIDTH, get_viewport().get_visible_rect().size.x - 60.0)))
+	box.add_child(_title(tip_data.title.replace("{player}", GameManager.player_name(GameManager.HUMAN_ID))))
+	box.add_child(_body(tip_data.text.replace("{player}", GameManager.player_name(GameManager.HUMAN_ID)).format({"min": Missions.DECK_MIN, "max": Missions.DECK_MAX}), minf(BUBBLE_WIDTH, get_viewport().get_visible_rect().size.x - 60.0)))
 	box.add_child(_button())
 	add_child(_bubble)
 	_lift_pointer()
@@ -264,6 +322,11 @@ func _show_next() -> void:
 		await get_tree().create_timer(AUTO_HOLD, true).timeout
 		if _bubble == bubble:
 			_dismiss()
+
+func _show_after_dialogue() -> void:
+	await DialogueManager.wait_until_idle()
+	if _bubble == null:
+		_show_next()
 
 func _process(_delta: float) -> void:
 	if _bubble != null and _bubble.modulate.a > 0.0:
@@ -418,9 +481,9 @@ func _body(text: String, width: float) -> RichTextLabel:
 
 func _button() -> Button:
 	var button := Button.new()
-	button.text = "Got it"
+	button.text = button_label()
 	button.focus_mode = Control.FOCUS_NONE
-	button.size_flags_horizontal = Control.SIZE_SHRINK_END
+	button.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	if InteractionManager.is_phone:
 		button.custom_minimum_size = Vector2(120, 44)
 	button.pressed.connect(_dismiss)

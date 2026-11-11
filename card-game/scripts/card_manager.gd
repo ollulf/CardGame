@@ -9,6 +9,7 @@ const PLAY_ZONE_SIZE := Vector2(660, 400)
 const HAND_SIZE := 5
 const DEAL_INTERVAL := 0.12
 const DEAL_SETTLE_TIME := 0.45
+const RETURN_FLY_TIME := 0.4
 const CLEAR_TIME := 0.45
 const CLEAR_STAGGER := 0.08
 const COLLECT_GATHER_TIME := 0.25
@@ -46,10 +47,70 @@ var trump_suit : Card.Suit = Card.Suit.SMOKE
 
 var leading_card : Card
 var first_trump_card : Card
+var last_played_by := {}
+var suit_bonuses := {}
+
+func suit_bonus(player_id: int, suit: Card.Suit) -> int:
+	return suit_bonuses.get(player_id, {}).get(suit, 0)
+
+func add_suit_bonus(player_id: int, suit: Card.Suit, amount: int) -> void:
+	var owned: Dictionary = suit_bonuses.get(player_id, {})
+	owned[suit] = owned.get(suit, 0) + amount
+	suit_bonuses[player_id] = owned
+	apply_buffs(player_id)
 
 func _ready() -> void:
 	PlayerDataManager.stats_changed.connect(apply_buffs)
 	trump_chosen.connect(_on_trump_chosen)
+	GameManager.round_finished.connect(_discard_leftover_hands)
+	GameManager.new_match_started.connect(func(): last_played_by.clear(); suit_bonuses.clear())
+
+func _discard_leftover_hands(_loosers) -> void:
+	var pairs := [[player_hand, player_deck, Card.Owner.HUMAN], [AI_1_hand, AI_1_deck, Card.Owner.AI_1], [AI_2_hand, AI_2_deck, Card.Owner.AI_2]]
+	for pair in pairs:
+		var hand: Hand = pair[0]
+		var deck: Deck = pair[1]
+		if hand == null or hand.is_empty():
+			continue
+		var returned := hand.cards.duplicate()
+		hand.cards.clear()
+		var home := _deck_pile_center(pair[2], table_root) if table_root != null else Vector2.ZERO
+		for card: Card in returned:
+			card.rank = card.base_rank
+			card.buff_parts = []
+			if deck != null:
+				deck.cards.append(card)
+			_fly_card_to_deck(card, home)
+		if deck != null:
+			deck.cards.shuffle()
+			deck.move_draw_first_to_top()
+
+func _fly_card_to_deck(card: Card, home: Vector2) -> void:
+	var visual := _find_visual(get_tree().root, card)
+	if visual == null:
+		card.remove()
+		return
+	if card.removed.is_connected(visual.destroy):
+		card.removed.disconnect(visual.destroy)
+	visual.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	visual.z_index = 40
+	var tween := visual.create_tween().set_parallel().set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	tween.tween_property(visual, "global_position", home - visual.size * 0.5, RETURN_FLY_TIME)
+	tween.tween_property(visual, "scale", Vector2.ONE * 0.5, RETURN_FLY_TIME)
+	tween.chain().tween_callback(visual.queue_free)
+	Sfx.play_card_move()
+
+func _find_visual(node: Node, card: Card) -> CardVisual:
+	if node is CardVisual and node.card == card:
+		return node
+	for child in node.get_children():
+		var found := _find_visual(child, card)
+		if found != null:
+			return found
+	return null
+
+static func entry_effect(entry: Array) -> CardEffect.Id:
+	return entry[2] if entry.size() > 2 else CardEffect.Id.NONE
 
 func _on_trump_chosen(_suit: Card.Suit) -> void:
 	for player_id in PlayerDataManager.PLAYERS:
@@ -89,6 +150,10 @@ func apply_buffs(player_id: int) -> void:
 			if drink_penalty != 0 and target > 0:
 				parts.append({"kind": "drink_penalty", "amount": lowered - target, "count": drink_rounds, "capped": lowered - target != -drink_penalty, "floor": mini(card.base_rank, 1)})
 			target = lowered
+		var suit_extra := suit_bonus(player_id, card.suit)
+		if suit_extra != 0:
+			parts.append({"kind": "suit_up", "amount": suit_extra, "count": suit_extra})
+		target = CardEffect.modify_rank(card, target, player_id)
 		var changed := card.rank != target or card.buff_parts != parts
 		card.buff_parts = parts
 		if changed:
@@ -104,9 +169,9 @@ func load_player_decks():
 	else:
 		player_cards = _mission_cards(match_number, 0, Card.Owner.HUMAN)
 	player_deck = Deck.new(player_cards)
+	player_deck.move_draw_first_to_top()
 	AI_1_deck = Deck.new(_mission_cards(match_number, 1, Card.Owner.AI_1))
 	AI_2_deck = Deck.new(_mission_cards(match_number, 2, Card.Owner.AI_2))
-	print("Decks generated")
 
 func _mission_cards(match_number: int, seat: int, owner: Card.Owner) -> Array[Card]:
 	var min_rank := Missions.lowest_rank(match_number)
@@ -118,7 +183,7 @@ func _mission_cards(match_number: int, seat: int, owner: Card.Owner) -> Array[Ca
 		return cards
 	var given: Array[Card] = []
 	for entry in listed:
-		given.append(Card.new(entry[0], entry[1], owner, false))
+		given.append(Card.new(entry[0], entry[1], owner, false, entry_effect(entry)))
 	cards.append_array(_lock_suits(_raise_low_ranks(given, min_rank), match_number))
 	cards.shuffle()
 	return cards
@@ -126,8 +191,8 @@ func _mission_cards(match_number: int, seat: int, owner: Card.Owner) -> Array[Ca
 func _raise_low_ranks(cards: Array[Card], min_rank: int) -> Array[Card]:
 	var result: Array[Card] = []
 	for card in cards:
-		if card.base_rank < min_rank:
-			result.append(Card.new(card.suit, randi_range(min_rank, 9), card.owner, false))
+		if card.base_rank < min_rank and not card.has_stamp():
+			result.append(Card.new(card.suit, randi_range(min_rank, 9), card.owner, false, card.effect))
 		else:
 			result.append(card)
 	return result
@@ -138,7 +203,7 @@ func _lock_suits(cards: Array[Card], match_number: int) -> Array[Card]:
 	var result: Array[Card] = []
 	for card in cards:
 		if card.suit == Card.Suit.ALK:
-			result.append(Card.new(randi_range(0, Card.Suit.CLUBS), card.base_rank, card.owner, false))
+			result.append(Card.new(randi_range(0, Card.Suit.CLUBS), card.printed_rank, card.owner, false, card.effect, card.stamp))
 		else:
 			result.append(card)
 	return result
@@ -148,11 +213,16 @@ func random_trump_suit() -> Card.Suit:
 
 func set_trump_suit(suit: Card.Suit) -> void:
 	trump_suit = suit
-	print("Trump suit: ", Card.Suit.keys()[trump_suit])
 	trump_chosen.emit(trump_suit)
 
+func change_trump_to(suit: Card.Suit, whole_match: bool) -> void:
+	if suit == Card.Suit.SMOKE or suit == Card.Suit.ALK or suit == trump_suit:
+		return
+	if whole_match:
+		GameManager.match_trump = suit
+	set_trump_suit(suit)
+
 func generate_player_hands():	
-	print("Drawing player hands")
 	_place_scripted_cards(player_deck, 0, Card.Owner.HUMAN)
 	_place_scripted_cards(AI_1_deck, 1, Card.Owner.AI_1)
 	_place_scripted_cards(AI_2_deck, 2, Card.Owner.AI_2)
@@ -170,7 +240,6 @@ func generate_player_hands():
 		[AI_2_deck, GameManager.ai_player_2, Card.Owner.AI_2],
 	])
 
-	print("All Hands drawn")
 
 func _deal_cards(seats: Array) -> void:
 	var counts: Array[int] = []
@@ -199,16 +268,24 @@ func _place_scripted_cards(deck: Deck, seat: int, owner: Card.Owner) -> void:
 	var planned: Array = TutorialScript.hand_cards(seat)
 	for i in min(planned.size(), deck.cards.size()):
 		var index: int = deck.cards.size() - 1 - i
-		deck.replace_card(index, Card.new(planned[i][0], planned[i][1], owner, false))
+		deck.replace_card(index, Card.new(planned[i][0], planned[i][1], owner, false, entry_effect(planned[i])))
 
 func is_legal_play(hand: Hand, card: Card) -> bool:
 	if not hand.contains(card):
 		return false
-	if leading_card == null:
+	if leading_card == null or card.is_colorless():
 		return true
 	if leading_card.is_trump:
 		return card.is_trump or not hand.has_trump_card()
-	return card.suit == leading_card.suit or not hand.contains_card_of_suit(leading_card.suit)
+	var lead := lead_suit()
+	if lead < 0:
+		return true
+	return card.suit == lead or not hand.contains_card_of_suit(lead)
+
+func lead_suit() -> int:
+	if leading_card == null or leading_card.is_colorless():
+		return -1
+	return leading_card.suit
 
 func generate_cards(amount: int, owner : Card.Owner, min_rank: int = 0) -> Array[Card]:
 	var cards: Array[Card] = []
@@ -257,9 +334,14 @@ func submit_play(player_id: int, card: Card, from: Transform2D = Transform2D.IDE
 	if card.suit == Card.Suit.SMOKE:
 		PlayerDataManager.unlock_smoke()
 
+	if card.has_effect():
+		var token := GameManager.round_token
+		await CardEffect.on_played(card, player_id)
+		if token != GameManager.round_token:
+			return
+	last_played_by[player_id] = card
+
 	GameManager.play_callback(player_id)
-	print("played: ", card)
-	print("contains: ", played_cards_round.cards[0])
 
 func render_played_card(card : Card, from: Transform2D) -> void:
 	
@@ -374,7 +456,7 @@ func graveyard_of(owner: Card.Owner) -> GraveyardPile:
 
 func clear_all_cards() -> void:
 	turn_clean_up()
-	played_cards_round.empty()
+	played_cards_round.clear()
 
 	for hand in [player_hand, AI_1_hand, AI_2_hand]:
 		if hand != null:
@@ -390,7 +472,7 @@ func get_normal_winning_card() -> Card:
 	var highest_trump = played_cards_turn.get_highest_trump_card()
 	if highest_trump != null:
 		return highest_trump
-	return played_cards_turn.get_highest_card_of_suit(leading_card.suit)
+	return played_cards_turn.get_highest_card_of_suit(lead_suit())
 
 func highlight_turn_winner() -> CardVisual:
 	var winning_card := get_turn_winning_card()
@@ -416,9 +498,14 @@ func get_zero_beating_nine() -> Card:
 	if best == null or best.rank < ZERO_BEATS_RANK:
 		return null
 	for card in played_cards_turn.cards:
-		if card.rank == 0 and card.suit == best.suit:
+		if card.rank == 0 and card != best and _same_color(card, best):
 			return card
 	return null
+
+func _same_color(card: Card, best: Card) -> bool:
+	if best.is_trump:
+		return card.is_trump and card.suit == best.suit
+	return not card.is_trump and card.matches_suit(lead_suit())
 
 func turn_won_by_tie() -> bool:
 	var winner := get_turn_winning_card()
@@ -430,7 +517,7 @@ func turn_won_by_tie() -> bool:
 		if winner.is_trump:
 			if card.is_trump:
 				return true
-		elif not card.is_trump and card.suit == winner.suit:
+		elif not card.is_trump and card.matches_suit(lead_suit()):
 			return true
 	return false
 
@@ -452,6 +539,28 @@ func deck_of(player_id: int) -> Deck:
 		2:
 			return AI_2_deck
 	return null
+
+func draw_extra_card(player_id: int) -> void:
+	var deck := deck_of(player_id)
+	if deck == null or deck.cards.is_empty():
+		return
+	var hand := hand_of(player_id)
+	if hand == null or hand.size() >= HAND_SIZE:
+		return
+	var card: Card = deck.cards.pop_back()
+	await give_card(player_id, card)
+
+func give_card(player_id: int, card: Card) -> void:
+	var hand := hand_of(player_id)
+	var player := GameManager.id_to_player(player_id)
+	if hand == null or player == null or card == null:
+		return
+	var count := hand.size() + 1
+	player.deal_card(card, _deck_pile_center(player.player_id_to_Owner(player_id), player), count - 1, count)
+	await get_tree().create_timer(DEAL_SETTLE_TIME, false).timeout
+	if is_instance_valid(player):
+		player.finish_deal()
+	apply_buffs(player_id)
 
 func draw_tie_card(player_id: int) -> Card:
 	var deck := deck_of(player_id)
@@ -603,7 +712,7 @@ func set_table_root(node: Control) -> void:
 	table_root = node
 
 func get_highest_lead_card() -> Card:
-	return played_cards_turn.get_highest_card_of_suit(leading_card.suit)
+	return played_cards_turn.get_highest_card_of_suit(lead_suit())
 
 func get_highest_trump_card() -> Card:
 	return played_cards_turn.get_highest_trump_card()

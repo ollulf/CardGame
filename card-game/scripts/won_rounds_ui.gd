@@ -1,9 +1,9 @@
 extends CanvasLayer
 
 const PILE_OFFSETS := {
-	Card.Owner.HUMAN: Vector2(-428, 0),
-	Card.Owner.AI_1: Vector2(0, 125),
-	Card.Owner.AI_2: Vector2(0, 125),
+	Card.Owner.HUMAN: Vector2(-45, -88),
+	Card.Owner.AI_1: Vector2(70, 125),
+	Card.Owner.AI_2: Vector2(-70, 125),
 }
 const GRAVEYARD_OFFSETS := {
 	Card.Owner.HUMAN: Vector2(78, -60),

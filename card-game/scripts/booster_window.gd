@@ -28,6 +28,7 @@ const CARD_SCALE := 1.5
 const CARD_GAP := 16.0
 const ROW_LEFT := 350.0
 const FLIP_FX_TIME := 0.35
+const SPECIAL_FX_TIME := 0.8
 
 var state: State = State.HIDDEN
 var cards: Array[Card] = []
@@ -131,7 +132,7 @@ func _pack_piece(region: Rect2, shine: ShaderMaterial) -> TextureRect:
 func open(booster: Dictionary = PlayerDataManager.BOOSTERS[0]) -> void:
 	_booster = booster
 	_logo.text = String(booster.get("name", "Booster")).to_upper().replace(" ", "\n")
-	var tint := BoosterShelf.pack_tint(maxi(PlayerDataManager.BOOSTERS.find(booster), 0))
+	var tint := BoosterShelf.pack_tint(booster)
 	_body.self_modulate = tint
 	_flap.self_modulate = tint
 	for visual in card_visuals:
@@ -153,49 +154,60 @@ func open(booster: Dictionary = PlayerDataManager.BOOSTERS[0]) -> void:
 
 
 func roll_cards() -> Array[Card]:
-	var count: int = _booster.get("cards", MAX_ROW_CARDS)
-	var min_rank: int = clampi(_booster.get("min_rank", MIN_RANK), 0, MAX_RANK)
-	var max_rank: int = clampi(_booster.get("max_rank", MAX_RANK), min_rank, MAX_RANK)
-	var smoke_count := mini(_roll_smoke_count(), count)
-	var alk_count := mini(_roll_count("alk_min", "alk_max"), count - smoke_count)
-	var high_count := mini(int(_booster.get("high_min", 0)), count - smoke_count - alk_count)
-	var high_rank: int = clampi(_booster.get("high_rank", min_rank), min_rank, max_rank)
+	return roll(_booster, DialogueManager.upcoming_match())
+
+
+static func roll(booster: Dictionary, match_number: int) -> Array[Card]:
+	var count: int = booster.get("cards", MAX_ROW_CARDS)
+	var min_rank := lowest_rank(booster, match_number)
+	var max_rank: int = clampi(booster.get("max_rank", MAX_RANK), min_rank, MAX_RANK)
+	var effects := special_effects()
+	var special_count := 0
+	if not effects.is_empty():
+		special_count = mini(_roll_count(booster, "special_min", "special_max"), count)
+	var rest := count - special_count
+	var rare_count := rest
+	if booster.get("filler", "common") != "rare":
+		rare_count = mini(_roll_count(booster, "rare_min", "rare_max"), rest)
+	var rare := rare_suits(booster, match_number)
+	var special_suits: Array[Card.Suit] = NORMAL_SUITS.duplicate()
+	special_suits.append_array(rare)
 	var result: Array[Card] = []
 	for i in count:
 		var rank := randi_range(min_rank, max_rank)
-		if i >= smoke_count + alk_count and i < smoke_count + alk_count + high_count:
-			rank = randi_range(high_rank, max_rank)
-		var suit: Card.Suit
-		if i < smoke_count:
-			suit = Card.Suit.SMOKE
-		elif i < smoke_count + alk_count:
-			suit = Card.Suit.ALK
-		elif _booster.get("any_suit", false):
-			suit = _roll_any_suit()
+		if i < special_count:
+			result.append(Card.new(special_suits.pick_random(), rank, Card.Owner.HUMAN, false, effects.pick_random()))
+		elif i < special_count + rare_count:
+			result.append(Card.new(rare.pick_random(), rank, Card.Owner.HUMAN, false))
 		else:
-			suit = NORMAL_SUITS.pick_random()
-		result.append(Card.new(suit, rank, Card.Owner.HUMAN, false))
+			result.append(Card.new(NORMAL_SUITS.pick_random(), rank, Card.Owner.HUMAN, false))
 	result.shuffle()
 	return result
 
 
-func _roll_any_suit() -> Card.Suit:
-	var suits: Array = Card.Suit.values()
-	if not Missions.allows_alk(DialogueManager.upcoming_match()):
-		suits.erase(Card.Suit.ALK)
-	return suits.pick_random()
+static func lowest_rank(booster: Dictionary, match_number: int) -> int:
+	return clampi(maxi(int(booster.get("min_rank", MIN_RANK)), Missions.lowest_rank(match_number)), 0, MAX_RANK)
 
 
-func _roll_smoke_count() -> int:
-	return _roll_count("smoke_min", "smoke_max")
+static func rare_suits(booster: Dictionary, match_number: int) -> Array[Card.Suit]:
+	var suits: Array[Card.Suit] = [Card.Suit.SMOKE]
+	if match_number >= int(booster.get("alk_from_match", 0)):
+		suits.append(Card.Suit.ALK)
+	return suits
 
 
-func _roll_count(min_key: String, max_key: String) -> int:
-	var low: int = _booster.get(min_key, 0)
-	var high: int = _booster.get(max_key, 0)
+static func special_effects() -> Array:
+	var effects: Array = CardEffect.Id.values()
+	effects.erase(CardEffect.Id.NONE)
+	return effects
+
+
+static func _roll_count(booster: Dictionary, min_key: String, max_key: String) -> int:
+	var low: int = booster.get(min_key, 0)
+	var high: int = booster.get(max_key, 0)
 	if high <= 0:
 		return 0
-	return randi_range(low, high)
+	return randi_range(mini(low, high), high)
 
 
 func _gui_input(event: InputEvent) -> void:
@@ -282,7 +294,7 @@ func flip(index: int) -> void:
 		return
 	flipped[index] = true
 	Sfx.play_card_flip()
-	if _is_rare(cards[index]):
+	if _is_rare(cards[index]) or _is_special(cards[index]):
 		Sfx.play_booster_cheer()
 	var visual := card_visuals[index]
 	var turn := create_tween()
@@ -300,6 +312,8 @@ func flip(index: int) -> void:
 func _play_flip_effect(visual: CardVisual, card: Card) -> void:
 	_flash_effect(visual)
 	_sparks_effect(visual, card)
+	if _is_special(card):
+		_special_effect(visual, card)
 
 
 func _flip_overlay(visual: CardVisual) -> ShaderMaterial:
@@ -333,7 +347,13 @@ func _is_rare(card: Card) -> bool:
 	return card.suit == Card.Suit.SMOKE or card.suit == Card.Suit.ALK
 
 
+func _is_special(card: Card) -> bool:
+	return card.has_effect()
+
+
 func _fx_color(card: Card) -> Color:
+	if _is_special(card):
+		return CardEffect.color(card.effect)
 	match card.suit:
 		Card.Suit.SMOKE:
 			return Color(1.0, 0.55, 0.25)
@@ -343,15 +363,9 @@ func _fx_color(card: Card) -> Color:
 
 
 func _sparks_effect(visual: CardVisual, card: Card) -> void:
-	var rare := _is_rare(card)
+	var rare := _is_rare(card) or _is_special(card)
 	var color := _fx_color(card)
-	var dot := Image.create(2, 2, false, Image.FORMAT_RGBA8)
-	dot.fill(Color.WHITE)
-	var sparks := CPUParticles2D.new()
-	sparks.texture = ImageTexture.create_from_image(dot)
-	sparks.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-	sparks.one_shot = true
-	sparks.explosiveness = 1.0
+	var sparks := _spark_emitter()
 	sparks.amount = 28 if rare else 14
 	sparks.lifetime = FLIP_FX_TIME
 	sparks.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
@@ -378,6 +392,85 @@ func _sparks_effect(visual: CardVisual, card: Card) -> void:
 	var glow := create_tween()
 	glow.tween_property(visual, "modulate", Color(glow_color, 1.0), 0.05)
 	glow.tween_property(visual, "modulate", Color.WHITE, 0.25)
+
+
+func _spark_emitter() -> CPUParticles2D:
+	var dot := Image.create(2, 2, false, Image.FORMAT_RGBA8)
+	dot.fill(Color.WHITE)
+	var sparks := CPUParticles2D.new()
+	sparks.texture = ImageTexture.create_from_image(dot)
+	sparks.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	sparks.one_shot = true
+	sparks.explosiveness = 1.0
+	return sparks
+
+
+func _ramp(start: Color, middle: Color, middle_offset: float, end: Color) -> Gradient:
+	var ramp := Gradient.new()
+	ramp.offsets = PackedFloat32Array([0.0, middle_offset, 1.0])
+	ramp.colors = PackedColorArray([start, middle, end])
+	return ramp
+
+
+func _special_effect(visual: CardVisual, card: Card) -> void:
+	var color := _fx_color(card)
+	var ring := _spark_emitter()
+	ring.amount = 40
+	ring.lifetime = SPECIAL_FX_TIME
+	ring.spread = 180.0
+	ring.gravity = Vector2.ZERO
+	ring.initial_velocity_min = 180.0
+	ring.initial_velocity_max = 240.0
+	ring.damping_min = 220.0
+	ring.damping_max = 260.0
+	ring.scale_amount_min = 2.0
+	ring.scale_amount_max = 3.0
+	ring.color_ramp = _ramp(Color.WHITE, color.lightened(0.3), 0.25, Color(color, 0.0))
+	ring.position = visual.position + CARD_SIZE / 2.0
+	ring.z_index = 3
+	add_child(ring)
+	ring.emitting = true
+	ring.finished.connect(ring.queue_free)
+
+	var fountain := _spark_emitter()
+	fountain.amount = 36
+	fountain.explosiveness = 0.6
+	fountain.lifetime = SPECIAL_FX_TIME
+	fountain.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+	fountain.emission_rect_extents = Vector2(CARD_SIZE.x * CARD_SCALE / 2.0, 4.0)
+	fountain.direction = Vector2.UP
+	fountain.spread = 25.0
+	fountain.gravity = Vector2(0, 160)
+	fountain.initial_velocity_min = 120.0
+	fountain.initial_velocity_max = 220.0
+	fountain.scale_amount_min = 1.0
+	fountain.scale_amount_max = 2.5
+	var gold := Color(1.0, 0.85, 0.4)
+	fountain.color_ramp = _ramp(gold, color, 0.5, Color(color, 0.0))
+	fountain.position = visual.position + Vector2(CARD_SIZE.x / 2.0, CARD_SIZE.y / 2.0 + CARD_SIZE.y * CARD_SCALE / 2.0)
+	fountain.z_index = 2
+	add_child(fountain)
+	get_tree().create_timer(0.12, true, false, true).timeout.connect(func() -> void:
+		fountain.emitting = true)
+	fountain.finished.connect(fountain.queue_free)
+
+	var wobble := create_tween()
+	for angle in [-0.09, 0.07, -0.04, 0.0]:
+		wobble.tween_property(visual, "rotation", angle, 0.07).set_trans(Tween.TRANS_SINE)
+
+	var pulse_color := Color(color.lerp(Color.WHITE, 0.35) * 1.6, 1.0)
+	var pulse := create_tween()
+	pulse.tween_interval(0.3)
+	for i in 3:
+		pulse.tween_property(visual, "modulate", pulse_color, 0.1)
+		pulse.tween_property(visual, "modulate", Color.WHITE, 0.18)
+
+	var fx := _flip_overlay(visual)
+	fx.set_shader_parameter("flash", 0.0)
+	var flash := create_tween()
+	flash.tween_interval(0.18)
+	flash.tween_method(func(value: float) -> void:
+		fx.set_shader_parameter("flash", value), 0.7, 0.0, 0.17)
 
 
 func _collect() -> void:

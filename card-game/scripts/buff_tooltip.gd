@@ -37,7 +37,12 @@ static func hide_for(card_visual: CardVisual) -> void:
 
 
 static func part_icon(part: Dictionary) -> Texture2D:
-	return SMOKE_ICON if part.get("kind") == "smoke" else ALK_ICON
+	match part.get("kind"):
+		"smoke":
+			return SMOKE_ICON
+		"suit_up":
+			return null
+	return ALK_ICON
 
 
 static func signed(amount: int) -> String:
@@ -75,7 +80,7 @@ func _process(_delta: float) -> void:
 		if _box != null:
 			_clear()
 		return
-	var key := str(_target.card.rank, _target.card.buff_parts)
+	var key := str(_target.card.rank, _target.card.buff_parts, _target.card.effect, _target.card.stamp)
 	if key != _key:
 		_key = key
 		_rebuild()
@@ -87,7 +92,7 @@ func _should_show() -> bool:
 		return false
 	if _target.face_down or _target.dragging or not _target.is_visible_in_tree():
 		return false
-	return not _target.card.buff_parts.is_empty()
+	return not _target.card.buff_parts.is_empty() or _target.card.has_effect() or _target.card.has_stamp()
 
 
 func _clear() -> void:
@@ -137,10 +142,47 @@ func _build_pill(card: Card) -> Control:
 	var pill := PanelContainer.new()
 	pill.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	pill.add_theme_stylebox_override("panel", _style(BG_COLOR, BORDER_COLOR, 2, 14, Vector2(10, 2)))
+	var lines := VBoxContainer.new()
+	lines.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	lines.add_theme_constant_override("separation", 2)
+	pill.add_child(lines)
+	if not card.buff_parts.is_empty():
+		lines.add_child(_buff_row(card))
+	if card.has_effect():
+		lines.add_child(effect_row(card.effect, _font(14)))
+	if card.has_stamp():
+		lines.add_child(stamp_row(card.stamp, _font(14)))
+	return pill
+
+
+static func stamp_row(stamp: int, font_size: int) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_theme_constant_override("separation", 6)
+	var badge := StampBadge.create(stamp)
+	badge.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(badge)
+	row.add_child(_label(CardStamp.display_name(stamp) + " stamp:", CardStamp.color(stamp).lightened(0.3), font_size))
+	row.add_child(_label(CardStamp.description(stamp), Color.WHITE, font_size))
+	return row
+
+
+static func effect_row(effect: int, font_size: int) -> HBoxContainer:
+	var row := HBoxContainer.new()
+	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	row.add_theme_constant_override("separation", 6)
+	var badge := EffectBadge.create(effect)
+	badge.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	row.add_child(badge)
+	row.add_child(_label(CardEffect.display_name(effect) + ":", CardEffect.color(effect).lightened(0.3), font_size))
+	row.add_child(_label(CardEffect.description(effect), Color.WHITE, font_size))
+	return row
+
+
+func _buff_row(card: Card) -> HBoxContainer:
 	var row := HBoxContainer.new()
 	row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	row.add_theme_constant_override("separation", 4)
-	pill.add_child(row)
 	row.add_child(_label(str(card.base_rank), Color.WHITE))
 	for part in card.buff_parts:
 		var amount := int(part.get("amount", 0))
@@ -154,7 +196,7 @@ func _build_pill(card: Card) -> Control:
 			row.add_child(_label("min %d" % int(part.get("floor", 1)), MUTED_COLOR, _font(12)))
 	row.add_child(_label("=", MUTED_COLOR))
 	row.add_child(_label(str(card.rank), rank_color(card), _font(20)))
-	return pill
+	return row
 
 
 static func _style(bg: Color, border: Color, border_width: int, radius: int, padding: Vector2) -> StyleBoxFlat:

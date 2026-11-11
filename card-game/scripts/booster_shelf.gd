@@ -5,7 +5,7 @@ signal closed
 signal denied
 
 const PANEL_RECT := Rect2(106, 84, 940, 490)
-const ENTRY_SIZE := Vector2(222, 300)
+const ENTRY_SIZE := Vector2(380, 300)
 const ENTRY_GAP := 18.0
 const ENTRY_PADDING := Vector2(18, 16)
 const BG_COLOR := Color("17161c")
@@ -18,7 +18,7 @@ const DENY_COLOR := Color(1.0, 0.45, 0.4)
 const CONFIRM_TEXT := "Really?"
 const NOT_ENOUGH_MONEY_TEXT := "Not enough money"
 const HINT_TEXT := "Tap a pack, then tap it again to buy it"
-const PACK_COLORS: Array[Color] = [Color(0.8, 0.8, 0.84, 1), Color(0.78, 0.88, 1.0, 1), Color(1.0, 0.86, 0.6, 1), Color(0.72, 1.0, 0.78, 1), Color(1.0, 0.7, 0.42, 1)]
+const PACK_COLOR := Color(0.8, 0.8, 0.84, 1)
 const PACK_TEXTURE := preload("res://sprites/booster_pack.png")
 const SHINE_SHADER := preload("res://shaders/booster_shine.gdshader")
 const SHADING_MAP := preload("res://sprites/booster_pack_map.png")
@@ -26,11 +26,14 @@ const SHINE_STAGGER := 0.35
 
 var entries: Array[PanelContainer] = []
 var _footers: Array[Label] = []
+var _rank_labels: Array[Label] = []
 var _styles: Array[StyleBoxFlat] = []
 var _confirm_index := -1
 var _deny_tween: Tween
 var _cash_label: Label
 var _hint_label: Label
+var _close_button: Button
+var _panel: Panel
 var show_hint := false
 
 
@@ -49,12 +52,12 @@ func _build() -> void:
 	dim.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	add_child(dim)
 
-	var panel := Panel.new()
-	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	panel.position = PANEL_RECT.position
-	panel.size = PANEL_RECT.size
-	panel.add_theme_stylebox_override("panel", _box_style(BORDER_COLOR))
-	add_child(panel)
+	_panel = Panel.new()
+	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_panel.position = PANEL_RECT.position
+	_panel.size = PANEL_RECT.size
+	_panel.add_theme_stylebox_override("panel", _box_style(BORDER_COLOR))
+	add_child(_panel)
 
 	var title := HeadlineLabel.new()
 	title.text = "Booster Shelf"
@@ -79,37 +82,50 @@ func _build() -> void:
 	add_child(_hint_label)
 
 	for i in PlayerDataManager.BOOSTERS.size():
-		var entry := _build_entry(PlayerDataManager.BOOSTERS[i], pack_tint(i))
+		var entry := _build_entry(PlayerDataManager.BOOSTERS[i], pack_tint(PlayerDataManager.BOOSTERS[i]))
 		add_child(entry)
 		entries.append(entry)
-	_layout_entries()
 
-	var close_button := Button.new()
-	close_button.text = "Close"
-	close_button.focus_mode = Control.FOCUS_NONE
-	close_button.size = Vector2(110, 32)
-	close_button.position = Vector2(PANEL_RECT.get_center().x - 55, PANEL_RECT.end.y - 50)
-	close_button.pressed.connect(close)
-	add_child(close_button)
+	_close_button = Button.new()
+	_close_button.text = "Close"
+	_close_button.focus_mode = Control.FOCUS_NONE
+	_close_button.size = Vector2(110, 32)
+	_close_button.pressed.connect(close)
+	add_child(_close_button)
+	_layout_entries()
 
 
 func _layout_entries() -> void:
 	var shown: Array[PanelContainer] = []
 	for i in entries.size():
+		_rank_labels[i].text = rank_text(PlayerDataManager.BOOSTERS[i], DialogueManager.upcoming_match())
 		entries[i].visible = PlayerDataManager.is_booster_available(PlayerDataManager.BOOSTERS[i])
 		if entries[i].visible:
 			shown.append(entries[i])
-	if shown.is_empty():
-		return
-	var fit_width := (PANEL_RECT.size.x - (shown.size() + 1) * ENTRY_GAP) / shown.size()
-	var entry_size := Vector2(minf(ENTRY_SIZE.x, fit_width), ENTRY_SIZE.y)
-	var row_width := shown.size() * entry_size.x + (shown.size() - 1) * ENTRY_GAP
-	var left := PANEL_RECT.get_center().x - row_width / 2.0
-	for i in shown.size():
-		shown[i].custom_minimum_size = entry_size
-		shown[i].size = entry_size
-		shown[i].pivot_offset = entry_size / 2.0
-		shown[i].position = Vector2(left + i * (entry_size.x + ENTRY_GAP), PANEL_RECT.position.y + 70)
+	var top := PANEL_RECT.position.y + 70
+	var height := 0.0
+	if not shown.is_empty():
+		var fit_width := (PANEL_RECT.size.x - (shown.size() + 1) * ENTRY_GAP) / shown.size()
+		var width := minf(ENTRY_SIZE.x, fit_width)
+		var row_width := shown.size() * width + (shown.size() - 1) * ENTRY_GAP
+		var left := PANEL_RECT.get_center().x - row_width / 2.0
+		for entry in shown:
+			entry.custom_minimum_size = Vector2(width, 0)
+			entry.size = Vector2(width, 0)
+		for entry in shown:
+			height = maxf(height, entry.get_combined_minimum_size().y)
+		for i in shown.size():
+			var entry_size := Vector2(width, height)
+			shown[i].custom_minimum_size = entry_size
+			shown[i].size = entry_size
+			shown[i].pivot_offset = entry_size / 2.0
+			shown[i].position = Vector2(left + i * (width + ENTRY_GAP), top)
+	var below := top + height + 10.0
+	_hint_label.position = Vector2(PANEL_RECT.position.x, below)
+	_hint_label.size = Vector2(PANEL_RECT.size.x, 28)
+	var hint_height := 34.0 if _hint_label.visible else 0.0
+	_close_button.position = Vector2(PANEL_RECT.get_center().x - 55, below + hint_height + 6.0)
+	_panel.size.y = maxf(PANEL_RECT.size.y, _close_button.position.y + 32.0 + 16.0 - PANEL_RECT.position.y)
 
 
 func _build_entry(booster: Dictionary, pack_color: Color) -> PanelContainer:
@@ -151,8 +167,9 @@ func _build_entry(booster: Dictionary, pack_color: Color) -> PanelContainer:
 	box.add_child(_centered(_label("%d$" % booster["price"], 22, PRICE_COLOR)))
 	box.add_child(_centered(_label("%d cards" % booster["cards"], 15, MUTED_COLOR)))
 	box.add_child(_centered(_label(booster["contents"], 15, MUTED_COLOR)))
-	var ranks := "Rank %d" % booster["min_rank"] if booster["min_rank"] == booster["max_rank"] else "Ranks %d-%d" % [booster["min_rank"], booster["max_rank"]]
-	box.add_child(_centered(_label(ranks, 15, MUTED_COLOR)))
+	var rank_label := _centered(_label("", 15, MUTED_COLOR))
+	box.add_child(rank_label)
+	_rank_labels.append(rank_label)
 	var footer := _centered(_label("", 18, SELECTED_COLOR))
 	footer.custom_minimum_size = Vector2(0, 26)
 	box.add_child(footer)
@@ -160,8 +177,14 @@ func _build_entry(booster: Dictionary, pack_color: Color) -> PanelContainer:
 	return entry
 
 
-static func pack_tint(index: int) -> Color:
-	return PACK_COLORS[index % PACK_COLORS.size()]
+static func pack_tint(booster: Dictionary) -> Color:
+	return booster.get("tint", PACK_COLOR)
+
+
+static func rank_text(booster: Dictionary, match_number: int) -> String:
+	var low := BoosterWindow.lowest_rank(booster, match_number)
+	var high: int = clampi(booster.get("max_rank", BoosterWindow.MAX_RANK), low, BoosterWindow.MAX_RANK)
+	return "Rank %d" % low if low == high else "Ranks %d-%d" % [low, high]
 
 
 func _box_style(border: Color) -> StyleBoxFlat:
@@ -193,8 +216,8 @@ func _centered(label: Label) -> Label:
 
 func open() -> void:
 	_cancel_confirm()
-	_layout_entries()
 	_hint_label.visible = show_hint
+	_layout_entries()
 	show()
 	_layout_entries.call_deferred()
 

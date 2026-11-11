@@ -1,6 +1,7 @@
 extends Node
 
 const POOL_SIZE := 8
+const MAX_POOL_SIZE := 12
 const CIG_MACHINE_SOUND := preload("res://sounds/cig_machine.wav")
 const CARD_DRAW_SOUND := preload("res://sounds/card_draw.wav")
 const CARD_MOVE_INTERVAL_MSEC := 60
@@ -49,6 +50,21 @@ const MUSIC_VOLUME_DB := -17.0
 const MUSIC_SILENT_DB := -60.0
 const MUSIC_FADE_TIME := 3.0
 
+const MUSIC_BUS := &"Music"
+const AMBIENCE_BUS := &"Ambience"
+const SFX_BUS := &"SFX"
+const LONG_SOUND_SEC := 1.5
+
+const ROUND_LOST_SOUND := preload("res://sounds/stinger_round_lost.wav")
+const ROUND_LOST_DB := -1.0
+const MATCH_LOST_SOUND := preload("res://sounds/stinger_match_lost.wav")
+const MATCH_LOST_DB := 0.0
+const RUN_WON_SOUND := preload("res://sounds/stinger_run_won.wav")
+const RUN_WON_DB := 0.0
+const DUCK_DB := -14.0
+const DUCK_IN_TIME := 0.15
+const DUCK_OUT_TIME := 0.8
+
 var _last_played: AudioStreamPlayer
 var _cheer_player: AudioStreamPlayer
 var card_move_count := 0
@@ -63,21 +79,31 @@ var _loop_counts := {}
 var _loop_tweens := {}
 var _ambient: AudioStreamPlayer
 var _ambient_tween: Tween
+var _started_msec := {}
+var _protected := {}
+var _duck_tween: Tween
+var _duck_until_msec := 0
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	for i in POOL_SIZE:
 		var player := AudioStreamPlayer.new()
+		player.bus = SFX_BUS
 		add_child(player)
 		_players.append(player)
 	_ambient = AudioStreamPlayer.new()
+	_ambient.bus = AMBIENCE_BUS
 	add_child(_ambient)
 	play_ambient(AMBIENT_SOUND, AMBIENT_VOLUME_DB)
 	_music = AudioStreamPlayer.new()
+	_music.bus = MUSIC_BUS
 	add_child(_music)
 	play_music(MUSIC_SOUND, MUSIC_VOLUME_DB)
 	get_tree().node_added.connect(_hook_node)
 	_hook_tree(get_tree().root)
+	GameManager.round_finished.connect(_on_round_finished)
+	GameManager.match_lost.connect(_on_match_lost)
+	GameManager.run_won.connect(play_run_won)
 
 func play_card_move(delay: float = 0.0) -> void:
 	if delay > 0.0:
@@ -104,21 +130,39 @@ func play_hover_card() -> void:
 	play(HOVER_CARD_SOUND, HOVER_CARD_PITCH_VARIATION, HOVER_CARD_DB)
 
 
-func play(stream: AudioStream, pitch_variation: float = 0.0, volume_db: float = 0.0) -> void:
+func play(stream: AudioStream, pitch_variation: float = 0.0, volume_db: float = 0.0, important: bool = false) -> void:
 	if stream == null:
 		return
-	var player: AudioStreamPlayer = null
-	for p in _players:
-		if not p.playing:
-			player = p
-			break
+	_last_played = null
+	var is_protected := important or stream.get_length() > LONG_SOUND_SEC
+	var player := _pick_player(is_protected)
 	if player == null:
-		player = _players[0]
+		return
 	player.stream = stream
 	player.volume_db = volume_db
 	player.pitch_scale = 1.0 + randf_range(-pitch_variation, pitch_variation)
 	player.play()
+	_started_msec[player] = Time.get_ticks_msec()
+	_protected[player] = is_protected
 	_last_played = player
+
+
+func _pick_player(is_protected: bool) -> AudioStreamPlayer:
+	var oldest: AudioStreamPlayer = null
+	for p in _players:
+		if not p.playing:
+			return p
+		if _protected.get(p, false):
+			continue
+		if oldest == null or _started_msec.get(p, 0) < _started_msec.get(oldest, 0):
+			oldest = p
+	if oldest == null and is_protected and _players.size() < MAX_POOL_SIZE:
+		var extra := AudioStreamPlayer.new()
+		extra.bus = SFX_BUS
+		add_child(extra)
+		_players.append(extra)
+		return extra
+	return oldest
 
 
 func play_ambient(stream: AudioStream, volume_db: float = AMBIENT_VOLUME_DB) -> void:
@@ -147,6 +191,7 @@ func start_loop(key: String, stream: AudioStream, volume_db: float = SMOKE_LOOP_
 	var player: AudioStreamPlayer = _loops.get(key)
 	if player == null:
 		player = AudioStreamPlayer.new()
+		player.bus = AMBIENCE_BUS
 		add_child(player)
 		_loops[key] = player
 	if _loop_tweens.has(key):
@@ -204,7 +249,7 @@ func stop_music() -> void:
 
 
 func play_cig_machine() -> float:
-	play(CIG_MACHINE_SOUND)
+	play(CIG_MACHINE_SOUND, 0.0, 0.0, true)
 	return CIG_MACHINE_SOUND.get_length()
 
 func play_dialogue_next() -> void:
@@ -229,6 +274,50 @@ func play_booster_cheer() -> void:
 
 func play_button() -> void:
 	play(BUTTON_SOUND, 0.05)
+
+
+func play_round_lost() -> void:
+	_play_stinger(ROUND_LOST_SOUND, ROUND_LOST_DB)
+
+func play_match_lost() -> void:
+	_play_stinger(MATCH_LOST_SOUND, MATCH_LOST_DB)
+
+func play_run_won() -> void:
+	_play_stinger(RUN_WON_SOUND, RUN_WON_DB)
+
+
+func _play_stinger(stream: AudioStream, volume_db: float) -> void:
+	play(stream, 0.0, volume_db, true)
+	duck_music(stream.get_length())
+
+
+func duck_music(duration: float) -> void:
+	var bus := AudioServer.get_bus_index(MUSIC_BUS)
+	if bus < 0 or AudioServer.get_bus_effect_count(bus) == 0:
+		return
+	var duck := AudioServer.get_bus_effect(bus, 0) as AudioEffectAmplify
+	if duck == null:
+		return
+	var hold_msec := Time.get_ticks_msec() + int(duration * 1000.0)
+	if hold_msec <= _duck_until_msec and _duck_tween != null and _duck_tween.is_running():
+		return
+	_duck_until_msec = hold_msec
+	if _duck_tween:
+		_duck_tween.kill()
+	_duck_tween = create_tween()
+	_duck_tween.tween_property(duck, "volume_db", DUCK_DB, DUCK_IN_TIME)
+	_duck_tween.tween_interval(maxf(duration - DUCK_IN_TIME, 0.0))
+	_duck_tween.tween_property(duck, "volume_db", 0.0, DUCK_OUT_TIME)
+
+
+func _on_round_finished(loosers) -> void:
+	if loosers is Array and loosers.has(GameManager.HUMAN_ID):
+		play_round_lost()
+
+
+func _on_match_lost(looser_id: int) -> void:
+	if looser_id == GameManager.HUMAN_ID:
+		play_match_lost()
 
 
 func _hook_tree(node: Node) -> void:

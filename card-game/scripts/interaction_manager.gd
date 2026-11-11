@@ -247,7 +247,7 @@ func _update_drag(event: InputEventMouseMotion) -> void:
 		_is_dragging = true
 		_pressed_card.begin_drag()
 
-	_pressed_card.position = human_player.make_input_local(event).position - _grab_offset
+	_pressed_card.drag_to(human_player.make_input_local(event).position - _grab_offset)
 
 func _release_press(mouse_position: Vector2) -> void:
 	if not _is_press_active():
@@ -270,6 +270,9 @@ func _release_press(mouse_position: Vector2) -> void:
 			human_player.try_play_card(card_visual.card)
 			return
 		human_player.explain_refusal(card_visual.card)
+		_return_to_hand(card_visual)
+		card_visual.deny()
+		return
 
 	_return_to_hand(card_visual)
 

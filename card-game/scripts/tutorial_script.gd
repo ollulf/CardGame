@@ -150,7 +150,7 @@ static func _clean_round(raw, line: int):
 		for word in _words(raw[key]):
 			var card = _card(word)
 			if card == null:
-				push_error("TutorialGame line %d: '%s' in %s is not a card like 'HEARTS 9'" % [line, word, key])
+				push_error("TutorialGame line %d: '%s' in %s is not a card like 'HEARTS 9' or 'HEARTS 9 DRAW'" % [line, word, key])
 				return null
 			cards.append(card)
 		if cards.is_empty() or cards.size() > HAND_SIZE:
@@ -179,7 +179,7 @@ static func _clean_round(raw, line: int):
 			if card == null:
 				push_error("TutorialGame line %d: '%s' in %s is not a card or one of %s" % [line, word, key, ", ".join(RULE_WORDS + AUTO_WORDS)])
 				return null
-			if entry.hands.has(seat) and not entry.hands[seat].has(card):
+			if entry.hands.has(seat) and not entry.hands[seat].any(same_card.bind(card)):
 				push_error("TutorialGame line %d: %s plays %s %d, which is not in %s" % [line, key, Card.Suit.keys()[card[0]], card[1], HAND_KEYS[seat]])
 				return null
 			plan.append(card)
@@ -203,10 +203,22 @@ static func _suit(value) -> int:
 
 static func _card(word: String):
 	var parts := word.split(" ", false)
-	if parts.size() != 2 or not parts[1].is_valid_int():
+	if parts.size() < 2 or parts.size() > 3 or not parts[1].is_valid_int():
 		return null
 	var suit := _suit(parts[0])
 	var rank := parts[1].to_int()
 	if suit < 0 or rank < 0 or rank > 9:
 		return null
-	return [suit, rank]
+	return with_effect([suit, rank], parts[2] if parts.size() > 2 else "")
+
+static func with_effect(card: Array, effect_word: String):
+	if effect_word == "":
+		return card
+	var effect := CardEffect.from_word(effect_word)
+	if effect < 0:
+		return null
+	card.append(effect)
+	return card
+
+static func same_card(a: Array, b: Array) -> bool:
+	return a[0] == b[0] and a[1] == b[1]

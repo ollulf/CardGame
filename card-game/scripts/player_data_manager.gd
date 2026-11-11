@@ -8,6 +8,8 @@ signal collection_changed
 signal deck_changed
 signal buttons_unlock_changed
 signal cig_machine_changed(unlocked: bool)
+signal stamp_offers_changed
+signal stamp_applied(card: Card)
 
 var booster_collected := false
 var deck_edited := false
@@ -36,13 +38,10 @@ const DRINK_PENALTY_PER_ROUND := 1
 const DRINK_BONUS_PER_DRINK := 1
 const DRINK_ROUND_PRICE := 5
 const DRINK_ROUND_FROM_MATCH := 3
-const DRINKING_BOOSTER_FROM_MATCH := 4
+const ALK_BOOSTER_CARDS_FROM_MATCH := 4
 const BOOSTERS: Array[Dictionary] = [
-	{"name": "Smoke Booster", "price": 10, "cards": 5, "min_rank": 1, "max_rank": 9, "smoke_min": 2, "smoke_max": 3, "contents": "2-3 Smoke + basic suits"},
-	{"name": "Standard Booster", "price": 6, "cards": 6, "min_rank": 1, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "high_min": 2, "high_rank": 7, "contents": "Basic suits, two 7+ cards"},
-	{"name": "Premium Booster", "price": 14, "cards": 8, "min_rank": 5, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "contents": "Basic suits, ranks 5-9"},
-	{"name": "Zero Booster", "price": 8, "cards": 2, "min_rank": 0, "max_rank": 0, "smoke_min": 0, "smoke_max": 0, "contents": "Two 0 cards, any suit", "any_suit": true, "from_match": 3},
-	{"name": "Drinking Booster", "price": 9, "cards": 5, "min_rank": 1, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "alk_min": 2, "alk_max": 3, "contents": "2-3 Drinking + basic suits", "from_match": DRINKING_BOOSTER_FROM_MATCH},
+	{"name": "Standard Booster", "price": 5, "cards": 9, "min_rank": 0, "max_rank": 9, "special_min": 0, "special_max": 0, "rare_min": 1, "rare_max": 2, "filler": "common", "alk_from_match": ALK_BOOSTER_CARDS_FROM_MATCH, "tint": Color(0.78, 0.88, 1.0, 1), "contents": "1-2 rare trump cards + common suits"},
+	{"name": "Premium Booster", "price": 8, "cards": 3, "min_rank": 0, "max_rank": 9, "special_min": 0, "special_max": 1, "filler": "rare", "alk_from_match": ALK_BOOSTER_CARDS_FROM_MATCH, "tint": Color(1.0, 0.8, 0.4, 1), "contents": "0-1 special effect card + rare trump cards"},
 ]
 
 var smoking_stacks := {
@@ -66,6 +65,8 @@ var smoke_unlocked := false
 var collection: Array[Card] = []
 var active_deck: Array[Card] = []
 var new_cards: Array[Card] = []
+var stamp_offers: Array[int] = []
+var stamp_offers_match := 0
 
 func _ready() -> void:
 	GameManager.round_finished.connect(_on_round_finished)
@@ -217,7 +218,7 @@ func init_active_deck(cards: Array[Card]) -> void:
 	if not active_deck.is_empty():
 		return
 	for card in cards:
-		active_deck.append(Card.new(card.suit, card.base_rank, Card.Owner.HUMAN, false))
+		active_deck.append(card.copy_for(Card.Owner.HUMAN))
 	deck_changed.emit()
 
 func move_to_deck(card: Card) -> bool:
@@ -242,12 +243,65 @@ func clear_new_cards() -> void:
 func active_deck_copy() -> Array[Card]:
 	var cards: Array[Card] = []
 	for card in active_deck:
-		cards.append(Card.new(card.suit, card.base_rank, Card.Owner.HUMAN, false))
+		cards.append(card.copy_for(Card.Owner.HUMAN))
 	cards.shuffle()
 	return cards
 
+func get_stamp_offers() -> Array[int]:
+	var match_number := DialogueManager.upcoming_match()
+	if stamp_offers_match != match_number:
+		stamp_offers_match = match_number
+		stamp_offers.clear()
+		stamp_offers.append_array(CardStamp.random_ids(CardStamp.OFFERS_PER_MATCH))
+		stamp_offers_changed.emit()
+	return stamp_offers
+
+func buy_stamp(index: int) -> int:
+	var offers := get_stamp_offers()
+	if index < 0 or index >= offers.size() or not has_stampable_card():
+		return CardStamp.Id.NONE
+	var stamp := offers[index]
+	if not spend(CardStamp.price(stamp)):
+		return CardStamp.Id.NONE
+	offers.remove_at(index)
+	stamp_offers_changed.emit()
+	return stamp
+
+func stampable_cards() -> Array[Card]:
+	var cards: Array[Card] = []
+	for card in active_deck + collection:
+		if CardStamp.can_stamp(card):
+			cards.append(card)
+	return cards
+
+func has_stampable_card() -> bool:
+	return not stampable_cards().is_empty()
+
+func apply_stamp(card: Card, stamp: int) -> bool:
+	if not CardStamp.can_stamp(card) or stamp == CardStamp.Id.NONE:
+		return false
+	var in_deck := active_deck.has(card)
+	var list := active_deck if in_deck else collection
+	var index := list.find(card)
+	if index < 0:
+		return false
+	var stamped := card.copy_for(card.owner)
+	stamped.set_stamp(stamp)
+	list[index] = stamped
+	var new_index := new_cards.find(card)
+	if new_index >= 0:
+		new_cards[new_index] = stamped
+	stamp_applied.emit(stamped)
+	if in_deck:
+		deck_changed.emit()
+	else:
+		collection_changed.emit()
+	return true
+
 func capture_state() -> Dictionary:
 	return {
+		"stamp_offers": stamp_offers.duplicate(),
+		"stamp_offers_match": stamp_offers_match,
 		"money": money,
 		"starting_money_granted": starting_money_granted,
 		"cig_machine_unlocked": cig_machine_unlocked,
@@ -266,6 +320,9 @@ func restore_state(state: Dictionary) -> void:
 	active_deck.assign(state.get("active_deck", []))
 	_top_up_active_deck()
 	new_cards.assign(state.get("new_cards", []))
+	stamp_offers.assign(state.get("stamp_offers", []))
+	stamp_offers_match = state.get("stamp_offers_match", 0)
+	stamp_offers_changed.emit()
 	clear_smoking()
 	clear_drinking()
 	smoke_unlocked_changed.emit()

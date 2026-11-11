@@ -18,3 +18,5 @@ mono_crash.*.json
 # Agent worktrees
 .claude/worktrees/
 .claude/settings.local.json
+
+*.tmp

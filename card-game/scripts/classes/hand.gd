@@ -32,6 +32,9 @@ func empty():
 		card.remove()
 	cards.clear()
 
+func clear():
+	cards.clear()
+
 func size() -> int:
 	return cards.size()
 
@@ -39,11 +42,8 @@ func get_index_by_card(card : Card) -> int:
 	return cards.find(card)
 
 func contains_card_of_suit(suit: Card.Suit) -> bool:
-	if suit == null:
-		return true
-	
 	for card in cards:
-		if card.suit == suit:
+		if card.suit == suit and not card.is_colorless():
 			return true
 	return false
 
@@ -95,7 +95,7 @@ func get_lowest_card_of_suit(suit: Card.Suit) -> Card:
 
 	return lowest
 
-func get_highest_card_of_suit(suit: Card.Suit) -> Card:
+func get_highest_card_of_suit(suit: int) -> Card:
 	var c = get_cards_of_suit(suit)
 	
 	if c.is_empty():
@@ -109,9 +109,9 @@ func get_highest_card_of_suit(suit: Card.Suit) -> Card:
 
 	return highest
 
-func get_cards_of_suit(suit: Card.Suit) -> Array[Card]:
+func get_cards_of_suit(suit: int) -> Array[Card]:
 	return cards.filter(func(c):
-		return c.suit == suit
+		return c.matches_suit(suit)
 		)
 
 func get_cards_higher_than(card: Card) -> Array[Card]:
