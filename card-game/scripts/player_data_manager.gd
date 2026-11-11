@@ -274,6 +274,12 @@ func add_to_collection(cards: Array[Card]) -> void:
 func has_active_deck() -> bool:
 	return active_deck.size() >= Missions.DECK_MIN and active_deck.size() <= Missions.DECK_MAX
 
+func starter_deck() -> Array[Card]:
+	var cards: Array[Card] = []
+	for entry in Missions.deck_cards(1, 0):
+		cards.append(Card.new(entry[0], entry[1], Card.Owner.HUMAN, false))
+	return cards
+
 func init_active_deck(cards: Array[Card]) -> void:
 	if not active_deck.is_empty():
 		return

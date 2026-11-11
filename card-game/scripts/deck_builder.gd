@@ -81,8 +81,8 @@ func _ready() -> void:
 
 
 func open() -> void:
-	if not PlayerDataManager.has_active_deck() and CardManager.player_deck != null:
-		PlayerDataManager.init_active_deck(CardManager.player_deck.cards)
+	if not PlayerDataManager.has_active_deck():
+		PlayerDataManager.init_active_deck(PlayerDataManager.starter_deck())
 	_rebuild()
 	_show_card(null)
 	show()
