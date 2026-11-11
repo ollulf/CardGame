@@ -510,7 +510,7 @@ static func highlight(text: String) -> String:
 	return result + text.substr(last)
 
 func _input(event: InputEvent) -> void:
-	if _bubble == null:
+	if _bubble == null or _overlay_open():
 		return
 	if event is InputEventScreenTouch:
 		get_viewport().set_input_as_handled()
@@ -524,6 +524,12 @@ func _input(event: InputEvent) -> void:
 		_press_seen = true
 	elif _press_seen and _bubble.modulate.a > 0.0:
 		_dismiss()
+
+func _overlay_open() -> bool:
+	if PauseMenu.is_open():
+		return true
+	var debug := get_tree().get_first_node_in_group(DebugMenu.GROUP)
+	return debug != null and debug.visible
 
 class PointerBubble extends PanelContainer:
 	var tail_target := Vector2.ZERO

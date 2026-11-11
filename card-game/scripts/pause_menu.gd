@@ -1,6 +1,6 @@
 extends CanvasLayer
 
-const MENU_LAYER := 100
+const MENU_LAYER := 118
 const FADE_TIME := 0.15
 const PANEL_WIDTH := 460.0
 const SLIDER_STEP := 0.05
