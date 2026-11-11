@@ -2,6 +2,7 @@ extends  Node
 
 signal trump_chosen(suit: Card.Suit)
 signal card_played(player_id: int, card: Card)
+signal special_played(card: Card, seat: int)
 
 const PLAY_ZONE_OFFSET := Vector2(-330, -350)
 const PLAY_ZONE_SIZE := Vector2(660, 400)
@@ -335,6 +336,8 @@ func submit_play(player_id: int, card: Card, from: Transform2D = Transform2D.IDE
 	render_played_card(card, from)
 	Sfx.play_card_flip()
 	card_played.emit(player_id, card)
+	if card.has_effect() or card.has_stamp():
+		special_played.emit(card, player_id)
 	if card.suit == Card.Suit.SMOKE:
 		PlayerDataManager.unlock_smoke()
 
