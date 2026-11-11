@@ -81,6 +81,10 @@ const DEFAULT_TIPS := {
 		"title": "Drinking cards",
 		"text": "[b]Drinking cards[/b] are always trump and get [b]+1[/b] for every drink.",
 	},
+	"horst": {
+		"title": "Horst",
+		"text": "Horst buys [b]3 cards[/b] from your collection for [b]1$[/b], once per visit. A special card counts as 3.",
+	},
 }
 
 const TEXTS_PATH := "res://tutorial_popups.yaml"

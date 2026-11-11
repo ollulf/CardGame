@@ -121,6 +121,9 @@ static func state_from_data(data: Dictionary):
 				offers.append(stamp)
 	state["stamp_offers"] = offers
 	state["stamp_offers_match"] = _int(data.get("stamp_offers_match"), 0)
+	state["horst_deals"] = maxi(0, _int(data.get("horst_deals"), 0))
+	state["horst_deals_match"] = maxi(0, _int(data.get("horst_deals_match"), 0))
+	state["horst_offer_used"] = data.get("horst_offer_used") == true
 	var tutorial = data.get("tutorial", {})
 	if not tutorial is Dictionary:
 		tutorial = {}

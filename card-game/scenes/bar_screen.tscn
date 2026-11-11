@@ -238,6 +238,38 @@ text = "Round of Drinks"
 horizontal_alignment = 1
 vertical_alignment = 1
 
+[node name="Horst" type="Control" parent="Room"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 327.0
+offset_top = 408.0
+offset_right = 435.0
+offset_bottom = 606.0
+script = ExtResource("2_machine")
+needs_confirm = false
+
+[node name="Sprite" type="TextureRect" parent="Room/Horst"]
+layout_mode = 0
+offset_right = 36.0
+offset_bottom = 66.0
+scale = Vector2(3, 3)
+mouse_filter = 2
+
+[node name="Tooltip" type="Label" parent="Room/Horst"]
+visible = false
+z_index = 10
+layout_mode = 0
+offset_left = -46.0
+offset_top = -40.0
+offset_right = 154.0
+offset_bottom = -8.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 13
+theme_override_styles/normal = SubResource("StyleBoxFlat_back")
+text = "Horst"
+horizontal_alignment = 1
+vertical_alignment = 1
+
 [node name="CashLabel" type="Label" parent="Room"]
 unique_name_in_owner = true
 layout_mode = 0
