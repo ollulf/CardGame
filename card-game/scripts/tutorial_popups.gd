@@ -18,7 +18,7 @@ const SCREEN_MARGIN := 8.0
 const TAIL_GAP := 30.0
 const POINT_PAD := 36.0
 const MIN_TARGET_SIZE := 4.0
-const BASIC_TIPS := ["follow", "trump", "bierdeckel", "deck", "lives"]
+const BASIC_TIPS := ["follow", "trump", "enemy_suits", "bierdeckel", "deck", "lives"]
 
 const DEFAULT_TIPS := {
 	"follow": {
@@ -28,6 +28,10 @@ const DEFAULT_TIPS := {
 	"trump": {
 		"title": "Trump",
 		"text": "[b]Trump[/b] beats every other suit. It is shown at the top and picked [b]at random[/b] each match.",
+	},
+	"enemy_suits": {
+		"title": "Their cards",
+		"text": "You can see the [b]suit[/b] on the back of every card your opponents hold. Use it to guess who can [b]follow[/b] and who has [b]trump[/b].",
 	},
 	"bierdeckel": {
 		"title": "Won tricks",
@@ -194,6 +198,7 @@ func _on_request_play_card(player_id: int) -> void:
 	if player_id == GameManager.HUMAN_ID:
 		request("follow", GameManager.human_player)
 		request("trump", _trump_anchor())
+		request("enemy_suits", _enemy_hand_anchor())
 
 func _on_card_played(_player_id: int, card: Card) -> void:
 	if card == null:
@@ -236,6 +241,12 @@ func _round_number() -> int:
 func _trump_anchor():
 	var display = get_tree().get_first_node_in_group(TrumpDisplay.GROUP)
 	return display.anchor() if display != null else null
+
+func _enemy_hand_anchor():
+	var ai := GameManager.ai_player_1 as AIPlayer
+	if ai == null or ai.card_visuals.is_empty():
+		return null
+	return ai.card_visuals[ai.card_visuals.size() / 2]
 
 func _won_turns_anchor(winner_id: int):
 	var pile := CardManager.won_pile_of(Card.Owner.AI_1)
