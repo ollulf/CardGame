@@ -19,17 +19,16 @@ class_name CigPack
 const PACK_BOTTOM := 16.0
 const SMOKE_ICON := preload("res://sprites/suit_Smoke.png")
 const SMOKE_ICON_GAP := 1.0
+const COUNT_Y := -22.5
 
 var _base_position: Vector2
 var _smoke_icon: Sprite2D
-var _label_center: Vector2
 
 func _ready() -> void:
 	visible = true
 	InteractionManager.cigPack = self
 	
 	_base_position = sprite.position
-	_label_center = amount_label.position + amount_label.size * 0.5
 	_smoke_icon = Sprite2D.new()
 	_smoke_icon.texture = SMOKE_ICON
 	_smoke_icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
@@ -80,7 +79,7 @@ func on_clicked() -> void:
 	update_label()
 
 func update_label():
-	amount_label.text = str(cig_amount)
+	amount_label.text = "x%d" % cig_amount
 	_place_smoke_icon()
 
 
@@ -109,8 +108,7 @@ func _place_smoke_icon() -> void:
 	if _smoke_icon == null:
 		return
 	var font: Font = amount_label.get_theme_font("font")
-	var text_width: float = font.get_string_size(amount_label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, amount_label.get_theme_font_size("font_size")).x
-	var icon_width := SMOKE_ICON.get_width() + SMOKE_ICON_GAP
-	var shift := icon_width * 0.5
-	amount_label.position.x = _label_center.x - amount_label.size.x * 0.5 - shift
-	_smoke_icon.position = Vector2(_label_center.x + text_width * 0.5 - shift + SMOKE_ICON_GAP + SMOKE_ICON.get_width() * 0.5, _label_center.y)
+	var text_width := font.get_string_size(amount_label.text, HORIZONTAL_ALIGNMENT_LEFT, -1, amount_label.get_theme_font_size("font_size")).x
+	var left := floorf(-(SMOKE_ICON.get_width() + SMOKE_ICON_GAP + text_width) * 0.5)
+	_smoke_icon.position = Vector2(left + SMOKE_ICON.get_width() * 0.5, COUNT_Y)
+	amount_label.position = Vector2(left + SMOKE_ICON.get_width() + SMOKE_ICON_GAP, COUNT_Y - amount_label.size.y * 0.5)
