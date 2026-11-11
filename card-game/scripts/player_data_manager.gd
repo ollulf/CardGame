@@ -40,8 +40,8 @@ const DRINK_ROUND_PRICE := 5
 const DRINK_ROUND_FROM_MATCH := 3
 const ALK_BOOSTER_CARDS_FROM_MATCH := 4
 const BOOSTERS: Array[Dictionary] = [
-	{"name": "Standard Booster", "price": 5, "cards": 9, "min_rank": 0, "max_rank": 9, "special_min": 0, "special_max": 0, "rare_min": 1, "rare_max": 2, "filler": "common", "alk_from_match": ALK_BOOSTER_CARDS_FROM_MATCH, "tint": Color(0.78, 0.88, 1.0, 1), "contents": "1-2 rare trump cards + common suits"},
-	{"name": "Premium Booster", "price": 8, "cards": 3, "min_rank": 0, "max_rank": 9, "special_min": 0, "special_max": 1, "filler": "rare", "alk_from_match": ALK_BOOSTER_CARDS_FROM_MATCH, "tint": Color(1.0, 0.8, 0.4, 1), "contents": "0-1 special effect card + rare trump cards"},
+	{"name": "Kiosk Pack", "price": 5, "cards": 9, "min_rank": 0, "max_rank": 9, "special_min": 0, "special_max": 0, "rare_min": 1, "rare_max": 2, "filler": "common", "alk_from_match": ALK_BOOSTER_CARDS_FROM_MATCH, "tint": Color(0.78, 0.88, 1.0, 1), "contents": "1-2 rare trump cards + common suits"},
+	{"name": "Back-Room Pack", "price": 8, "cards": 3, "min_rank": 0, "max_rank": 9, "special_min": 0, "special_max": 1, "filler": "rare", "alk_from_match": ALK_BOOSTER_CARDS_FROM_MATCH, "tint": Color(1.0, 0.8, 0.4, 1), "contents": "0-1 special effect card + rare trump cards"},
 ]
 
 var smoking_stacks := {

@@ -25,11 +25,6 @@ const MAX_TIE_DRAWS := 5
 
 const HUMAN_ID := 0
 const PLAYER_NAMES := ["You", "Bernd", "Manfred"]
-const ROUND_ORDER_LINES := {
-	0: "A *round of drinks* from *{player}*? Cheers, everybody drinks!",
-	1: "Bartender, a *round* for the whole table! Everybody drinks!",
-	2: "This *round* is on me! Bottoms up, all of you!",
-}
 const ROUND_SERVE_STAGGER := 0.25
 const ROUND_SERVE_TIME := 1.6
 
@@ -189,8 +184,7 @@ func _show_drink_round() -> void:
 	await get_tree().create_timer(ROUND_SERVE_TIME, false).timeout
 
 func serve_round_of_drinks(buyer: int) -> void:
-	var speaker := buyer if buyer != HUMAN_ID else 1
-	DialogueManager.say(speaker, ROUND_ORDER_LINES[buyer])
+	DialogueManager.play_round_ordered(buyer)
 	Sfx.play_drink_round()
 	var glass = get_tree().get_first_node_in_group(DrinkGlass.GROUP)
 	var servings: Array = []
@@ -377,7 +371,7 @@ func _finish_turn() -> void:
 	var winner : Card.Owner = CardManager.get_turn_winner()
 	var winner_visual := CardManager.highlight_turn_winner()
 
-	message(_message_name(owner_to_id(winner)) + " won the turn")
+	message(_message_name(owner_to_id(winner)) + " won the trick")
 
 	await _wait_for_continue(winner_visual, winner)
 	if token != round_token:

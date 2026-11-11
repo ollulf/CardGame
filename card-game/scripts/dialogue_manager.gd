@@ -6,9 +6,12 @@ signal closed
 const SPEECH_BUBBLE := preload("res://scenes/speech_bubble.tscn")
 const SEAT_COUNT := 3
 const SEAT_OFFSETS := [Vector2(-276, -18), Vector2(66, 0), Vector2(-66, 0)]
-const TRIGGERS := ["match_start", "round_start", "turn_start", "turn_end", "round_end", "match_won", "match_lost", "run_lost", "zero_beats_nine", "zero_played", "alk_played", "tie_played", "round_tie", "run_won"]
-const ONCE_PER_MATCH_TRIGGERS := ["zero_beats_nine", "zero_played", "alk_played", "tie_played"]
-const ONCE_PER_RUN_TRIGGERS := ["round_tie"]
+const TRIGGERS := ["match_start", "round_start", "turn_start", "turn_end", "round_end", "match_won", "match_lost", "run_lost", "zero_beats_nine", "zero_played", "alk_played", "tie_played", "round_tie", "run_won", "first_smoke", "smoked", "first_drink", "round_by_you", "round_by_bernd", "round_by_manfred", "bought_cigs", "bought_booster", "bought_stamp"]
+const ONCE_PER_MATCH_TRIGGERS := ["zero_beats_nine", "zero_played", "alk_played", "tie_played", "smoked"]
+const ONCE_PER_RUN_TRIGGERS := ["round_tie", "first_smoke", "first_drink"]
+const VARIANT_TRIGGERS := ["first_smoke", "smoked", "first_drink", "round_by_you", "round_by_bernd", "round_by_manfred", "bought_cigs", "bought_booster", "bought_stamp"]
+const ROUND_TRIGGER_BY_SEAT := ["round_by_you", "round_by_bernd", "round_by_manfred"]
+const PURCHASE_TRIGGERS := ["bought_cigs", "bought_stamp", "bought_booster"]
 const ROUND_TRIGGERS := ["round_start", "turn_start", "turn_end", "round_end"]
 const TURN_TRIGGERS := ["turn_start", "turn_end"]
 const TRIGGER_ALIASES := {"start": "match_start", "end": "match_won", "match_end": "match_won"}
@@ -41,6 +44,10 @@ var _round := 0
 var _silent := false
 var _fired_this_match: Array[String] = []
 var _fired_this_run: Array[String] = []
+var _last_variant := {}
+var _used_variants: Array[int] = []
+var _human_smokes := 0
+var _human_drinks := 0
 
 func _ready() -> void:
 	var layer := CanvasLayer.new()
@@ -60,6 +67,7 @@ func _ready() -> void:
 	GameManager.match_lost.connect(_on_match_lost)
 	GameManager.new_match_started.connect(_drop_waiting)
 	CardManager.card_played.connect(_on_card_played)
+	PlayerDataManager.stats_changed.connect(_on_stats_changed)
 
 	_check_lines()
 
@@ -147,6 +155,16 @@ func play_run_won() -> void:
 	_fire("run_won")
 	await wait_until_idle()
 
+func play_round_ordered(buyer: int) -> void:
+	if buyer >= 0 and buyer < ROUND_TRIGGER_BY_SEAT.size():
+		_fire(ROUND_TRIGGER_BY_SEAT[buyer])
+
+func play_bar_purchases(bought: Array) -> void:
+	for trigger in PURCHASE_TRIGGERS:
+		if trigger in bought:
+			_fire(trigger)
+			return
+
 func play_round_tie() -> void:
 	if _match_running:
 		_fire("round_tie", _round)
@@ -157,6 +175,7 @@ func rewind_to_match(match_number: int) -> void:
 	_round = 0
 	if match_number <= 1:
 		_fired_this_run.clear()
+		_used_variants.clear()
 
 func _input(event: InputEvent) -> void:
 	if not is_open() or not event is InputEventMouse or InteractionManager.is_table_blocked():
@@ -311,11 +330,52 @@ func _fire(trigger: String, round_number := ANY, turn_number := ANY) -> void:
 		if trigger in _fired_this_run:
 			return
 		_fired_this_run.append(trigger)
+	if trigger in VARIANT_TRIGGERS:
+		_fire_variant(trigger)
+		return
 	for entry in lines:
 		if entry.when != trigger or not _matches(entry.match_number, _match):
 			continue
 		if _matches(entry.round, round_number) and _matches(entry.turn, turn_number):
 			_queue_entry(entry)
+
+func _fire_variant(trigger: String) -> void:
+	var number := upcoming_match()
+	var specific: Array = []
+	var general: Array = []
+	for entry in lines:
+		if entry.when != trigger:
+			continue
+		if entry.match_number == number and not entry.line in _used_variants:
+			specific.append(entry)
+		elif entry.match_number == ANY:
+			general.append(entry)
+	var pool := specific if not specific.is_empty() else general
+	if pool.size() > 1:
+		pool = pool.filter(func(entry): return entry.line != _last_variant.get(trigger, -1))
+	if pool.is_empty():
+		return
+	var picked: Dictionary = pool.pick_random()
+	_last_variant[trigger] = picked.line
+	_used_variants.append(picked.line)
+	_queue_entry(picked)
+
+func _on_stats_changed(player_id: int) -> void:
+	if player_id != GameManager.HUMAN_ID:
+		return
+	var smokes := PlayerDataManager.get_smoking_stack_count(player_id)
+	var drinks := PlayerDataManager.get_drinking(player_id)
+	if smokes > _human_smokes:
+		if "first_smoke" in _fired_this_run:
+			_fire("smoked")
+		else:
+			if not "smoked" in _fired_this_match:
+				_fired_this_match.append("smoked")
+			_fire("first_smoke")
+	if drinks > _human_drinks:
+		_fire("first_drink")
+	_human_smokes = smokes
+	_human_drinks = drinks
 
 func _matches(wanted: int, actual: int) -> bool:
 	return wanted == ANY or wanted == actual

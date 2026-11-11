@@ -11,20 +11,20 @@ const SCREEN_MARGIN := 150.0
 const FADE_TIME := 0.15
 const HEADING_COLOR := "#a59d94"
 const RULES := """[h]GOAL[/h]
-• A round has [b]5 turns[/b]. Whoever wins the [b]fewest turns[/b] loses the round.
+• A round has [b]5 tricks[/b]: everybody plays one card, the best card takes the trick. Whoever takes the [b]fewest tricks[/b] loses the round.
 • Lose [b]2 rounds[/b] and you are out of the match.
 
-[h]PLAYING A TURN[/h]
+[h]PLAYING A TRICK[/h]
 • You must [b]follow the suit[/b] that was led if you can.
-• The [b]highest card[/b] of the led suit wins the turn.
+• The [b]highest card[/b] of the led suit takes the trick.
 • The [b]trump suit[/b] beats every other suit, so the highest trump wins. It is picked at random at the start of every match and stays for the whole match.
 • [b]Smoking cards[/b] and [b]drinking cards[/b] are always trump.
 • A [b]0[/b] beats a 9 of the [b]same suit[/b].
 • On a tie, the card played [b]first[/b] wins.
 
 [h]SMOKING AND DRINKS[/h]
-• Every cigarette you smoke gives your smoking cards [b]+1[/b] until the round ends.
-• A [b]Round of Drinks[/b] makes everybody drink: drinking cards [b]+1[/b], all other cards [b]-1[/b], for the whole match."""
+• Every cigarette you smoke gives your smoking cards [b]+1[/b] until the round ends, up to [b]+3[/b].
+• A [b]round of drinks[/b] makes everybody drink: drinking cards [b]+1[/b], all other cards [b]-1[/b], for the whole match."""
 
 var _button: Button
 var _dim: ColorRect

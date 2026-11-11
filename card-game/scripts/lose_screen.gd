@@ -1,6 +1,7 @@
 extends CanvasLayer
 
 const FADE_TIME := 0.5
+const LOST_TITLES := ["Your chair's still warm", "The pot stays at the table", "Go sleep it off", "They didn't look up", "Same chair tomorrow"]
 
 @onready var dim: ColorRect = %Dim
 @onready var content: Control = %Content
@@ -22,15 +23,15 @@ func _ready() -> void:
 
 func open() -> void:
 	var match_number := GameManager.current_match()
-	title_label.text = "Kicked from the table"
+	title_label.text = LOST_TITLES[clampi(match_number, 1, LOST_TITLES.size()) - 1]
 	subtitle_label.text = "You lost two rounds in match %d." % match_number
 	retry_button.text = "Retry last match"
 	retry_button.show()
 	_fade_in()
 
 func open_won() -> void:
-	title_label.text = "You won the run"
-	subtitle_label.text = "You beat all %d matches." % Missions.LAST_MATCH
+	title_label.text = "Closing time"
+	subtitle_label.text = "You beat all %d matches. They're still at the table." % Missions.LAST_MATCH
 	retry_button.hide()
 	_fade_in()
 
