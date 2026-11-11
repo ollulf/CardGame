@@ -510,6 +510,7 @@ func _send_off() -> void:
 	_set_hovered(-1)
 	_take_arrow.hide()
 	PlayerDataManager.add_to_collection(cards)
+	Sfx.play_booster_whoosh()
 	var exit_x := get_viewport_rect().size.x + CARD_SIZE.x * CARD_SCALE
 	var fly := create_tween()
 	fly.set_parallel(true)

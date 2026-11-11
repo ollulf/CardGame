@@ -39,6 +39,7 @@ const HOVER_SHADOW_LIFT := 8.0
 const HOVER_BOB := 3.0
 const HOVER_BOB_SPEED := 3.0
 const SOLD_OUT_TEXTURE := preload("res://sprites/sold_out_sign.png")
+const SOLD_OUT_QUIET_MSEC := 400
 
 var stamp_items: Array[CigaretteMachine] = []
 var booster_items: Array[CigaretteMachine] = []
@@ -61,6 +62,7 @@ var shop_tooltip: ShopTooltip
 var _booster_signs: Array[Control] = []
 var _stamps_sign: Control
 var _items_sign: Control
+var _sold_out_quiet_until := 0
 
 static var _slip_cache := {}
 
@@ -99,7 +101,7 @@ func set_match_text(text: String) -> void:
 
 func show_stamps(offers: Array[int], locked: bool, locked_text: String) -> void:
 	_stamps_locked_text = locked_text if locked else ""
-	_stamps_sign.visible = offers.is_empty()
+	_set_sold_out(_stamps_sign, offers.is_empty())
 	for i in stamp_items.size():
 		var has_offer := i < offers.size()
 		stamp_items[i].visible = has_offer
@@ -122,7 +124,7 @@ func show_boosters(offers: Array[int]) -> void:
 		booster_items[i].visible = has_offer
 		_booster_tags[i].visible = has_offer
 		_booster_offers[i] = index
-		_booster_signs[i].visible = not has_offer
+		_set_sold_out(_booster_signs[i], not has_offer)
 		if not has_offer:
 			_end_hover_if(booster_items[i])
 			continue
@@ -135,7 +137,7 @@ func show_boosters(offers: Array[int]) -> void:
 
 func show_smokes(available: bool, label_text: String) -> void:
 	smokes.visible = available
-	_items_sign.visible = not available
+	_set_sold_out(_items_sign, not available)
 	for extra in _smokes_extras:
 		extra.visible = available
 	smokes.set_label_text(label_text)
@@ -466,3 +468,14 @@ static func _slip(id: int) -> ImageTexture:
 	_slip_cache[id] = ImageTexture.create_from_image(image)
 	return _slip_cache[id]
 
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_READY or (what == NOTIFICATION_VISIBILITY_CHANGED and is_visible_in_tree()):
+		_sold_out_quiet_until = Time.get_ticks_msec() + SOLD_OUT_QUIET_MSEC
+
+
+func _set_sold_out(board: Control, on: bool) -> void:
+	if on and not board.visible and is_visible_in_tree() and Time.get_ticks_msec() >= _sold_out_quiet_until:
+		Sfx.play_sold_out()
+	board.visible = on

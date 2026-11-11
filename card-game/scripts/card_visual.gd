@@ -183,6 +183,7 @@ func _pop_rank_change() -> void:
 		var text := ("+%d" % diff) if diff > 0 else str(diff)
 		var color := RANK_INCREASED_COLOR if diff > 0 else RANK_DECREASED_COLOR
 		CardJuice.number_pop(get_parent(), get_global_transform() * Vector2(size.x * 0.5, 0.0), text, color)
+		Sfx.play_rank_pop(diff)
 		punch(CardJuice.RANK_POP_SQUASH)
 	_shown_rank = card.rank
 

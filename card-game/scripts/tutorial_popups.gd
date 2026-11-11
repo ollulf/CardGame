@@ -331,6 +331,7 @@ func _show_next() -> void:
 	_bubble.reset_size()
 	_place()
 	_bubble.modulate.a = 1.0
+	Sfx.play_popup()
 	if DialogueManager.auto_advance:
 		var bubble := _bubble
 		await get_tree().create_timer(AUTO_HOLD, true).timeout
