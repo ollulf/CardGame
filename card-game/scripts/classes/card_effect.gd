@@ -127,11 +127,6 @@ static func on_played(card: Card, player_id: int) -> void:
 	match card.effect:
 		Id.DRAW:
 			await CardManager.draw_extra_card(player_id)
-		Id.COPY:
-			var last: Card = CardManager.last_played_by.get(player_id)
-			if last != null and last.rank != card.rank:
-				card.rank = last.rank
-				card.apply_modifiers()
 		Id.SUIT_UP:
 			CardManager.add_suit_bonus(player_id, card.suit, 1)
 		Id.TRUMP:
@@ -139,11 +134,20 @@ static func on_played(card: Card, player_id: int) -> void:
 
 
 static func modify_rank(card: Card, rank: int, player_id: int) -> int:
-	if card.effect == Id.COPY:
-		var last: Card = CardManager.last_played_by.get(player_id)
-		if last != null:
-			return last.rank
 	return rank + CardManager.suit_bonus(player_id, card.suit)
+
+
+static func copied_rank(card: Card, player_id: int) -> int:
+	if card.effect != Id.COPY:
+		return -1
+	var last: Card = CardManager.last_played_by.get(player_id)
+	if last == null:
+		return -1
+	var rank := last.rank
+	for part in last.buff_parts:
+		if part.get("kind") in ["drink_penalty", "drink_bonus"]:
+			rank -= int(part.get("amount", 0))
+	return rank
 
 
 static func ai_discount(card: Card, player_id: int) -> float:
