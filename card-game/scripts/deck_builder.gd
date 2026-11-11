@@ -384,23 +384,7 @@ func _card_cell(card: Card, card_scale: float, is_new: bool) -> Control:
 	var cell := Control.new()
 	cell.custom_minimum_size = CARD_SIZE * card_scale
 	cell.mouse_filter = Control.MOUSE_FILTER_STOP
-	var face := Panel.new()
-	face.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	face.size = cell.custom_minimum_size
-	var face_style := _box(PANEL_COLOR_2, LINE_COLOR)
-	face_style.set_border_width_all(1)
-	face.add_theme_stylebox_override("panel", face_style)
-	cell.add_child(face)
-	var visual: CardVisual = CARD_SCENE.instantiate()
-	_ignore_mouse(visual)
-	visual.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	visual.size = CARD_SIZE
-	visual.pivot_offset = Vector2.ZERO
-	visual.hover_enabled = false
-	cell.add_child(visual)
-	visual.setup(card, false)
-	visual.scale = Vector2.ONE * card_scale
-	visual.position = Vector2.ZERO
+	_add_card_visual(cell, card, card_scale)
 	if is_new:
 		var tag := _badge("NEW", NEW_COLOR, BG_COLOR)
 		tag.position = Vector2(cell.custom_minimum_size.x / 2.0 - 14, cell.custom_minimum_size.y + 1)
@@ -512,16 +496,7 @@ func _show_card(card: Card) -> void:
 	holder.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	holder.custom_minimum_size = CARD_SIZE * PREVIEW_SCALE
 	_preview_holder.add_child(holder)
-	var visual: CardVisual = CARD_SCENE.instantiate()
-	_ignore_mouse(visual)
-	visual.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-	visual.size = CARD_SIZE
-	visual.pivot_offset = Vector2.ZERO
-	visual.hover_enabled = false
-	holder.add_child(visual)
-	visual.setup(card, false)
-	visual.scale = Vector2.ONE * PREVIEW_SCALE
-	visual.position = Vector2.ZERO
+	_add_card_visual(holder, card, PREVIEW_SCALE)
 	_card_info.text = "\n".join(lines)
 
 
@@ -663,17 +638,19 @@ func _fill_stats_panel() -> void:
 			_rect(bar, Rect2(x, 0, maxf(part - 1, 1), 12), _suit_color(suit))
 		x += part
 	_stats_panel.add_child(bar)
-	var legend := GridContainer.new()
-	legend.columns = 3
+	var legend := HBoxContainer.new()
 	legend.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	legend.add_theme_constant_override("h_separation", 8)
-	for suit in _visible_suits():
+	legend.add_theme_constant_override("separation", 2)
+	var suits := _visible_suits()
+	var compact := suits.size() > 4
+	for suit in suits:
 		var line := HBoxContainer.new()
 		line.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		line.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		line.add_theme_constant_override("separation", 4)
-		line.add_child(_suit_icon(suit, 14))
-		line.add_child(_label(str(counts[suit]), 14, _suit_color(suit) if counts[suit] > 0 else Color(MUTED_COLOR, 0.5)))
+		line.alignment = BoxContainer.ALIGNMENT_CENTER
+		line.add_theme_constant_override("separation", 2 if compact else 4)
+		line.add_child(_suit_icon(suit, 12 if compact else 14))
+		line.add_child(_label(str(counts[suit]), 12 if compact else 14, _suit_color(suit) if counts[suit] > 0 else Color(MUTED_COLOR, 0.5)))
 		legend.add_child(line)
 	_stats_panel.add_child(legend)
 	_stats_panel.add_child(_label("Ranks", 12, MUTED_COLOR))
@@ -717,3 +694,20 @@ func _fill_stats_panel() -> void:
 		grid.add_child(_label(entry[1], 13, FG_COLOR))
 	_stats_panel.add_child(grid)
 
+
+
+func _add_card_visual(parent: Control, card: Card, card_scale: float) -> CardVisual:
+	var visual: CardVisual = CARD_SCENE.instantiate()
+	_ignore_mouse(visual)
+	visual.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
+	visual.size = CARD_SIZE
+	visual.pivot_offset = Vector2.ZERO
+	visual.hover_enabled = false
+	var background: CanvasItem = visual.get_node("Background")
+	background.z_index = 0
+	visual.move_child(background, 0)
+	parent.add_child(visual)
+	visual.setup(card, false)
+	visual.scale = Vector2.ONE * card_scale
+	visual.position = Vector2.ZERO
+	return visual
