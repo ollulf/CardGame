@@ -15,6 +15,7 @@ const BODY_FONT_SIZE := 15
 const SUIT_ICON_SIZE := 18
 const NO_BREAK := "\u00a0"
 const ICON_GAP := "\u202f"
+const WORD_JOIN := "\u2060"
 const SUIT_ICONS := {
 	Card.Suit.DIAMONDS: "res://sprites/suit_Karo.png",
 	Card.Suit.HEARTS: "res://sprites/suit_Herz.png",
@@ -84,7 +85,7 @@ static func describe(booster: Dictionary, match_number: int) -> String:
 	var specials := mini(int(booster.get("specials", 0)), count)
 	var low := BoosterWindow.lowest_rank(booster, match_number)
 	var high := clampi(int(booster.get("max_rank", BoosterWindow.MAX_RANK)), low, BoosterWindow.MAX_RANK)
-	var ranks := str(low) if low == high else "%d%s-%s%d" % [low, NO_BREAK, NO_BREAK, high]
+	var ranks := str(low) if low == high else "%d%s%s-%s%s%d" % [low, NO_BREAK, WORD_JOIN, WORD_JOIN, NO_BREAK, high]
 	var text := "Contains %s cards of suit %s" % [_number(str(count)), _suit_list(booster, match_number)]
 	if specials >= count and count > 0:
 		text += ", %s" % _special("all" + NO_BREAK + "special")
