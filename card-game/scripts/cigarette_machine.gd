@@ -16,6 +16,7 @@ const CONFIRM_TEXT := "Really?"
 const SIGN_TEXTURE := preload("res://sprites/out_of_order.png")
 
 var out_of_order := false
+var tooltip_enabled := true
 var _sign: TextureRect
 var _base_position: Vector2
 var _label_text: String
@@ -87,13 +88,13 @@ func deny(message: String) -> void:
 func _end_deny() -> void:
 	tooltip.text = _shown_label()
 	tooltip.modulate = Color.WHITE
-	tooltip.visible = _hovered
+	tooltip.visible = _hovered and tooltip_enabled
 
 
 func _on_mouse_entered() -> void:
 	_hovered = true
 	sprite.position = _base_position + hover_offset
-	tooltip.visible = true
+	tooltip.visible = tooltip_enabled
 
 
 func _on_mouse_exited() -> void:
@@ -134,7 +135,7 @@ func cancel_confirm() -> void:
 	_confirming = false
 	_bubble.close_line()
 	set_process_input(false)
-	tooltip.visible = _hovered
+	tooltip.visible = _hovered and tooltip_enabled
 
 
 func _input(event: InputEvent) -> void:
@@ -146,3 +147,7 @@ func _input(event: InputEvent) -> void:
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_VISIBILITY_CHANGED and _bubble != null and not is_visible_in_tree():
 		cancel_confirm()
+
+
+func is_denying() -> bool:
+	return _deny_tween != null and _deny_tween.is_running()
