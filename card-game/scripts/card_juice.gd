@@ -156,7 +156,7 @@ static func grid_hover(node: Control, on: bool) -> void:
 	if not ENABLED or node == null:
 		return
 	node.pivot_offset = node.size * 0.5
-	var previous: Variant = node.get_meta("juice_tween", null)
+	var previous: Variant = node.get_meta("juice_tween") if node.has_meta("juice_tween") else null
 	if previous is Tween and previous.is_valid():
 		previous.kill()
 	var tween := node.create_tween()
