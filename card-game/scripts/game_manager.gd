@@ -439,6 +439,7 @@ func _end_round(loosers: Array[int]) -> void:
 		match_trump = -1
 		await _pay_out_prize(total_loosers)
 		if Missions.is_last_match(current_match()):
+			await DialogueManager.play_run_won()
 			run_won.emit()
 		else:
 			match_finished.emit(total_loosers)

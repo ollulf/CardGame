@@ -6,20 +6,22 @@ match: 1
 			1: Well...
 			1: Let's play some *cards*. What do you say *Manfred*?
 			2: Alright *Bernd*, we were out of topics anyways.
-			1: Everybody got their own *deck* with them?
+			1: Out of topics? You never had any. Everybody brought a *deck*?
 			cue: show_deck
 			cue: deal_cards
-			1: Okay *{player}*, play a card now.
+			1: Go on *{player}*, you start. We don't bite.
+			2: He bites. Mostly the *ashtray*.
 			wait_for_cards_played: 2
-			1: Nobody can beat my *hearts 9*.
-			2: Yeah, I cannot beat that...
+			1: Ha! My *hearts 9*. Read it and weep.
+			2: Thirty years and he still gloats like it's the first time.
 
 		when: turn_end
 		round: 1
 		turn: 1
 		lines:
 			cue: show_won_turns
-			1: This was the first turn and I was the *winner*. I will play the next *first card.*
+			1: First *Bierdeckel* of the night. Somebody frame it.
+			2: Somebody frame his face when he loses.
 			wait_for_cards_played: 2
 			2: No *hearts* for me... again.
 
@@ -28,7 +30,7 @@ match: 1
 		lines:
 			cue: show_life_cards
 			2: Well, that makes me the *loser*...
-			2: But since I lost, I will get us a round of *drinks*.
+			2: Fine. Tradition is tradition. I'm getting the *drinks*.
 			1: Awesome idea *Manfred*... 
 			1: Cheers!
 			2: Cheers.
@@ -53,14 +55,15 @@ match: 1
 			2: Sure, I would also smoke one.
 			cue: ai_one_smokes
 			2: Can I use your *lighter*?
-			1: Sure, here you go.
+			1: Again? Buy your own one day.
 			cue: ai_two_smokes
 
 		when: round_start
 		round: 3
 		lines:
 			wait_for_cards_played: 2
-			2: Finally I am drawing my *smoking* cards.
+			2: Finally, the good stuff.
+			1: You say that about everything that burns.
 
 		when: turn_start
 		round: 3
@@ -68,7 +71,7 @@ match: 1
 		lines:
 			1: Well, beat *this*!
 			wait_for_cards_played: 1
-			2: I will, by *smoking a cigarette*!
+			2: Hold that thought, Bernd. This calls for a *cigarette*.
 
 		when: match_end
 		lines:
@@ -80,23 +83,23 @@ match: 2
 	dialogues:
 		when: match_start
 		lines:
-			2: Alright, let's spice it up and play with some *money*!
-			1: Sounds good! Since I lost last round I have to put in the *prize money*.
+			2: Alright, let's make it interesting. Real *money* this time.
+			1: And of course *I* pay in. Last night's loser.
 			cue: ai_1_pays
 			1: Let's hope it's not me again...
 			wait_for_cards_played: 1
 			1: Ahh *{player}* ...
 			cue: give_player_cigs 3
-			1: Have some of my *cigarettes*.
-			1: I hope you already added *smoking cards* to your *deck*.
-			2: I hope not...
-			2: That's going to make it harder for us, to win.
+			1: Have some of my *cigarettes*. On the house.
+			2: His house. Which is mostly this bar.
+			1: Hope you packed some *smoking cards*, {player}.
+			2: Don't encourage the kid. We want to *win*.
 
 		when: zero_played
 		lines:
-			2: See that *0*? Those are in our decks now.
-			1: I know, I know. That's why I keep my *9s* away from it.
-			2: Hehe, then you'd better watch your *9s*.
+			2: Ooh, a *0*. Careful with your *9s*, Bernd.
+			1: Don't start. I didn't sleep for a week last time.
+			2: Best week of my life.
 
 		when: round_start
 		round: 2
@@ -105,19 +108,22 @@ match: 2
 			Bar: Jo guys, the *cigarette machine* works again, in case somebody needs more.
 			1: Awesome, I ran out of *cigarettes*. Let me quickly buy some.
 			cue: ai_1_buys_cigarettes
+			2: You bought a pack yesterday.
+			1: And it's a new day, Manfred.
 
 		when: zero_beats_nine
 		lines:
 			1: Ugh, I knew it, and I still fell for it.
-			1: Fine, fine. Next time I'll keep my *0s* for the big ones.
+			2: Every time, Bernd. Every single time.
 
 match: 3
 	dialogues:
 		when: match_start
 		lines:
-			2: Okay, cigarettes are nice, but a bar game needs *drinks*!
+			2: Cigarettes alone are a sad hobby. Let's get some *drinks* going.
 			cue: show_drinks
-			2: So watch out, *we* can order rounds too!
+			1: Says the man who orders before he sits down.
+			2: I'm efficient.
 
 		when: alk_played
 		lines:
@@ -126,7 +132,105 @@ match: 3
 		when: match_end
 		lines:
 			1: Phew, my *hearts 7* looked like a *5* after those drinks.
-			2: If *YOU* like drinking, check the shop next time. The *boosters* have *drinking cards* now.
+			2: The *boosters* have *drinking cards* now, {player}. Just saying.
+			1: He's recruiting. Don't listen to him.
+
+match: 4
+	dialogues:
+		when: match_start
+		lines:
+			1: *{player}*! Sit, sit. We kept your chair warm.
+			2: He kept the *ashtray* warm.
+			cue: ai_one_smokes
+			1: First one of the evening. Doesn't count.
+			2: You said that about the last three.
+			1: Here *{player}*, have a few. Nobody smokes alone at this table.
+			cue: give_player_cigs 2
+			2: Leave the kid alone, Bernd.
+			2: ...unless the kid is buying.
+
+		when: round_start
+		round: 2
+		lines:
+			2: Bartender! Same again. And one for *{player}*.
+			1: Manfred, it's barely dark outside.
+			2: It's dark somewhere.
+
+		when: turn_start
+		round: 2
+		turn: 3
+		lines:
+			1: Where's my *lighter*? Who took my lighter?
+			2: It's in your hand, Bernd.
+			1: ...I knew that. I was testing you.
+
+		when: round_start
+		round: 3
+		lines:
+			1: Just this round. Then I'm switching to *water*.
+			2: He's been switching to water since 1998.
+			1: Water's for fish, Manfred.
+
+		when: zero_played
+		lines:
+			2: A *0*! Bernd, your *9s*...
+			1: Can't hear you. I'm *smoking*.
+
+		when: alk_played
+		lines:
+			2: Now we're talking. *{player}*, that could be you.
+			1: Leave it, Manfred. ...Or don't.
+
+		when: match_end
+		lines:
+			2: Same time tomorrow?
+			1: Same time every day, Manfred. That's the problem.
+			1: Tomorrow's the big one, *{player}*. Bring your thirst.
+
+match: 5
+	dialogues:
+		when: match_start
+		lines:
+			Bar: Last round tonight, gentlemen. And I mean it this time.
+			1: Says that every night.
+			2: Big pot tonight. Bernd's whole *pension*.
+			1: Half of it. The other half is in that *ashtray*.
+			cue: ai_two_smokes
+			2: *{player}*, one with us. For luck. One won't kill you.
+			1: Won't kill you *fast*, anyway.
+			cue: give_player_cigs 3
+
+		when: round_start
+		round: 2
+		lines:
+			cue: show_drink_round
+			2: Round's on me. Don't look at me like that, Bernd.
+			1: I'm not looking. I'm *counting*.
+			2: *{player}*, you're not drinking? You make us look bad.
+
+		when: turn_start
+		round: 2
+		turn: 4
+		lines:
+			1: My hands are shaking. It's the cards. Cheap cards.
+			2: It's not the cards, Bernd.
+			1: ...Pass me a *cigarette*.
+
+		when: round_start
+		round: 3
+		lines:
+			1: You're good, *{player}*. Too good. Have a *drink*, even it out.
+			2: Come on. It's warmer over here with us.
+
+		when: alk_played
+		lines:
+			1: Ahh, *drinking cards*. My people.
+			2: Your only people, Bernd.
+
+		when: match_end
+		lines:
+			1: Well... beaten by the new kid.
+			2: Thirty years at this table, and the kid takes the pot.
 
 match: any
 	dialogues:
@@ -135,10 +239,20 @@ match: any
 
 		when: tie_played
 		lines:
-			1: Wait, we both played the same card. Who wins now?
-			2: Hehe, being *first* has its perks.
+			1: Same card? *Copycat*.
+			2: I played it *first*. You're the copycat.
 
 		when: round_tie
 		lines:
-			1: Hold on, there is a *tie* for the *fewest won turns*. Who loses the round now?
-			2: Tie-break! Let's *draw*.
+			1: A *tie*? Not again...
+			2: Shut up and *draw*, Bernd.
+
+		when: run_won
+		lines:
+			Bar: Closing time, boys.
+			1: Already? *{player}*, stay. One more game. One more *drink*.
+			2: Let them go, Bernd.
+			1: I am. I'm just asking.
+			cue: ai_one_smokes
+			2: ...Same table tomorrow, *{player}*?
+			1: We'll be here. We're always here.
