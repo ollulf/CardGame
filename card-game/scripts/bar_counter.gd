@@ -36,8 +36,7 @@ const HOVER_BORDER_PAD := 7.0
 const HOVER_SHADOW_LIFT := 8.0
 const HOVER_BOB := 3.0
 const HOVER_BOB_SPEED := 3.0
-const SOLD_OUT_TEXT := "SOLD OUT"
-const SOLD_OUT_SIZE := Vector2(84, 60)
+const SOLD_OUT_TEXTURE := preload("res://sprites/sold_out_sign.png")
 
 var stamp_items: Array[CigaretteMachine] = []
 var booster_items: Array[CigaretteMachine] = []
@@ -385,15 +384,19 @@ func _label(text: String, pos: Vector2, font_size: int, color: Color, width := 0
 
 
 func _sold_out_sign(center: Vector2, tilt: float) -> Control:
-	var sign := _tag(center)
-	sign.text = SOLD_OUT_TEXT
-	sign.size = SOLD_OUT_SIZE
-	sign.position = center - SOLD_OUT_SIZE * 0.5
-	sign.autowrap_mode = TextServer.AUTOWRAP_WORD
-	sign.add_theme_font_size_override("font_size", 16)
-	sign.pivot_offset = SOLD_OUT_SIZE * 0.5
+	var size_px := SOLD_OUT_TEXTURE.get_size() * ART_SCALE
+	var sign := TextureRect.new()
+	sign.texture = SOLD_OUT_TEXTURE
+	sign.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
+	sign.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	sign.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	sign.size = size_px
+	sign.position = center - size_px * 0.5
+	sign.pivot_offset = size_px * 0.5
 	sign.rotation_degrees = tilt
 	sign.visible = false
+	add_child(sign)
+	TableShadow.add_to(sign)
 	return sign
 
 
