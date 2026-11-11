@@ -279,7 +279,6 @@ func reveal_trump() -> void:
 	_trump_revealed = true
 	CardManager.set_trump_suit(match_trump)
 	if first_reveal:
-		Sfx.play_table_knock()
 		await get_tree().create_timer(TRUMP_REVEAL_TIME, false).timeout
 
 func _pick_match_trump() -> void:
