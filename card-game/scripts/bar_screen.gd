@@ -113,7 +113,6 @@ func _hide_bar() -> void:
 
 func _refresh_counter() -> void:
 	var match_number := DialogueManager.upcoming_match()
-	counter.set_mess(match_number)
 	counter.set_match_text(MATCH_TEXT % [match_number, Missions.matches.size()])
 	counter.show_stamps(PlayerDataManager.get_stamp_offers(), GameManager.match_active, STAMPS_LOCKED_TEXT)
 	counter.show_boosters(PlayerDataManager.get_booster_offers())
