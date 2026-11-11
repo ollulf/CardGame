@@ -22,12 +22,13 @@ var _key := ""
 var _fade: Tween
 
 
-static func show_for(card_visual: CardVisual) -> void:
+static func show_for(card_visual: CardVisual, on_layer: int = TOOLTIP_LAYER) -> void:
 	if card_visual.card == null or not card_visual.is_inside_tree():
 		return
 	if not is_instance_valid(_instance):
 		_instance = BuffTooltip.new()
 		card_visual.get_tree().root.add_child(_instance)
+	_instance.layer = on_layer
 	_instance._set_target(card_visual)
 
 

@@ -3,11 +3,13 @@ class_name BoosterWindow
 
 signal finished
 
-enum State { HIDDEN, CLOSED, OPENING, REVEAL, COLLECTING }
+enum State { HIDDEN, CLOSED, OPENING, REVEAL, DONE, LEAVING }
 
 const CARD_SCENE := preload("res://scenes/Card.tscn")
 const MAX_ROW_CARDS := 5
-const COLLECT_DELAY := 2.0
+const HOVER_TINT := Color(1.15, 1.1, 0.95)
+const TAKE_TEXT := "Click to pocket them"
+const TAKE_TEXT_TOUCH := "Tap to pocket them"
 const NORMAL_SUITS: Array[Card.Suit] = [Card.Suit.DIAMONDS, Card.Suit.HEARTS, Card.Suit.SPADES, Card.Suit.CLUBS]
 const MIN_RANK := 1
 const NORMAL_SUIT_WEIGHT := 3
@@ -36,7 +38,8 @@ var _panel: Panel
 var _pack: Control
 var _body: TextureRect
 var _flap: TextureRect
-var _collection_button: Button
+var _take_label: Label
+var _hovered := -1
 var _logo: Label
 var _booster: Dictionary = {}
 
@@ -97,19 +100,15 @@ func _build() -> void:
 	_flap.pivot_offset = _flap.size
 	_pack.add_child(_flap)
 
-	_collection_button = Button.new()
-	_collection_button.text = "Collection"
-	var flat_style := StyleBoxFlat.new()
-	flat_style.bg_color = Color(0.2, 0.19, 0.26)
-	flat_style.set_border_width_all(1)
-	flat_style.border_color = Color("6b6390")
-	for style_name in ["normal", "hover", "pressed", "disabled", "focus"]:
-		_collection_button.add_theme_stylebox_override(style_name, flat_style)
-	_collection_button.focus_mode = Control.FOCUS_NONE
-	_collection_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_collection_button.size = Vector2(120, 32)
-	_collection_button.position = PANEL_RECT.end - Vector2(140, 48)
-	add_child(_collection_button)
+	_take_label = Label.new()
+	_take_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_take_label.add_theme_font_size_override("font_size", InteractionManager.font_px(16))
+	_take_label.add_theme_color_override("font_color", Color("ffcf6e"))
+	_take_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_take_label.position = Vector2(PANEL_RECT.position.x, PANEL_RECT.end.y - 40)
+	_take_label.size = Vector2(PANEL_RECT.size.x, 28)
+	_take_label.hide()
+	add_child(_take_label)
 
 
 func _pack_piece(region: Rect2, shine: ShaderMaterial) -> TextureRect:
@@ -148,7 +147,8 @@ func open(booster: Dictionary = PlayerDataManager.BOOSTERS[0]) -> void:
 	_flap.position = Vector2.ZERO
 	_flap.rotation = 0.0
 	_flap.modulate = Color.WHITE
-	_collection_button.modulate = Color.WHITE
+	_take_label.hide()
+	_hovered = -1
 	state = State.CLOSED
 	show()
 
@@ -206,9 +206,37 @@ static func special_effects() -> Array:
 
 
 func _gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+	if event is InputEventMouseMotion:
+		hover_at(event.position)
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 		accept_event()
 		click_at(event.position)
+
+
+func hover_at(point: Vector2) -> void:
+	var index := -1
+	if state == State.REVEAL or state == State.DONE:
+		for i in card_visuals.size():
+			if flipped[i] and _card_rect(i).has_point(point):
+				index = i
+				break
+	_set_hovered(index)
+
+
+func _set_hovered(index: int) -> void:
+	if index == _hovered:
+		return
+	if _hovered >= 0 and _hovered < card_visuals.size():
+		card_visuals[_hovered].modulate = Color.WHITE
+		BuffTooltip.hide_for(card_visuals[_hovered])
+	_hovered = index
+	if index < 0:
+		return
+	var visual := card_visuals[index]
+	visual.modulate = HOVER_TINT
+	Sfx.play_hover_card()
+	var canvas := get_canvas_layer_node()
+	BuffTooltip.show_for(visual, (canvas.layer if canvas != null else 0) + 1)
 
 
 func click_at(point: Vector2) -> void:
@@ -222,6 +250,13 @@ func click_at(point: Vector2) -> void:
 				if not flipped[i] and _card_rect(i).has_point(point):
 					flip(i)
 					return
+		State.DONE:
+			if InteractionManager.uses_touch():
+				var before := _hovered
+				hover_at(point)
+				if _hovered >= 0 and _hovered != before:
+					return
+			_send_off()
 
 
 func _card_center(index: int) -> Vector2:
@@ -298,10 +333,16 @@ func flip(index: int) -> void:
 		visual.show_front()
 		_play_flip_effect(visual, cards[index]))
 	turn.tween_property(visual, "scale:x", CARD_SCALE, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	await turn.finished
+	if state != State.REVEAL:
+		return
+	hover_at(get_local_mouse_position())
 	if not flipped.has(false):
-		state = State.COLLECTING
-		await turn.finished
-		_collect()
+		state = State.DONE
+		_take_label.text = TAKE_TEXT_TOUCH if InteractionManager.uses_touch() else TAKE_TEXT
+		_take_label.modulate.a = 0.0
+		_take_label.show()
+		create_tween().tween_property(_take_label, "modulate:a", 1.0, 0.25)
 
 
 func _play_flip_effect(visual: CardVisual, card: Card) -> void:
@@ -468,29 +509,27 @@ func _special_effect(visual: CardVisual, card: Card) -> void:
 		fx.set_shader_parameter("flash", value), 0.7, 0.0, 0.17)
 
 
-func _collect() -> void:
-	await get_tree().create_timer(COLLECT_DELAY, true, false, true).timeout
-	var target := _collection_button.position + _collection_button.size / 2.0 - CARD_SIZE / 2.0
+func _send_off() -> void:
+	state = State.LEAVING
+	_set_hovered(-1)
+	_take_label.hide()
+	PlayerDataManager.add_to_collection(cards)
+	var exit_x := get_viewport_rect().size.x + CARD_SIZE.x * CARD_SCALE
 	var fly := create_tween()
 	fly.set_parallel(true)
-	for i in card_visuals.size():
+	var count := card_visuals.size()
+	for i in count:
 		var visual := card_visuals[i]
-		var delay := i * 0.07
+		var delay := (count - 1 - i) * 0.06
 		Sfx.play_card_move(delay)
-		fly.tween_property(visual, "position", target, 0.4).set_delay(delay).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-		fly.tween_property(visual, "scale", Vector2.ONE * 0.3, 0.4).set_delay(delay)
-		fly.tween_property(visual, "modulate:a", 0.0, 0.1).set_delay(delay + 0.3)
+		fly.tween_property(visual, "position:x", exit_x, 0.45).set_delay(delay).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
+		fly.tween_property(visual, "rotation", randf_range(0.15, 0.35), 0.45).set_delay(delay)
 	await fly.finished
-	PlayerDataManager.add_to_collection(cards)
-	var pulse := create_tween()
-	pulse.tween_property(_collection_button, "modulate", Color(1.4, 1.3, 0.9), 0.1)
-	pulse.tween_property(_collection_button, "modulate", Color.WHITE, 0.2)
-	await pulse.finished
-	await get_tree().create_timer(0.3, true, false, true).timeout
 	close()
 
 
 func close() -> void:
+	_set_hovered(-1)
 	for visual in card_visuals:
 		visual.queue_free()
 	card_visuals.clear()
