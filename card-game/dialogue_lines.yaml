@@ -6,7 +6,7 @@ match: 1
 			1: Well...
 			1: Let's play some *cards*. What do you say *Manfred*?
 			2: Alright *Bernd*, we were out of topics anyways.
-			1: We were never *in* topics. Everybody got a *deck*?
+			1: Out of topics? You never had any. Everybody brought a *deck*?
 			cue: show_deck
 			cue: deal_cards
 			1: Go on *{player}*, you start. We don't bite.
