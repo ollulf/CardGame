@@ -5,8 +5,8 @@ const DRINK_ICON := preload("res://sprites/suit_Alk.png")
 const BUFF_COLOR := Color("5fbf6a")
 const DEBUFF_COLOR := Color(1.0, 0.4, 0.4)
 const MUTED_COLOR := Color("a59d94")
-const PLAYER_OFFSET := Vector2(110.0, -4.0)
-const AI_OFFSET := Vector2(6.0, 92.0)
+const PLAYER_OFFSET := Vector2(12.0, -8.0)
+const AI_OFFSET := Vector2(8.0, 104.0)
 const CHIP_GAP := 4.0
 
 var chips := {}
@@ -30,10 +30,11 @@ func _ready() -> void:
 func _place_chip(player_id: int, chip: PanelContainer, slot: int) -> void:
 	add_child(chip)
 	var chip_size := chip.get_combined_minimum_size()
-	var shift := slot * (chip_size.y + CHIP_GAP)
+	var shift_slot := slot if player_id == 0 else 1 - slot
+	var shift := shift_slot * (chip_size.y + CHIP_GAP)
 	match player_id:
 		0:
-			chip.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+			chip.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
 			chip.grow_horizontal = Control.GROW_DIRECTION_END
 			chip.grow_vertical = Control.GROW_DIRECTION_BEGIN
 			chip.offset_left = PLAYER_OFFSET.x
@@ -44,15 +45,15 @@ func _place_chip(player_id: int, chip: PanelContainer, slot: int) -> void:
 			chip.set_anchors_preset(Control.PRESET_TOP_LEFT)
 			chip.offset_left = AI_OFFSET.x
 			chip.offset_right = AI_OFFSET.x + chip_size.x
-			chip.offset_top = AI_OFFSET.y - shift
-			chip.offset_bottom = AI_OFFSET.y + chip_size.y - shift
+			chip.offset_top = AI_OFFSET.y + shift
+			chip.offset_bottom = AI_OFFSET.y + chip_size.y + shift
 		2:
 			chip.set_anchors_preset(Control.PRESET_TOP_RIGHT)
 			chip.grow_horizontal = Control.GROW_DIRECTION_BEGIN
 			chip.offset_left = -AI_OFFSET.x - chip_size.x
 			chip.offset_right = -AI_OFFSET.x
-			chip.offset_top = AI_OFFSET.y - shift
-			chip.offset_bottom = AI_OFFSET.y + chip_size.y - shift
+			chip.offset_top = AI_OFFSET.y + shift
+			chip.offset_bottom = AI_OFFSET.y + chip_size.y + shift
 
 func _build_chip(player_id: int, icon_texture: Texture2D, bonus_text: String, bonus_color: Color, count_text: String, duration_text := "· round") -> PanelContainer:
 	var chip := PanelContainer.new()
@@ -88,7 +89,7 @@ func _make_label(label_name: String, text: String, color: Color) -> Label:
 	label.name = label_name
 	label.text = text
 	label.add_theme_color_override("font_color", color)
-	label.add_theme_font_size_override("font_size", InteractionManager.font_px(14))
+	label.add_theme_font_size_override("font_size", InteractionManager.font_px(16))
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return label
 
