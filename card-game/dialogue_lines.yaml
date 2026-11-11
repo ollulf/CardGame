@@ -111,7 +111,7 @@ match: 2
 			1: Have some of my *cigarettes*. On the house.
 			2: His house. Which is mostly this bar.
 			1: Hope you packed some *smoking cards*, *{player}*.
-			2: Don't encourage the kid. We want to *win*.
+			2: Don't coach the competition, *Bernd*. We want to *win*.
 
 		when: zero_played
 		lines:
@@ -283,8 +283,8 @@ match: 5
 
 		when: match_won
 		lines:
-			1: Well... beaten by the new kid.
-			2: Thirty years at this table, and the kid takes the pot.
+			1: Well... beaten by the new one.
+			2: We taught *{player}* everything. Big mistake.
 
 		when: match_lost
 		lines:
@@ -303,9 +303,6 @@ match: 5
 
 match: any
 	dialogues:
-		when: match_won
-		lines:
-
 		when: tie_played
 		lines:
 			1: Same card? Copycat.
@@ -322,9 +319,11 @@ match: any
 			1: Already? *{player}*, stay. One more game. One more *drink*.
 			2: Let them go, *Bernd*.
 			1: I am. I'm just asking.
+			Bar: I'm putting the chairs up, gentlemen.
+			1: Leave ours.
 			cue: ai_one_smokes
-			2: ...Same table tomorrow, *{player}*?
-			1: We'll be here. We're always here.
+			2: Deal, *Bernd*. Just the two of us.
+			1: Like before.
 
 match: 2
 	dialogues:
@@ -500,7 +499,7 @@ match: any
 		when: round_by_manfred
 		lines:
 			2: Bartender. Same again, for everyone.
-			1: Thirty years and he's never once said "something else".
+			1: Not once in his life has he said "something else".
 
 		when: round_by_manfred
 		lines:

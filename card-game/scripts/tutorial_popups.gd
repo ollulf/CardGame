@@ -43,7 +43,7 @@ const DEFAULT_TIPS := {
 	},
 	"smoke": {
 		"title": "Smoking cards",
-		"text": "[b]Smoking cards[/b] are always *trump*. Each *cigarette* smoked gives them [b]+1[/b] this round, up to [b]+3[/b].",
+		"text": "[b]Smoking cards[/b] are always [b]trump[/b]. Each *cigarette* smoked gives them [b]+1[/b] this round, up to [b]+3[/b].",
 	},
 	"zero": {
 		"title": "Zero",
@@ -55,7 +55,7 @@ const DEFAULT_TIPS := {
 	},
 	"tiebreak": {
 		"title": "Tie-break",
-		"text": "Tied for fewest tricks? Each tied player draws a card. The [b]lowest number[/b] loses; suit and *trump* don't count.",
+		"text": "Tied for fewest tricks? Each tied player draws a card. The [b]lowest number[/b] loses; suit and [b]trump[/b] don't count.",
 	},
 	"prize": {
 		"title": "Prize money",
@@ -63,7 +63,7 @@ const DEFAULT_TIPS := {
 	},
 	"cigs": {
 		"title": "Cigarettes",
-		"text": "Tap your [b]pack[/b] to take a *cigarette*, then the [b]lighter[/b] to smoke it. Smoking cards get [b]+1[/b] per *cigarette* this round, up to [b]+3[/b].",
+		"text": "Tap your [b]pack[/b] to take a *cigarette*, then the [b]lighter[/b] to smoke it.",
 	},
 	"wallet": {
 		"title": "Your money",
@@ -75,7 +75,7 @@ const DEFAULT_TIPS := {
 	},
 	"deck_size": {
 		"title": "Your deck",
-		"text": "A deck needs [b]{min} to {max} cards[/b]. Click cards to move them in or out.",
+		"text": "A deck needs [b]{min} to {max} cards[/b]. Tap cards to move them in or out.",
 	},
 	"drinks": {
 		"title": "Round of drinks",
@@ -87,11 +87,7 @@ const DEFAULT_TIPS := {
 	},
 	"alk": {
 		"title": "Drinking cards",
-		"text": "[b]Drinking cards[/b] are always *trump* and get [b]+1[/b] for every drink.",
-	},
-	"horst": {
-		"title": "Horst",
-		"text": "Horst buys [b]3 cards[/b] from your collection for [b]1$[/b], once per visit. A special card counts as 3.",
+		"text": "[b]Drinking cards[/b] are always [b]trump[/b] and get [b]+1[/b] for every drink.",
 	},
 }
 
