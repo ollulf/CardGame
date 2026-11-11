@@ -1,5 +1,5 @@
 extends PanelContainer
-class_name BoosterTooltip
+class_name ShopTooltip
 
 const WIDTH := 250.0
 const GAP := 14.0
@@ -8,6 +8,7 @@ const BG := Color(0.0901961, 0.0862745, 0.109804, 0.96)
 const INNER_BG := Color(0.27, 0.26, 0.3)
 const NUMBER := "f2a94a"
 const SPECIAL := "a98bff"
+const LOCKED := "ff7a6b"
 const SUIT_NAMES := {
 	Card.Suit.DIAMONDS: "Diamonds",
 	Card.Suit.HEARTS: "Hearts",
@@ -52,9 +53,9 @@ func _ready() -> void:
 	inner.add_child(_body)
 
 
-func show_for(booster: Dictionary, match_number: int, anchor: Rect2) -> void:
-	_title.text = String(booster.get("name", "Booster"))
-	_body.text = describe(booster, match_number)
+func show_text(title: String, body: String, anchor: Rect2) -> void:
+	_title.text = title
+	_body.text = body
 	_shown += 1
 	var token := _shown
 	modulate.a = 0.0
@@ -110,3 +111,8 @@ static func _box(bg: Color, border: int, radius: int, margin: int) -> StyleBoxFl
 	style.set_corner_radius_all(radius)
 	style.set_content_margin_all(margin)
 	return style
+
+
+static func highlight_numbers(text: String) -> String:
+	var regex := RegEx.create_from_string("[+-]?[0-9]+")
+	return regex.sub(text, "[color=#%s]$0[/color]" % NUMBER, true)

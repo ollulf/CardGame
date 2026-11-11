@@ -31,30 +31,30 @@ const ITEM_SLOTS := [Vector2(1004, 150), Vector2(1004, 390)]
 const DRINKS_POS := Vector2(150, 360)
 const PACK_SIZE := Vector2(64, 120)
 const SLIP_SIZE := Vector2i(46, 52)
-const BOOSTER_LIFT := Vector2(0, -10)
-const BOOSTER_HOVER_SCALE := 1.15
-const BOOSTER_BORDER_PAD := 7.0
-const BOOSTER_SHADOW_LIFT := 8.0
-const BOOSTER_BOB := 3.0
-const BOOSTER_BOB_SPEED := 3.0
+const HOVER_LIFT := Vector2(0, -10)
+const HOVER_SCALE := 1.15
+const HOVER_BORDER_PAD := 7.0
+const HOVER_SHADOW_LIFT := 8.0
+const HOVER_BOB := 3.0
+const HOVER_BOB_SPEED := 3.0
 
 var stamp_items: Array[CigaretteMachine] = []
 var booster_items: Array[CigaretteMachine] = []
 var smokes: CigaretteMachine
 var drinks: CigaretteMachine
 var match_label: Label
-var _stamp_names: Array[Label] = []
 var _stamp_tags: Array[Label] = []
-var _booster_names: Array[Label] = []
 var _booster_tags: Array[Label] = []
 var _coaster: TextureRect
 var _drinks_name: Label
 var _drinks_tag: Label
 var _booster_offers: Array[int] = []
-var _hovered_booster := -1
+var _stamp_offers: Array[int] = []
+var _stamps_locked_text := ""
+var _hovered: CigaretteMachine
 var _hover_tweens := {}
 var _hover_time := 0.0
-var booster_tooltip: BoosterTooltip
+var shop_tooltip: ShopTooltip
 
 static var _slip_cache := {}
 
@@ -79,8 +79,8 @@ func _ready() -> void:
 		_build_booster_slot(i)
 	_build_smokes(ITEM_SLOTS[0])
 	_build_drinks()
-	booster_tooltip = BoosterTooltip.new()
-	add_child(booster_tooltip)
+	shop_tooltip = ShopTooltip.new()
+	add_child(shop_tooltip)
 
 
 func set_match_text(text: String) -> void:
@@ -88,19 +88,20 @@ func set_match_text(text: String) -> void:
 
 
 func show_stamps(offers: Array[int], locked: bool, locked_text: String) -> void:
+	_stamps_locked_text = locked_text if locked else ""
 	for i in stamp_items.size():
 		var has_offer := i < offers.size()
 		stamp_items[i].visible = has_offer
-		_stamp_names[i].visible = has_offer
 		_stamp_tags[i].visible = has_offer
+		_stamp_offers[i] = offers[i] if has_offer else -1
 		if not has_offer:
+			_end_hover_if(stamp_items[i])
 			continue
 		var id: int = offers[i]
 		stamp_items[i].sprite.texture = _slip(id)
 		stamp_items[i].sprite.modulate = LOCKED if locked else Color.WHITE
-		stamp_items[i].set_label_text(locked_text if locked else CardStamp.description(id))
-		_stamp_names[i].text = CardStamp.display_name(id)
 		_stamp_tags[i].text = "%d$" % CardStamp.price(id)
+	_refresh_hover_tip()
 
 
 func show_boosters(offers: Array[int]) -> void:
@@ -108,19 +109,16 @@ func show_boosters(offers: Array[int]) -> void:
 		var index: int = offers[i] if i < offers.size() else -1
 		var has_offer := index >= 0
 		booster_items[i].visible = has_offer
-		_booster_names[i].visible = has_offer
 		_booster_tags[i].visible = has_offer
 		_booster_offers[i] = index
 		if not has_offer:
-			if _hovered_booster == i:
-				_set_booster_hover(i, false)
+			_end_hover_if(booster_items[i])
 			continue
 		var booster: Dictionary = PlayerDataManager.BOOSTERS[index]
 		booster_items[i].sprite.texture = BoosterArt.pack_texture(booster)
 		booster_items[i].sprite.self_modulate = BoosterArt.pack_tint(booster)
-		booster_items[i].set_label_text("%d cards: %s" % [int(booster["cards"]), String(booster["contents"])])
-		_booster_names[i].text = String(booster["name"])
 		_booster_tags[i].text = "%d$" % int(booster["price"])
+	_refresh_hover_tip()
 
 
 func show_smokes(available: bool, label_text: String) -> void:
@@ -151,8 +149,9 @@ func _build_stamp_slot(i: int) -> void:
 	item.sprite.rotation_degrees = STAMP_TILT[i]
 	item.clicked.connect(func() -> void: stamp_clicked.emit(i))
 	stamp_items.append(item)
-	_stamp_names.append(_label("", center + Vector2(-80, 46), 15, TEXT, 160))
-	_stamp_tags.append(_tag(center + Vector2(0, 84)))
+	_stamp_offers.append(-1)
+	_add_hover(item, STAMP_TILT[i], _stamp_tip.bind(i))
+	_stamp_tags.append(_tag(center + Vector2(0, 66)))
 
 
 func _build_booster_slot(i: int) -> void:
@@ -167,62 +166,94 @@ func _build_booster_slot(i: int) -> void:
 	shine.set_shader_parameter("shading_map", BoosterArt.SHADING_MAP)
 	item.sprite.material = shine
 	item.clicked.connect(func() -> void: booster_clicked.emit(i))
+	booster_items.append(item)
+	_booster_offers.append(-1)
+	_add_hover(item, BOOSTER_TILT[i], _booster_tip.bind(i))
+	_booster_tags.append(_tag(center + Vector2(0, 80)))
+
+
+func _stamp_tip(i: int) -> Array:
+	var id := _stamp_offers[i]
+	if id < 0:
+		return []
+	var body := ShopTooltip.highlight_numbers(CardStamp.description(id))
+	if _stamps_locked_text != "":
+		body += "\n[color=#%s]%s[/color]" % [ShopTooltip.LOCKED, _stamps_locked_text]
+	return [CardStamp.display_name(id), body]
+
+
+func _booster_tip(i: int) -> Array:
+	if _booster_offers[i] < 0:
+		return []
+	var booster: Dictionary = PlayerDataManager.BOOSTERS[_booster_offers[i]]
+	return [String(booster.get("name", "Booster")), ShopTooltip.describe(booster, DialogueManager.upcoming_match())]
+
+
+func _add_hover(item: CigaretteMachine, tilt: float, tip: Callable) -> void:
 	item.tooltip_enabled = false
-	item.hover_offset = BOOSTER_LIFT
+	item.hover_offset = HOVER_LIFT
+	item.set_meta("tilt", tilt)
+	item.set_meta("tip", tip)
 	var border := Panel.new()
 	border.name = "HoverBorder"
 	border.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	border.visible = false
-	border.position = -Vector2.ONE * BOOSTER_BORDER_PAD
-	border.size = PACK_SIZE + Vector2.ONE * BOOSTER_BORDER_PAD * 2.0
+	border.position = -Vector2.ONE * HOVER_BORDER_PAD
+	border.size = item.size + Vector2.ONE * HOVER_BORDER_PAD * 2.0
 	var style := StyleBoxFlat.new()
 	style.draw_center = false
-	style.border_color = BoosterTooltip.EDGE
+	style.border_color = ShopTooltip.EDGE
 	style.set_border_width_all(3)
 	style.set_corner_radius_all(6)
 	border.add_theme_stylebox_override("panel", style)
 	item.sprite.add_child(border)
-	item.mouse_entered.connect(_set_booster_hover.bind(i, true))
-	item.mouse_exited.connect(_set_booster_hover.bind(i, false))
-	booster_items.append(item)
-	_booster_offers.append(-1)
-	_booster_names.append(_label("", center + Vector2(-80, 62), 15, TEXT, 160))
-	_booster_tags.append(_tag(center + Vector2(0, 100)))
+	item.mouse_entered.connect(_set_hover.bind(item, true))
+	item.mouse_exited.connect(_set_hover.bind(item, false))
 
 
-func _set_booster_hover(i: int, on: bool) -> void:
-	var item := booster_items[i]
-	if on and _booster_offers[i] < 0:
+func _end_hover_if(item: CigaretteMachine) -> void:
+	if _hovered == item:
+		_set_hover(item, false)
+
+
+func _set_hover(item: CigaretteMachine, on: bool) -> void:
+	if on and (item.get_meta("tip") as Callable).call().is_empty():
 		return
-	if not on and _hovered_booster != i:
+	if not on and _hovered != item:
 		return
-	_hovered_booster = i if on else -1
+	_hovered = item if on else null
 	item.z_index = 1 if on else 0
 	item.sprite.get_node("HoverBorder").visible = on
 	var shadow := TableShadow.add_to(item.sprite)
-	if _hover_tweens.has(i):
-		(_hover_tweens[i] as Tween).kill()
+	if _hover_tweens.has(item):
+		(_hover_tweens[item] as Tween).kill()
 	var tween := create_tween().set_parallel(true).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.tween_property(item.sprite, "scale", Vector2.ONE * (BOOSTER_HOVER_SCALE if on else 1.0), 0.18)
-	tween.tween_property(item.sprite, "rotation_degrees", 0.0 if on else float(BOOSTER_TILT[i]), 0.18)
-	tween.tween_property(shadow, "lift", BOOSTER_SHADOW_LIFT if on else 0.0, 0.18)
-	_hover_tweens[i] = tween
+	tween.tween_property(item.sprite, "scale", Vector2.ONE * (HOVER_SCALE if on else 1.0), 0.18)
+	tween.tween_property(item.sprite, "rotation_degrees", 0.0 if on else float(item.get_meta("tilt")), 0.18)
+	tween.tween_property(shadow, "lift", HOVER_SHADOW_LIFT if on else 0.0, 0.18)
+	_hover_tweens[item] = tween
 	if on:
 		_hover_time = 0.0
-		var booster: Dictionary = PlayerDataManager.BOOSTERS[_booster_offers[i]]
-		booster_tooltip.show_for(booster, DialogueManager.upcoming_match(), Rect2(item.position, item.size).grow(BOOSTER_BORDER_PAD * BOOSTER_HOVER_SCALE))
+		_refresh_hover_tip()
 	else:
-		booster_tooltip.hide()
+		shop_tooltip.hide()
+
+
+func _refresh_hover_tip() -> void:
+	if _hovered == null:
+		return
+	var tip: Array = (_hovered.get_meta("tip") as Callable).call()
+	if tip.is_empty():
+		return
+	var anchor := Rect2(_hovered.position, _hovered.size).grow(HOVER_BORDER_PAD * HOVER_SCALE)
+	shop_tooltip.show_text(tip[0], tip[1], anchor)
 
 
 func _process(delta: float) -> void:
-	if _hovered_booster < 0:
-		return
-	var item := booster_items[_hovered_booster]
-	if item.is_denying():
+	if _hovered == null or _hovered.is_denying():
 		return
 	_hover_time += delta
-	item.sprite.position = BOOSTER_LIFT + Vector2(0, sin(_hover_time * BOOSTER_BOB_SPEED) * BOOSTER_BOB)
+	_hovered.sprite.position = HOVER_LIFT + Vector2(0, sin(_hover_time * HOVER_BOB_SPEED) * HOVER_BOB)
 
 
 func _build_smokes(center: Vector2) -> void:
