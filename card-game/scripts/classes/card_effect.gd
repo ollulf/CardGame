@@ -18,10 +18,10 @@ const WORDS := {
 	Id.TRUMP: "TRUMP",
 }
 const NAMES := {
-	Id.DRAW: "Draw",
-	Id.COPY: "Copy",
-	Id.SUIT_UP: "Suit +1",
-	Id.TRUMP: "Trump",
+	Id.DRAW: "Refill",
+	Id.COPY: "Same Again",
+	Id.SUIT_UP: "Stammtisch",
+	Id.TRUMP: "Calls the Shots",
 }
 const DESCRIPTIONS := {
 	Id.DRAW: "When played, draw a card from your deck.",

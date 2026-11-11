@@ -22,12 +22,12 @@ const PRICES := {
 	Id.ZERO: 5,
 }
 const NAMES := {
-	Id.COLORLESS: "Colorless",
-	Id.DRAW_FIRST: "Draw First",
-	Id.PLUS_2: "+2 Rank",
-	Id.PLUS_3: "+3 Rank",
-	Id.PLUS_4: "+4 Rank",
-	Id.ZERO: "Make 0",
+	Id.COLORLESS: "Joker",
+	Id.DRAW_FIRST: "Up the Sleeve",
+	Id.PLUS_2: "Marked +2",
+	Id.PLUS_3: "Marked +3",
+	Id.PLUS_4: "Marked +4",
+	Id.ZERO: "Nobody",
 }
 const DESCRIPTIONS := {
 	Id.COLORLESS: "Can always be played, never follows suit rules. Never trump.",
