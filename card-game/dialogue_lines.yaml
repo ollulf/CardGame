@@ -308,7 +308,7 @@ match: any
 
 		when: tie_played
 		lines:
-			1: Same card? *Copycat*.
+			1: Same card? Copycat.
 			2: I played it *first*. You're the copycat.
 
 		when: round_tie
