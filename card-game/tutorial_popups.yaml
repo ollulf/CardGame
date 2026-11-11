@@ -35,7 +35,7 @@ id: lives
 id: smoke
 	when: first smoking card is played
 	title: Smoking cards
-	text: [b]Smoking cards[/b] are always trump. Each cigarette smoked gives them [b]+1[/b] this round, up to [b]+3[/b].
+	text: [b]Smoking cards[/b] are always *trump*. Each cigarette smoked gives them [b]+1[/b] this round, up to [b]+3[/b].
 
 id: zero
 	when: a 0 is in play
@@ -50,7 +50,7 @@ id: tie
 id: tiebreak
 	when: players tie for fewest tricks
 	title: Tie-break
-	text: Tied for fewest tricks? Each tied player draws a card. The [b]lowest number[/b] loses; suit and trump don't count.
+	text: Tied for fewest tricks? Each tied player draws a card. The [b]lowest number[/b] loses; suit and *trump* don't count.
 
 id: prize
 	when: the match ends and the prize is paid
@@ -80,7 +80,7 @@ id: drinks
 id: alk
 	when: first drinking card is played
 	title: Drinking cards
-	text: [b]Drinking cards[/b] are always trump and get [b]+1[/b] for every drink.
+	text: [b]Drinking cards[/b] are always *trump* and get [b]+1[/b] for every drink.
 
 id: horst
 	when: first visit to the bar with Horst (from match 2)
