@@ -1,4 +1,4 @@
-extends CanvasLayer
+extends Node2D
 
 const PILE_OFFSETS := {
 	Card.Owner.HUMAN: Vector2(-45, -88),

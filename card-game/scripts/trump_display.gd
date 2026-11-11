@@ -1,10 +1,14 @@
-extends CanvasLayer
+extends Node2D
 class_name TrumpDisplay
 
 const GROUP := "trump_display"
 const CARD_SCENE := preload("res://scenes/Card.tscn")
 const CARD_SIZE := Vector2(60, 90)
-const TOP_MARGIN := 30.0
+const TOP_MARGIN := 0.0
+const LABEL_GAP := 4.0
+const LABEL_FONT_SIZE := 16
+const LABEL_COLOR := Color(1.0, 0.85, 0.3)
+const LABEL_OUTLINE_COLOR := Color(0.15, 0.1, 0.0)
 const DROP_DISTANCE := 40.0
 const REVEAL_TIME := 0.5
 const SPIN_HALF_TIMES := [0.07, 0.08, 0.09, 0.11, 0.14, 0.18, 0.23, 0.3]
@@ -21,15 +25,18 @@ var _final_suit: Card.Suit
 func _ready() -> void:
 	add_to_group(GROUP)
 	_root = Control.new()
-	_root.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_root)
 
 	_label = Label.new()
 	_label.text = "Trump"
 	_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	_label.size = Vector2(CARD_SIZE.x * 2.0, 22.0)
-	_label.position = Vector2(-CARD_SIZE.x, TOP_MARGIN - 24.0)
+	_label.add_theme_font_size_override("font_size", LABEL_FONT_SIZE)
+	_label.add_theme_color_override("font_color", LABEL_COLOR)
+	_label.add_theme_color_override("font_outline_color", LABEL_OUTLINE_COLOR)
+	_label.add_theme_constant_override("outline_size", 6)
+	_label.size = Vector2(CARD_SIZE.x * 2.0, 24.0)
+	_label.position = Vector2(-CARD_SIZE.x, TOP_MARGIN + CARD_SIZE.y + LABEL_GAP)
 	_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_root.add_child(_label)
 
@@ -71,6 +78,7 @@ func show_trump(suit: Card.Suit) -> void:
 	_card_visual.hover_enabled = false
 	_card_visual.get_node("RankLabel").visible = false
 	_card_visual.get_node("RankLabel2").visible = false
+	_card_visual.add_table_shadow()
 	_ignore_mouse(_card_visual)
 
 	visible = true
