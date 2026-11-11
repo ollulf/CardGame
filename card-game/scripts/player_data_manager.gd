@@ -28,20 +28,21 @@ func reset_buttons_unlock() -> void:
 const PLAYERS: Array[int] = [0, 1, 2]
 const PLAYER_NAME_MAX := 12
 const SMOKE_BONUS_PER_CIGARETTE := 1
-const STARTING_MONEY := 15
-const CIGARETTE_PACK_PRICE := 5
-const CIGARETTES_PER_PACK := 8
+const STARTING_MONEY := 10
+const CIGARETTE_PACK_PRICE := 6
+const CIGARETTES_PER_PACK := 6
+const MAX_SMOKE_BONUS := 3
 const DRINK_PENALTY_PER_ROUND := 1
 const DRINK_BONUS_PER_DRINK := 1
 const DRINK_ROUND_PRICE := 5
 const DRINK_ROUND_FROM_MATCH := 3
 const DRINKING_BOOSTER_FROM_MATCH := 4
 const BOOSTERS: Array[Dictionary] = [
-	{"name": "Smoke Booster", "price": 8, "cards": 5, "min_rank": 1, "max_rank": 9, "smoke_min": 2, "smoke_max": 3, "contents": "2-3 Smoke + basic suits"},
-	{"name": "Standard Booster", "price": 5, "cards": 6, "min_rank": 1, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "high_min": 2, "high_rank": 7, "contents": "Basic suits, two 7+ cards"},
-	{"name": "Premium Booster", "price": 12, "cards": 8, "min_rank": 5, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "contents": "Basic suits, ranks 5-9"},
-	{"name": "Zero Booster", "price": 7, "cards": 2, "min_rank": 0, "max_rank": 0, "smoke_min": 0, "smoke_max": 0, "contents": "Two 0 cards, any suit", "any_suit": true, "from_match": 3},
-	{"name": "Drinking Booster", "price": 8, "cards": 5, "min_rank": 1, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "alk_min": 2, "alk_max": 3, "contents": "2-3 Drinking + basic suits", "from_match": DRINKING_BOOSTER_FROM_MATCH},
+	{"name": "Smoke Booster", "price": 10, "cards": 5, "min_rank": 1, "max_rank": 9, "smoke_min": 2, "smoke_max": 3, "contents": "2-3 Smoke + basic suits"},
+	{"name": "Standard Booster", "price": 6, "cards": 6, "min_rank": 1, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "high_min": 2, "high_rank": 7, "contents": "Basic suits, two 7+ cards"},
+	{"name": "Premium Booster", "price": 14, "cards": 8, "min_rank": 5, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "contents": "Basic suits, ranks 5-9"},
+	{"name": "Zero Booster", "price": 8, "cards": 2, "min_rank": 0, "max_rank": 0, "smoke_min": 0, "smoke_max": 0, "contents": "Two 0 cards, any suit", "any_suit": true, "from_match": 3},
+	{"name": "Drinking Booster", "price": 9, "cards": 5, "min_rank": 1, "max_rank": 9, "smoke_min": 0, "smoke_max": 0, "alk_min": 2, "alk_max": 3, "contents": "2-3 Drinking + basic suits", "from_match": DRINKING_BOOSTER_FROM_MATCH},
 ]
 
 var smoking_stacks := {
@@ -74,6 +75,7 @@ func _ready() -> void:
 	GameManager.run_won.connect(_on_match_over)
 
 func smoke(player_id: int, amount: int) -> void:
+	amount = mini(amount, smoke_room(player_id))
 	if amount <= 0:
 		return
 	smoking_stacks[player_id].append({
@@ -96,6 +98,12 @@ func get_smoking(player_id: int) -> int:
 	for stack in smoking_stacks[player_id]:
 		total += int(stack.get("amount", 0))
 	return total
+
+func smoke_room(player_id: int) -> int:
+	return maxi(0, MAX_SMOKE_BONUS - get_smoking(player_id))
+
+func cigarettes_until_cap(player_id: int) -> int:
+	return smoke_room(player_id) / maxi(SMOKE_BONUS_PER_CIGARETTE, 1)
 
 func get_smoking_stack_count(player_id: int) -> int:
 	return smoking_stacks[player_id].size()

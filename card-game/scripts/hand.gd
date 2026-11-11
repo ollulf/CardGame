@@ -95,9 +95,11 @@ func remove_one_unlit() -> bool:
 	return false
 
 
-func light_all_unlit() -> int:
+func light_all_unlit(limit: int = -1) -> int:
 	var count := 0
 	for c in _cigs:
+		if limit >= 0 and count >= limit:
+			break
 		if c.get_state() == Cigarette.State.UNLIT:
 			c.set_state(Cigarette.State.LIT)
 			count += 1

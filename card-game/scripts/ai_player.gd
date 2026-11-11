@@ -34,6 +34,20 @@ const SPECIAL_COST := 0.5
 const ZERO_COST := 1.5
 const PLAYERS_PER_TRICK := 3
 const ENDGAME_TRICKS := 2
+const SKILL_GENTLE := 0
+const SKILL_SMART := 1
+const SKILL_SHARP := 2
+const SHARP_FROM_MATCH := 4
+const SHARP_LEAD_CHANCE := 0.75
+const DUCK_CHANCE := 0.6
+const SHARP_DUCK_CHANCE := 0.85
+const HUMAN_ID := 0
+const TOP_RANK := 9
+const TRUMP_VOID := -1
+const VICE_LEVELS := 4
+const SMOKE_CHANCE_PER_MATCH := 0.08
+const ORDER_CHANCE_PER_MATCH := 0.12
+const CHAIN_SMOKE_LEVEL := 3
 
 const DRINK_PIXEL_SCALE := 3.0
 const DRINK_FADE_TIME := 0.3
@@ -43,6 +57,8 @@ const DRINK_LEFT_IN_GLASS := 0.35
 var card_visuals : Array[CardVisual] = []
 var _smoke_visuals: Array[AiSmoke] = []
 var _ordered_this_round := false
+var _seen: Array[Card] = []
+var _voids := {}
 
 func _ready() -> void:
 	super._ready()
@@ -50,6 +66,7 @@ func _ready() -> void:
 	GameManager.request_play_card.connect(_on_request_play_card)
 	GameManager.turn_started.connect(_on_turn_started)
 	GameManager.round_started.connect(_on_round_started)
+	CardManager.card_played.connect(_on_card_played)
 
 	GameManager.register(self)
 
@@ -114,9 +131,9 @@ func _wants_to_order_round() -> bool:
 	if Missions.budget_left(player_id) < PlayerDataManager.DRINK_ROUND_PRICE:
 		return false
 	var alk_cards := _alk_cards_in_hand()
-	if alk_cards == 0 or alk_cards < hand.cards.size() - alk_cards:
+	if alk_cards == 0 or (_vice_level() < CHAIN_SMOKE_LEVEL and alk_cards < hand.cards.size() - alk_cards):
 		return false
-	return randf() < order_round_chance
+	return randf() < clampf(order_round_chance + ORDER_CHANCE_PER_MATCH * maxi(_vice_level() - 2, 0), 0.0, 0.95)
 
 
 func _free_smoke_slot() -> int:
@@ -138,10 +155,16 @@ func _smokes_this_turn() -> int:
 	var left := Missions.cigarettes_left(player_id)
 	if left == 0:
 		return 0
+	var room := PlayerDataManager.cigarettes_until_cap(player_id)
+	if room <= 0:
+		return 0
+	var vice := _vice_level()
+	if _skill() != SKILL_GENTLE and vice < CHAIN_SMOKE_LEVEL and is_safe(hand.size()):
+		return 0
 	var left_bonus := 10 if left == Missions.UNLIMITED else left
-	var chance := smoke_chance + smoke_chance_per_trump * (trumps - 1) + smoke_chance_per_left * left_bonus
+	var chance := smoke_chance + smoke_chance_per_trump * (trumps - 1) + smoke_chance_per_left * left_bonus + SMOKE_CHANCE_PER_MATCH * vice
 	var count := 0
-	while count < max_smokes_per_turn and count < trumps and (left == Missions.UNLIMITED or count < left):
+	while count < max_smokes_per_turn and count < trumps and count < room and (left == Missions.UNLIMITED or count < left):
 		if randf() >= clampf(chance, 0.0, 0.95):
 			break
 		count += 1
@@ -166,6 +189,8 @@ func _on_turn_started(_turn_index: int, _starting_player_id: int) -> void:
 
 func _on_round_started() -> void:
 	_ordered_this_round = false
+	_seen.clear()
+	_voids.clear()
 
 
 func _on_request_play_card(requested_player_id: int) -> void:
@@ -214,7 +239,10 @@ func choose_card() -> Card:
 	if legal.is_empty():
 		return hand.cards[0]
 	var behind := won_turns <= _fewest_other_wins()
-	return choose_from(legal, CardManager.played_cards_turn.cards, hand.size(), behind)
+	var table: Array[Card] = CardManager.played_cards_turn.cards
+	if _skill() == SKILL_GENTLE:
+		return choose_from(legal, table, hand.size(), behind)
+	return _choose_smart(legal, table, hand.size(), behind)
 
 
 func choose_from(legal: Array[Card], table: Array[Card], tricks_left: int, behind: bool) -> Card:
@@ -255,6 +283,194 @@ func _choose_follow(by_cost: Array[Card], table: Array[Card]) -> Card:
 	return winners.front()
 
 
+func _skill() -> int:
+	var match_number := DialogueManager.upcoming_match()
+	if match_number <= 1:
+		return SKILL_GENTLE
+	if match_number < SHARP_FROM_MATCH:
+		return SKILL_SMART
+	return SKILL_SHARP
+
+
+func _vice_level() -> int:
+	return clampi(DialogueManager.upcoming_match() - 1, 0, VICE_LEVELS)
+
+
+func _choose_smart(legal: Array[Card], table: Array[Card], tricks_left: int, behind: bool) -> Card:
+	var sharp := _skill() == SKILL_SHARP
+	var by_cost := legal.duplicate()
+	by_cost.sort_custom(func(a, b): return card_cost(a) < card_cost(b))
+	if not sharp and legal.size() > 1 and randf() < bluff_chance:
+		return legal.pick_random()
+	var after := _players_after(table)
+	if is_safe(tricks_left):
+		if table.is_empty():
+			return _safe_lead(by_cost, after)
+		return _safe_follow(by_cost, table, after)
+	if table.is_empty():
+		return _smart_lead(by_cost, tricks_left, behind, after, sharp)
+	return _smart_follow(by_cost, table, tricks_left, behind, after, sharp)
+
+
+func is_safe(tricks_left: int) -> bool:
+	for other in _other_players():
+		if other.won_turns + tricks_left < won_turns:
+			return true
+	return false
+
+
+func _smart_lead(by_cost: Array[Card], tricks_left: int, behind: bool, after: Array[int], sharp: bool) -> Card:
+	var strongest: Card = by_cost.back()
+	var endgame := ENDGAME_TRICKS + (1 if sharp else 0)
+	if behind and tricks_left <= endgame:
+		return strongest
+	for card in by_cost:
+		if not card.is_trump and _is_boss(card, after):
+			return card
+	var chance := SHARP_LEAD_CHANCE if sharp else lead_strong_chance
+	if _is_strong_lead(strongest) and (_is_boss(strongest, after) or randf() < chance):
+		return strongest
+	for card in by_cost:
+		if not card.is_trump:
+			return card
+	return by_cost.front()
+
+
+func _smart_follow(by_cost: Array[Card], table: Array[Card], tricks_left: int, behind: bool, after: Array[int], sharp: bool) -> Card:
+	var winners: Array[Card] = by_cost.filter(func(c): return trick_winner(table + [c]) == c)
+	if winners.is_empty():
+		return by_cost.front()
+	if after.is_empty():
+		return winners.front()
+	var sure: Array[Card] = winners.filter(func(c): return _is_boss(c, after))
+	if not sure.is_empty():
+		return sure.front()
+	var lead_is_trump: bool = table[0].is_trump
+	var only_trumps := winners.all(func(c): return c.is_trump)
+	var endgame := ENDGAME_TRICKS + (1 if sharp else 0)
+	if only_trumps and not lead_is_trump and not behind and tricks_left > endgame:
+		if randf() < (SHARP_DUCK_CHANCE if sharp else DUCK_CHANCE):
+			return by_cost.front()
+	var safe: Array[Card] = winners.filter(func(c): return c.is_trump or c.rank >= safe_rank)
+	if not safe.is_empty() and (sharp or randf() < safe_win_chance):
+		return safe.front()
+	return winners.front()
+
+
+func _safe_lead(by_cost: Array[Card], after: Array[int]) -> Card:
+	for i in range(by_cost.size() - 1, -1, -1):
+		if _is_boss(by_cost[i], after):
+			return by_cost[i]
+	return by_cost.back()
+
+
+func _safe_follow(by_cost: Array[Card], table: Array[Card], after: Array[int]) -> Card:
+	var winners: Array[Card] = by_cost.filter(func(c): return trick_winner(table + [c]) == c)
+	var losers: Array[Card] = by_cost.filter(func(c): return not winners.has(c))
+	var current: Card = trick_winner(table)
+	var human_after := after.has(HUMAN_ID)
+	if _owner_id(current) == HUMAN_ID:
+		if winners.is_empty():
+			return by_cost.front()
+		if human_after:
+			return winners.back()
+		return winners.front()
+	if human_after and not _is_boss(current, after):
+		if not winners.is_empty():
+			return winners.back()
+		return by_cost.front()
+	if not losers.is_empty():
+		return losers.back()
+	return by_cost.front()
+
+
+func _on_card_played(played_by: int, card: Card) -> void:
+	var lead: Card = CardManager.leading_card
+	if lead != null and lead != card:
+		if lead.is_trump and not card.is_trump:
+			_mark_void(played_by, TRUMP_VOID)
+		elif not lead.is_trump and card.suit != lead.suit:
+			_mark_void(played_by, lead.suit)
+	_seen.append(card)
+
+
+func _mark_void(pid: int, suit: int) -> void:
+	if not _voids.has(pid):
+		_voids[pid] = {}
+	_voids[pid][suit] = true
+
+
+func _is_void(pid: int, suit: int) -> bool:
+	return _voids.has(pid) and _voids[pid].has(suit)
+
+
+func _accounted(suit: Card.Suit, rank: int) -> bool:
+	for card in _seen:
+		if card.suit == suit and card.base_rank == rank:
+			return true
+	for card in hand.cards:
+		if card.suit == suit and card.base_rank == rank:
+			return true
+	return false
+
+
+func _is_boss(card: Card, after: Array[int]) -> bool:
+	if card == null:
+		return false
+	if after.is_empty():
+		return true
+	if card.is_trump:
+		var all_void := true
+		var top := TOP_RANK
+		for pid in after:
+			if _is_void(pid, TRUMP_VOID):
+				continue
+			all_void = false
+			top = maxi(top, TOP_RANK + maxi(PlayerDataManager.get_smoking(pid), PlayerDataManager.get_drink_bonus(pid)))
+		return all_void or card.rank >= top
+	for rank in range(card.base_rank + 1, TOP_RANK + 1):
+		if not _accounted(card.suit, rank):
+			return false
+	if card.base_rank == TOP_RANK and not _accounted(card.suit, 0):
+		return false
+	for pid in after:
+		if _is_void(pid, card.suit) and not _is_void(pid, TRUMP_VOID):
+			return false
+	return true
+
+
+func _players_after(table: Array[Card]) -> Array[int]:
+	var played: Array[int] = [player_id]
+	for card in table:
+		played.append(_owner_id(card))
+	var result: Array[int] = []
+	for pid in PlayerDataManager.PLAYERS:
+		if not played.has(pid):
+			result.append(pid)
+	return result
+
+
+static func _owner_id(card: Card) -> int:
+	if card == null:
+		return -1
+	match card.owner:
+		Card.Owner.HUMAN:
+			return HUMAN_ID
+		Card.Owner.AI_1:
+			return 1
+		Card.Owner.AI_2:
+			return 2
+	return -1
+
+
+func _other_players() -> Array:
+	var result := []
+	for other in [GameManager.human_player, GameManager.ai_player_1, GameManager.ai_player_2]:
+		if other != self and other is Player:
+			result.append(other)
+	return result
+
+
 static func card_cost(card: Card) -> float:
 	var cost := float(card.rank)
 	if card.rank == 0:
@@ -287,9 +503,7 @@ static func trick_winner(table: Array) -> Card:
 
 func _fewest_other_wins() -> int:
 	var fewest := -1
-	for other in [GameManager.human_player, GameManager.ai_player_1, GameManager.ai_player_2]:
-		if other == self or not (other is Player):
-			continue
+	for other in _other_players():
 		if fewest < 0 or other.won_turns < fewest:
 			fewest = other.won_turns
 	return maxi(fewest, 0)

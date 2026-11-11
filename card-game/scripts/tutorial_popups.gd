@@ -43,7 +43,7 @@ const TIPS := {
 	},
 	"smoke": {
 		"title": "Smoking cards",
-		"text": "[b]Smoking cards[/b] are always trump. Each cigarette smoked gives them [b]+1[/b] this round.",
+		"text": "[b]Smoking cards[/b] are always trump. Each cigarette smoked gives them [b]+1[/b] this round, up to [b]+3[/b].",
 	},
 	"zero": {
 		"title": "Zero",
@@ -63,7 +63,7 @@ const TIPS := {
 	},
 	"cigs": {
 		"title": "Cigarettes",
-		"text": "Tap your [b]pack[/b] to take a cigarette, then the [b]lighter[/b] to smoke it. Smoking cards get [b]+1[/b] per cigarette this round.",
+		"text": "Tap your [b]pack[/b] to take a cigarette, then the [b]lighter[/b] to smoke it. Smoking cards get [b]+1[/b] per cigarette this round, up to [b]+3[/b].",
 	},
 	"wallet": {
 		"title": "Your money",
