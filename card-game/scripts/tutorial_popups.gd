@@ -10,9 +10,6 @@ const SHOW_DELAY := 0.45
 const URGENT_DELAY := 0.35
 const FADE_TIME := 0.15
 const AUTO_HOLD := 2.5
-const BG_COLOR := Color(0.121569, 0.117647, 0.14902, 1)
-const BORDER_COLOR := Color("3d3854")
-const TEXT_COLOR := Color(0.956863, 0.952941, 0.968627, 1)
 const BUBBLE_WIDTH := 270.0
 const SCREEN_MARGIN := 8.0
 const TAIL_GAP := 30.0
@@ -320,7 +317,7 @@ func _show_next() -> void:
 	_bubble.add_theme_stylebox_override("panel", _panel_style())
 	_bubble.mouse_filter = Control.MOUSE_FILTER_STOP
 	var box := VBoxContainer.new()
-	box.add_theme_constant_override("separation", 4)
+	box.add_theme_constant_override("separation", 8)
 	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_bubble.add_child(box)
 	box.add_child(_title(tip_data.title.replace("{player}", GameManager.player_name(GameManager.HUMAN_ID))))
@@ -466,37 +463,48 @@ func _lower_pointer() -> void:
 	_pointer_parent = null
 
 func _panel_style() -> StyleBoxFlat:
-	var style := StyleBoxFlat.new()
-	style.bg_color = BG_COLOR
-	style.border_color = BORDER_COLOR
-	style.set_border_width_all(3)
-	style.content_margin_left = 14.0
-	style.content_margin_right = 14.0
-	style.content_margin_top = 10.0
-	style.content_margin_bottom = 10.0
-	return style
+	return ShopTooltip.outer_style()
 
 func _title(text: String) -> Label:
 	var label := Label.new()
 	label.text = text
-	label.add_theme_color_override("font_color", Color(SpeechBubble.HIGHLIGHT_COLOR))
-	label.add_theme_font_size_override("font_size", InteractionManager.font_px(18))
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.add_theme_color_override("font_color", Color.WHITE)
+	label.add_theme_font_size_override("font_size", InteractionManager.font_px(ShopTooltip.TITLE_FONT_SIZE))
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return label
 
-func _body(text: String, width: float) -> RichTextLabel:
+func _body(text: String, width: float) -> PanelContainer:
+	var inner := PanelContainer.new()
+	inner.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var style := ShopTooltip.inner_style()
+	inner.add_theme_stylebox_override("panel", style)
 	var label := RichTextLabel.new()
 	label.bbcode_enabled = true
+	label.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	label.fit_content = true
 	label.scroll_active = false
 	label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	label.custom_minimum_size = Vector2(width, 0)
+	label.custom_minimum_size = Vector2(width - style.get_minimum_size().x, 0)
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	label.add_theme_color_override("default_color", TEXT_COLOR)
-	label.add_theme_font_size_override("normal_font_size", InteractionManager.font_px(16))
-	label.add_theme_font_size_override("bold_font_size", InteractionManager.font_px(16))
-	label.text = text.replace("[b]", "[color=%s]" % SpeechBubble.HIGHLIGHT_COLOR).replace("[/b]", "[/color]")
-	return label
+	label.add_theme_color_override("default_color", ShopTooltip.TEXT)
+	label.add_theme_font_size_override("normal_font_size", InteractionManager.font_px(ShopTooltip.BODY_FONT_SIZE))
+	label.add_theme_font_size_override("bold_font_size", InteractionManager.font_px(ShopTooltip.BODY_FONT_SIZE))
+	label.text = highlight(text)
+	inner.add_child(label)
+	return inner
+
+static func highlight(text: String) -> String:
+	var pattern := RegEx.create_from_string("\\[b\\](.*?)\\[/b\\]|\\bspecial(?: cards?)?\\b")
+	var result := ""
+	var last := 0
+	for found in pattern.search_all(text):
+		result += text.substr(last, found.get_start() - last)
+		var inner := found.get_string(1) if found.get_string(0).begins_with("[b]") else found.get_string(0)
+		var color := ShopTooltip.SPECIAL if "special" in inner.to_lower() else ShopTooltip.NUMBER
+		result += "[color=#%s]%s[/color]" % [color, inner]
+		last = found.get_end()
+	return result + text.substr(last)
 
 func _button() -> Button:
 	var button := Button.new()
@@ -534,7 +542,7 @@ class PointerBubble extends PanelContainer:
 				angle = -PI / 2.0
 			_:
 				return
-		var color := TutorialPopups.BORDER_COLOR
+		var color := ShopTooltip.EDGE
 		draw_set_transform(anchor, angle, Vector2.ONE)
 		draw_rect(Rect2(-6, 0, 12, 6), color)
 		draw_rect(Rect2(-3, 6, 6, 6), color)
