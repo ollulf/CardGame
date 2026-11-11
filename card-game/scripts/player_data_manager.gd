@@ -31,7 +31,7 @@ func reset_buttons_unlock() -> void:
 const PLAYERS: Array[int] = [0, 1, 2]
 const PLAYER_NAME_MAX := 12
 const SMOKE_BONUS_PER_CIGARETTE := 1
-const STARTING_MONEY := 10
+const STARTING_MONEY := 16
 const CIGARETTE_PACK_PRICE := 6
 const CIGARETTES_PER_PACK := 6
 const MAX_SMOKE_BONUS := 3
