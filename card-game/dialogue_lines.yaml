@@ -338,11 +338,6 @@ match: 2
 			1: New cards? Manfred, they're taking this seriously.
 			2: Good. Somebody at this table should.
 
-		when: bought_cigs
-		lines:
-			1: Your own pack! Look, Manfred, they grow up so fast.
-			2: Don't cry on the cards, Bernd.
-
 match: 3
 	dialogues:
 		when: first_smoke
@@ -367,8 +362,8 @@ match: 3
 
 		when: bought_cigs
 		lines:
-			2: Machine took your money? It takes his every night.
-			1: We have an understanding, the machine and me.
+			1: Your own pack! Look, Manfred, they grow up so fast.
+			2: Don't cry on the cards, Bernd.
 
 match: 4
 	dialogues:
@@ -520,6 +515,11 @@ match: any
 		lines:
 			1: Fresh pack? Best sound in the world, that crinkle.
 			2: Second best. After the cork.
+
+		when: bought_cigs
+		lines:
+			2: Machine took your money? It takes his every night.
+			1: We have an understanding, the machine and me.
 
 		when: bought_stamp
 		lines:
