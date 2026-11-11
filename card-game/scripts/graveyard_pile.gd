@@ -23,7 +23,7 @@ func _ready() -> void:
 		var sprite := Sprite2D.new()
 		sprite.texture = CARD_BACK
 		sprite.scale = Vector2(CARD_SCALE, CARD_SCALE)
-		sprite.modulate = Color(0.8, 0.8, 0.8)
+		sprite.modulate = Color(0.8, 0.78, 0.75)
 		if i > 0:
 			sprite.rotation = randf_range(-MAX_TILT, MAX_TILT)
 			sprite.position = LAYER_STEP * float(i) + Vector2(randf_range(-MAX_JITTER, MAX_JITTER), 0)

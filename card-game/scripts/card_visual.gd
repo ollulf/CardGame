@@ -14,6 +14,10 @@ const COLORLESS_SUIT_TINT := Color(0.35, 0.35, 0.38, 0.75)
 const CARD_BACK := preload("res://sprites/card_backside.png")
 const CARD_FACE_SIZE := Vector2(60, 90)
 const SHINE_SHADER := preload("res://shaders/card_shine.gdshader")
+const BACK_ICON_DARK := 0.42
+const BACK_ICON_LIGHT := 0.62
+
+static var _gray_cache := {}
 
 # --- Hover FX (driven externally) ---
 @export var hover_scale: float = 1.4
@@ -399,8 +403,7 @@ func show_back(show_suit: bool = false) -> void:
 		var back_pixel := CARD_FACE_SIZE.x / CARD_BACK.get_width()
 		var icon := TextureRect.new()
 		icon.name = "BackSuit"
-		icon.texture = suit
-		icon.modulate = COLORLESS_SUIT_TINT if card.is_colorless() else Color.WHITE
+		icon.texture = _gray_texture(suit)
 		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		icon.stretch_mode = TextureRect.STRETCH_SCALE
@@ -408,6 +411,20 @@ func show_back(show_suit: bool = false) -> void:
 		icon.size = suit.get_size() * back_pixel
 		icon.position = ((CARD_BACK.get_size() - suit.get_size()) * 0.5).floor() * back_pixel
 		back.add_child(icon)
+
+
+static func _gray_texture(source: Texture2D) -> Texture2D:
+	if _gray_cache.has(source):
+		return _gray_cache[source]
+	var image := source.get_image()
+	image.convert(Image.FORMAT_RGBA8)
+	for y in image.get_height():
+		for x in image.get_width():
+			var c := image.get_pixel(x, y)
+			var v := lerpf(BACK_ICON_DARK, BACK_ICON_LIGHT, c.get_luminance())
+			image.set_pixel(x, y, Color(v, v, v, c.a))
+	_gray_cache[source] = ImageTexture.create_from_image(image)
+	return _gray_cache[source]
 
 
 func flip_face_up(duration: float) -> void:
