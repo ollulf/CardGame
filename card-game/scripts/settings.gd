@@ -1,5 +1,7 @@
 extends Node
 
+signal fullscreen_changed(on: bool)
+
 const SETTINGS_PATH := "user://settings.cfg"
 const BUSES := ["Master", "Music", "Ambience", "SFX"]
 const DEFAULT_VOLUME := 1.0
@@ -9,6 +11,9 @@ var volumes := {}
 var muted := false
 var fullscreen := false
 var enabled := Engine.get_write_movie_path() == "" and DisplayServer.get_name() != "headless"
+
+func _init() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func _ready() -> void:
 	for bus in BUSES:
@@ -81,3 +86,18 @@ func _apply_mute() -> void:
 
 func _apply_fullscreen() -> void:
 	DisplayServer.window_set_mode(DisplayServer.WINDOW_MODE_FULLSCREEN if fullscreen else DisplayServer.WINDOW_MODE_WINDOWED)
+	fullscreen_changed.emit(fullscreen)
+
+func can_fullscreen() -> bool:
+	return not OS.has_feature("web_ios")
+
+func toggle_fullscreen() -> void:
+	set_fullscreen(not is_fullscreen())
+	save_settings()
+
+func _unhandled_input(event: InputEvent) -> void:
+	if not enabled or not can_fullscreen():
+		return
+	if event is InputEventKey and event.pressed and not event.echo and event.alt_pressed and (event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER):
+		get_viewport().set_input_as_handled()
+		toggle_fullscreen()

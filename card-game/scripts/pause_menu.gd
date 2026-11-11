@@ -13,6 +13,10 @@ const VALUE_COLOR := Color(0.839216, 0.819608, 0.901961, 1)
 const SLIDERS := [["Master", "Master"], ["Music", "Music"], ["Ambience", "Ambience"], ["Sound effects", "SFX"]]
 const QUIT_TEXT := "Quit to title"
 const QUIT_CONFIRM_TEXT := "Sure? Match progress is lost"
+const PAUSED_TITLE := "Paused"
+const OPTIONS_TITLE := "Options"
+const RESUME_TEXT := "Resume"
+const BACK_TEXT := "Back"
 
 var _content: Control
 var _sliders := {}
@@ -27,6 +31,7 @@ var _pointer_parent: Node
 var _pointer_index := 0
 var _quit_armed := false
 var _tween: Tween
+var _title: Label
 
 func _init() -> void:
 	layer = MENU_LAYER
@@ -35,6 +40,7 @@ func _init() -> void:
 func _ready() -> void:
 	_build()
 	hide()
+	Settings.fullscreen_changed.connect(_fullscreen_toggle.set_pressed_no_signal)
 
 func is_open() -> bool:
 	return visible
@@ -47,11 +53,23 @@ func _unhandled_input(event: InputEvent) -> void:
 		close()
 	elif not SceneTransition.is_running():
 		get_viewport().set_input_as_handled()
-		open()
+		if get_tree().get_first_node_in_group(StartMenu.GROUP) != null:
+			open_options()
+		else:
+			open()
+
+func open_options() -> void:
+	_open_as(true)
 
 func open() -> void:
+	_open_as(false)
+
+func _open_as(options_mode: bool) -> void:
 	if visible:
 		return
+	_title.text = OPTIONS_TITLE if options_mode else PAUSED_TITLE
+	_resume_button.text = BACK_TEXT if options_mode else RESUME_TEXT
+	_quit_button.visible = not options_mode
 	InteractionManager.cancel_press()
 	_was_blocked = InteractionManager.is_table_blocked()
 	InteractionManager.set_table_blocked(true)
@@ -102,8 +120,9 @@ func _build() -> void:
 	var box := VBoxContainer.new()
 	box.add_theme_constant_override("separation", 12)
 	panel.add_child(box)
-	var title := Label.new()
-	title.text = "Paused"
+	_title = Label.new()
+	var title := _title
+	title.text = PAUSED_TITLE
 	title.theme_type_variation = &"HeadlineLabel"
 	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	box.add_child(title)
@@ -118,10 +137,13 @@ func _build() -> void:
 	_mute_toggle = _toggle("Mute all sound")
 	_mute_toggle.toggled.connect(func(on: bool) -> void: Settings.set_muted(on))
 	box.add_child(_mute_toggle)
-	box.add_child(_caps("Display"))
+	var display_caption := _caps("Display")
+	box.add_child(display_caption)
 	_fullscreen_toggle = _toggle("Fullscreen")
 	_fullscreen_toggle.toggled.connect(func(on: bool) -> void: Settings.set_fullscreen(on))
 	box.add_child(_fullscreen_toggle)
+	display_caption.visible = Settings.can_fullscreen()
+	_fullscreen_toggle.visible = Settings.can_fullscreen()
 	var spacer := Control.new()
 	spacer.custom_minimum_size = Vector2(0, 6)
 	box.add_child(spacer)
@@ -130,7 +152,7 @@ func _build() -> void:
 	buttons.add_theme_constant_override("separation", 12)
 	box.add_child(buttons)
 	_resume_button = Button.new()
-	_resume_button.text = "Resume"
+	_resume_button.text = RESUME_TEXT
 	_resume_button.theme_type_variation = &"ButtonPrimary"
 	_resume_button.custom_minimum_size = Vector2(150, 40)
 	_resume_button.pressed.connect(close)

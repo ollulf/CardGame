@@ -5,6 +5,7 @@ signal chosen(choice: Choice)
 
 enum Choice { CONTINUE, NEW_RUN, SKIP_TUTORIAL }
 
+const GROUP := "start_menu"
 const MENU_LAYER := 56
 const FADE_TIME := 0.4
 const TITLE_SIZE := 52
@@ -28,6 +29,7 @@ var _saved_name := ""
 
 func _init() -> void:
 	layer = MENU_LAYER
+	add_to_group(GROUP)
 	process_mode = Node.PROCESS_MODE_ALWAYS
 
 func _ready() -> void:
@@ -107,6 +109,8 @@ func open(save: Dictionary) -> void:
 		_subtitle.text = ""
 	var new_card := _new_card("New game", SUIT_KARO, not _has_save)
 	new_card.pressed.connect(_show_modes)
+	var options := _new_card("Options", SUIT_PIK)
+	options.pressed.connect(PauseMenu.open_options)
 	if not OS.has_feature("web"):
 		var quit := _new_card("Quit", SUIT_KREUZ)
 		quit.pressed.connect(_quit)
