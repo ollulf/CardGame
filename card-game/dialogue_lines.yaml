@@ -39,8 +39,8 @@ match: 1
 		when: zero_beats_nine
 		lines:
 			2: My *Diamonds 9*. Eaten by a *0*.
-			1: Ha! Now you know how it feels, Manfred.
-			2: You've felt it more than anyone, Bernd.
+			1: Ha! Now you know how it feels, *Manfred*.
+			2: You've felt it more than anyone, *Bernd*.
 			1: ...That's fair.
 
 		when: turn_start
@@ -78,7 +78,7 @@ match: 1
 		lines:
 			1: Well, beat *this*!
 			wait_for_cards_played: 1
-			2: Hold that thought, Bernd. This calls for a *cigarette*.
+			2: Hold that thought, *Bernd*. This calls for a *cigarette*.
 
 		when: match_won
 		lines:
@@ -88,7 +88,7 @@ match: 1
 
 		when: match_lost
 		lines:
-			1: Ha! I won one! Manfred, write it down.
+			1: Ha! I won one! *Manfred*, write it down.
 			2: Next to the other one. From 1994.
 
 		when: run_lost
@@ -110,19 +110,19 @@ match: 2
 			cue: give_player_cigs 3
 			1: Have some of my *cigarettes*. On the house.
 			2: His house. Which is mostly this bar.
-			1: Hope you packed some *smoking cards*, {player}.
+			1: Hope you packed some *smoking cards*, *{player}*.
 			2: Don't encourage the kid. We want to *win*.
 
 		when: zero_played
 		lines:
-			2: Learned that one from *{player}*. Careful with your *9s*, Bernd.
+			2: Learned that one from *{player}*. Careful with your *9s*, *Bernd*.
 			1: Don't start. I'm still not over the last one.
 			2: Best ten minutes of my life.
 
 		when: zero_beats_nine
 		lines:
 			1: Ugh, I knew it, and I still fell for it.
-			2: Every time, Bernd. Every single time.
+			2: Every time, *Bernd*. Every single time.
 
 		when: match_won
 		lines:
@@ -158,13 +158,13 @@ match: 3
 		when: match_won
 		lines:
 			1: Phew, my *hearts 7* looked like a *5* after those drinks.
-			2: The *boosters* have *drinking cards* now, {player}. Just saying.
+			2: The *boosters* have *drinking cards* now, *{player}*. Just saying.
 			1: He's recruiting. Don't listen to him.
 
 		when: match_lost
 		lines:
 			1: Out! Bartender, that one's on me!
-			2: Everything's on you, Bernd. That's why you're broke.
+			2: Everything's on you, *Bernd*. That's why you're broke.
 
 		when: run_lost
 		lines:
@@ -184,22 +184,22 @@ match: 4
 			2: You said that about the last three.
 			1: Here *{player}*, have a few. Nobody smokes alone at this table.
 			cue: give_player_cigs 2
-			2: Leave the kid alone, Bernd.
+			2: Leave the kid alone, *Bernd*.
 			2: ...unless the kid is buying.
 
 		when: round_start
 		round: 2
 		lines:
 			2: Bartender! Same again. And one for *{player}*.
-			1: Manfred, your glass is still half full.
-			2: Half empty, Bernd. I'm a realist.
+			1: *Manfred*, your glass is still half full.
+			2: Half empty, *Bernd*. I'm a realist.
 
 		when: turn_start
 		round: 2
 		turn: 3
 		lines:
 			1: Where's my *lighter*? Who took my lighter?
-			2: It's in your hand, Bernd.
+			2: It's in your hand, *Bernd*.
 			1: ...I knew that. I was testing you.
 
 		when: round_start
@@ -207,34 +207,34 @@ match: 4
 		lines:
 			1: Just this round. Then I'm switching to *water*.
 			2: He's been switching to water since 1998.
-			1: Water's for fish, Manfred.
+			1: Water's for fish, *Manfred*.
 
 		when: zero_played
 		lines:
-			2: A *0*! Bernd, your *9s*...
+			2: A *0*! *Bernd*, your *9s*...
 			1: Can't hear you. I'm *smoking*.
 
 		when: alk_played
 		lines:
 			2: Now we're talking. *{player}*, that could be you.
-			1: Leave it, Manfred. ...Or don't.
+			1: Leave it, *Manfred*. ...Or don't.
 
 		when: match_won
 		lines:
 			2: One more after this?
-			1: It's always one more, Manfred. That's the problem.
+			1: It's always one more, *Manfred*. That's the problem.
 			1: Next one's the big one, *{player}*. Bring your thirst.
 
 		when: match_lost
 		lines:
 			1: Out. Ha. Out...
-			2: Don't gloat, Bernd. Your hands are shaking.
+			2: Don't gloat, *Bernd*. Your hands are shaking.
 
 		when: run_lost
 		lines:
 			1: Wait, *{player}*. Sit. One more. Just one.
 			2: Leave it. They've got somewhere to be.
-			1: Somewhere. Huh. Remember having somewhere, Manfred?
+			1: Somewhere. Huh. Remember having somewhere, *Manfred*?
 			2: No.
 			Bar: Same again, gentlemen?
 			2: Same again.
@@ -245,10 +245,10 @@ match: 5
 		lines:
 			Bar: Last round tonight, gentlemen. And I mean it this time.
 			1: Says that every night.
-			2: Big pot tonight. Bernd's whole *pension*.
+			2: Big pot tonight. *Bernd*'s whole *pension*.
 			1: Half of it. The other half is in that *ashtray*.
 			cue: ai_two_smokes
-			1: Two hours ago you told me to leave the new one alone, Manfred.
+			1: Two hours ago you told me to leave the new one alone, *Manfred*.
 			2: Two hours ago I was sober.
 			2: *{player}*, one with us. For luck. One won't kill you.
 			1: Won't kill you *fast*, anyway.
@@ -258,7 +258,7 @@ match: 5
 		round: 2
 		lines:
 			cue: show_drink_round
-			2: Round's on me. Don't look at me like that, Bernd.
+			2: Round's on me. Don't look at me like that, *Bernd*.
 			1: I'm not looking. I'm *counting*.
 			2: *{player}*, you're not drinking? You make us look bad.
 
@@ -267,7 +267,7 @@ match: 5
 		turn: 4
 		lines:
 			1: My hands are shaking. It's the cards. Cheap cards.
-			2: It's not the cards, Bernd.
+			2: It's not the cards, *Bernd*.
 			1: ...Pass me a *cigarette*.
 
 		when: round_start
@@ -279,7 +279,7 @@ match: 5
 		when: alk_played
 		lines:
 			1: Ahh, *drinking cards*. My people.
-			2: Your only people, Bernd.
+			2: Your only people, *Bernd*.
 
 		when: match_won
 		lines:
@@ -296,7 +296,7 @@ match: 5
 			Bar: That's you done, *{player}*. Go home.
 			1: Home? It's warm here. Stay. Watch, at least.
 			cue: ai_one_smokes
-			2: Look at them, Bernd. Halfway out the door.
+			2: Look at them, *Bernd*. Halfway out the door.
 			1: We were like that once.
 			2: Same chair tomorrow, *{player}*. You know where.
 			1: Everybody comes back. That's the thing about this table.
@@ -314,13 +314,13 @@ match: any
 		when: round_tie
 		lines:
 			1: A *tie*? Not again...
-			2: Shut up and *draw*, Bernd.
+			2: Shut up and *draw*, *Bernd*.
 
 		when: run_won
 		lines:
 			Bar: Closing time, boys.
 			1: Already? *{player}*, stay. One more game. One more *drink*.
-			2: Let them go, Bernd.
+			2: Let them go, *Bernd*.
 			1: I am. I'm just asking.
 			cue: ai_one_smokes
 			2: ...Same table tomorrow, *{player}*?
@@ -335,7 +335,7 @@ match: 2
 
 		when: bought_booster
 		lines:
-			1: New cards? Manfred, they're taking this seriously.
+			1: New cards? *Manfred*, *{player}*'s taking this seriously.
 			2: Good. Somebody at this table should.
 
 match: 3
@@ -352,7 +352,7 @@ match: 3
 
 		when: round_by_you
 		lines:
-			1: *{player}* is buying! I like this one, Manfred.
+			1: *{player}* is buying! I like this one, *Manfred*.
 			2: You like everybody who's buying.
 
 		when: bought_booster
@@ -362,20 +362,20 @@ match: 3
 
 		when: bought_cigs
 		lines:
-			1: Your own pack! Look, Manfred, they grow up so fast.
-			2: Don't cry on the cards, Bernd.
+			1: Your own pack! Look, *Manfred*, they grow up so fast.
+			2: Don't cry on the cards, *Bernd*.
 
 match: 4
 	dialogues:
 		when: first_smoke
 		lines:
 			1: Finally. I was starting to feel judged.
-			2: You were judged, Bernd. You still are.
+			2: You were judged, *Bernd*. You still are.
 
 		when: first_drink
 		lines:
 			2: Look who finally joined us.
-			1: Don't make a fuss, Manfred. ...*Prost*!
+			1: Don't make a fuss, *Manfred*. ...*Prost*!
 
 		when: bought_booster
 		lines:
@@ -392,7 +392,7 @@ match: 5
 		when: first_smoke
 		lines:
 			2: ...Huh. Tonight of all nights.
-			1: Don't look at it like that, Manfred. Look at it like *family*.
+			1: Don't look at it like that, *Manfred*. Look at it like *family*.
 
 		when: smoked
 		lines:
@@ -402,28 +402,28 @@ match: 5
 		when: first_drink
 		lines:
 			2: There. Warmer, isn't it?
-			1: Manfred...
+			1: *Manfred*...
 			2: What? I'm being *friendly*.
 
 		when: round_by_you
 		lines:
-			2: That's the spirit. See, Bernd? I said they'd come round.
-			1: You said a lot of things, Manfred.
+			2: That's the spirit. See, *Bernd*? I said they'd come round.
+			1: You said a lot of things, *Manfred*.
 
 		when: round_by_bernd
 		lines:
 			1: One more *round*. For... for the road.
-			2: You don't have a road, Bernd.
+			2: You don't have a road, *Bernd*.
 
 		when: round_by_manfred
 		lines:
-			2: *Round*. Don't count them, Bernd.
+			2: *Round*. Don't count them, *Bernd*.
 			1: Somebody has to.
 
 		when: bought_booster
 		lines:
 			2: Buying cards. Like that'll help.
-			1: Let them, Manfred. Everybody needs something to hold on to.
+			1: Let them, *Manfred*. Everybody needs something to hold on to.
 
 		when: bought_cigs
 		lines:
@@ -433,24 +433,24 @@ match: 5
 		when: bought_stamp
 		lines:
 			1: Stamping cards. On a night like this.
-			2: Let them, Bernd. Some of us still plan ahead.
+			2: Let them, *Bernd*. Some of us still plan ahead.
 
 match: any
 	dialogues:
 		when: first_smoke
 		lines:
-			1: Look at that, Manfred. One of us.
+			1: Look at that, *Manfred*. One of us.
 			2: Don't sound so happy about it.
 
 		when: smoked
 		lines:
 			1: Another one? Now you're getting it.
-			2: Getting what, Bernd?
+			2: Getting what, *Bernd*?
 			1: ...It.
 
 		when: smoked
 		lines:
-			2: Bernd, they smoke faster than you now.
+			2: *Bernd*, they smoke faster than you now.
 			1: Nobody smokes faster than me. ...Give me a second.
 
 		when: smoked
@@ -469,12 +469,12 @@ match: any
 
 		when: round_by_you
 		lines:
-			2: *{player}*'s buying! Bernd, act surprised.
+			2: *{player}*'s buying! *Bernd*, act surprised.
 			1: I'm not surprised. I'm *thirsty*.
 
 		when: round_by_you
 		lines:
-			1: Look at that, Manfred. Generosity.
+			1: Look at that, *Manfred*. Generosity.
 			2: Don't get used to it.
 			1: Too late.
 
@@ -485,7 +485,7 @@ match: any
 		when: round_by_bernd
 		lines:
 			1: *Round*'s on me. Don't tell my wife.
-			2: She left in '03, Bernd.
+			2: She left in '03, *Bernd*.
 			1: Then don't tell her anything.
 
 		when: round_by_bernd
@@ -523,7 +523,7 @@ match: any
 
 		when: bought_stamp
 		lines:
-			2: Stamped your cards? Bernd marks his with ash.
+			2: Stamped your cards? *Bernd* marks his with ash.
 			1: It's a system.
 
 		when: bought_stamp
