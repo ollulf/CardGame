@@ -6,12 +6,12 @@ signal closed
 const SPEECH_BUBBLE := preload("res://scenes/speech_bubble.tscn")
 const SEAT_COUNT := 3
 const SEAT_OFFSETS := [Vector2(-276, -18), Vector2(66, 0), Vector2(-66, 0)]
-const TRIGGERS := ["match_start", "round_start", "turn_start", "turn_end", "round_end", "match_won", "match_lost", "run_lost", "zero_beats_nine", "zero_played", "alk_played", "tie_played", "round_tie", "run_won", "first_smoke", "smoked", "first_drink", "round_by_you", "round_by_bernd", "round_by_manfred", "bought_cigs", "bought_booster", "bought_stamp"]
+const TRIGGERS := ["match_start", "round_start", "turn_start", "turn_end", "round_end", "match_won", "match_lost", "run_lost", "zero_beats_nine", "zero_played", "alk_played", "tie_played", "round_tie", "run_won", "first_smoke", "smoked", "first_drink", "round_by_you", "round_by_bernd", "round_by_manfred", "bought_cigs", "bought_booster", "bought_stamp", "sold_to_horst"]
 const ONCE_PER_MATCH_TRIGGERS := ["zero_beats_nine", "zero_played", "alk_played", "tie_played", "smoked"]
 const ONCE_PER_RUN_TRIGGERS := ["round_tie", "first_smoke", "first_drink"]
-const VARIANT_TRIGGERS := ["first_smoke", "smoked", "first_drink", "round_by_you", "round_by_bernd", "round_by_manfred", "bought_cigs", "bought_booster", "bought_stamp"]
+const VARIANT_TRIGGERS := ["first_smoke", "smoked", "first_drink", "round_by_you", "round_by_bernd", "round_by_manfred", "bought_cigs", "bought_booster", "bought_stamp", "sold_to_horst"]
 const ROUND_TRIGGER_BY_SEAT := ["round_by_you", "round_by_bernd", "round_by_manfred"]
-const PURCHASE_TRIGGERS := ["bought_cigs", "bought_stamp", "bought_booster"]
+const PURCHASE_TRIGGERS := ["bought_cigs", "sold_to_horst", "bought_stamp", "bought_booster"]
 const ROUND_TRIGGERS := ["round_start", "turn_start", "turn_end", "round_end"]
 const TURN_TRIGGERS := ["turn_start", "turn_end"]
 const TRIGGER_ALIASES := {"start": "match_start", "end": "match_won", "match_end": "match_won"}

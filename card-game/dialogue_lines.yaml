@@ -533,3 +533,72 @@ match: any
 		lines:
 			1: Fancy. In my day we just bent the corners.
 			2: You still do. We all know which one's your *9*.
+
+match: 2
+	dialogues:
+		when: turn_start
+		round: 3
+		turn: 2
+		lines:
+			1: Horst was at the bar again. You see him, *{player}*?
+			2: Hard to miss. Counting the coasters.
+			1: He used to sit right there. In your chair.
+
+		when: sold_to_horst
+		lines:
+			1: You sold cards to *Horst*? Did he cough on them?
+			2: He coughs on everything. It's how he marks them.
+
+match: 3
+	dialogues:
+		when: round_start
+		round: 2
+		lines:
+			2: Horst bought my old deck. With money I gave him.
+			1: Why would you give *Horst* money?
+			2: He asked. He coughed the whole time, but he asked.
+
+		when: sold_to_horst
+		lines:
+			2: Feeding the shoebox, *{player}*?
+			1: Don't. Every card you give him, he talks to.
+
+match: 4
+	dialogues:
+		when: turn_start
+		round: 3
+		turn: 2
+		lines:
+			1: Best player in this bar, *Horst*. Hands like a surgeon.
+			2: Now they shake like yours.
+			1: ...Play your card, Manfred.
+
+		when: sold_to_horst
+		lines:
+			1: Back from *Horst*? Did he ask about us?
+			2: He never asks about us, Bernd.
+			1: ...No. Course not.
+
+match: 5
+	dialogues:
+		when: turn_start
+		round: 3
+		turn: 4
+		lines:
+			1: *{player}*. Got a *smoke*?
+			2: ...You sound like Horst.
+			1: Don't.
+			2: Exactly like him, Bernd.
+
+		when: sold_to_horst
+		lines:
+			2: How's Horst?
+			1: Same as always. That's the problem.
+			2: Same as us, you mean.
+
+match: any
+	dialogues:
+		when: sold_to_horst
+		lines:
+			1: Selling to *Horst*? He'll outlive us all, that one.
+			2: He won't. He just looks like he's trying.

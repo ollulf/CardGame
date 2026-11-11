@@ -28,31 +28,35 @@ const OFFER_TEXT := "His pick, blind (%d$)"
 const SLOT_FILLED_TEXT := "x%d"
 const GREETINGS := {
 	"early": [
-		"Three for a buck. I don't haggle, I don't do refunds.",
-		"Bernd's deck? Seen it. Had most of it before him.",
+		"Three cards, one buck. I don't haggle. *cough* I don't do refunds.",
+		"New face. Bernd always finds a new face.",
+		"Cards you don't play? Give them here. They're safe with me.",
 	],
 	"middle": [
-		"Show me what you've got. *cough* Don't rush me.",
-		"Manfred sold me his good deck once. Bought a round with it.",
+		"That stool's taken. By me. Twenty years.",
+		"Manfred sold me his good deck once. Drank it by midnight.",
+		"Show me what you've got. *cough* Don't rush me. Nobody rushes me.",
 	],
 	"late": [
-		"Got a smoke? ...Never mind. Show me the cards.",
-		"I used to beat them both, you know. Back when they still counted.",
+		"Got a smoke? ...No? Show me the cards, then.",
+		"I used to sit where you sit. Right between those two.",
+		"Ask Bernd who I am. Go on. He'll say he doesn't know.",
 	],
 }
 const SOLD_LINES := [
-	"One buck. Don't spend it all at once. You will, though.",
-	"Into the box. Box fourteen. Or fifteen.",
+	"One buck. You'll spend it here. Everybody spends it here.",
+	"Into the box. Box fourteen. ...Fifteen. *cough*",
+	"Good. Nobody plays them anymore. Nobody plays with me anymore.",
 ]
-const SOLD_SPECIAL_LINE := "Ooh. The weird ones. I like the weird ones."
-const STAMP_LINE := "That stamp cost you money, kid."
-const FLOOR_LINE := "You need those, kid. Can't play with an empty hand."
-const FULL_LINE := "Three cards. I can count, even now."
-const DONE_LINE := "Come back next round. I'm counting."
-const EMPTY_LINE := "Nothing spare? Your deck's eating everything."
-const OFFER_LINE := "I've got one for you. %d$, no peeking."
-const OFFER_BOUGHT_LINE := "Don't thank me. I've got three more of those somewhere."
-const POOR_LINE := "%d$, kid. I'm not a charity."
+const SOLD_SPECIAL_LINE := "Ooh. A strange one. I keep the strange ones closest."
+const STAMP_LINE := "Stamped, that one. You paid good money for that."
+const FLOOR_LINE := "Keep those. Can't play with an empty hand. Trust me."
+const FULL_LINE := "Three. I can still count. It's all I do now."
+const DONE_LINE := "One deal a night. Come back after the next game."
+const EMPTY_LINE := "Nothing to spare? Come back when you've lost something."
+const OFFER_LINE := "Got one for you. Bottom box. %d$, no peeking."
+const OFFER_BOUGHT_LINE := "Don't thank me. I had three of those. I had three of everything."
+const POOR_LINE := "%d$. I'm old, not a charity."
 
 var _title: Label
 var _cash_label: Label
