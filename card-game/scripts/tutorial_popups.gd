@@ -19,71 +19,71 @@ const BASIC_TIPS := ["follow", "trump", "enemy_suits", "bierdeckel", "deck", "li
 const DEFAULT_TIPS := {
 	"follow": {
 		"title": "Your turn",
-		"text": "Play one card. The [b]highest card[/b] of the [b]first suit played[/b] takes the trick. The other players must [b]follow the first suit[/b] if they can.",
+		"text": "Play one card. The *highest card* of the *first suit played* takes the trick. The other players must *follow the first suit* if they can.",
 	},
 	"trump": {
 		"title": "Trump",
-		"text": "[b]Trump[/b] beats every other suit. It is shown at the top and picked [b]at random[/b] each match.",
+		"text": "*Trump* beats every other suit. It is shown at the top and picked *at random* each match.",
 	},
 	"enemy_suits": {
 		"title": "Their cards",
-		"text": "You can see the [b]suit[/b] on the back of every card your opponents hold. Use it to guess who can [b]follow[/b] and who has [b]trump[/b].",
+		"text": "You can see the *suit* on the back of every card your opponents hold. Use it to guess who can *follow* and who has *trump*.",
 	},
 	"bierdeckel": {
 		"title": "Won tricks",
-		"text": "Each trick you take gives a [b]Bierdeckel[/b]. After [b]5 tricks[/b], whoever has the fewest loses the round.",
+		"text": "Each trick you take gives a *Bierdeckel*. After *5 tricks*, whoever has the fewest loses the round.",
 	},
 	"deck": {
 		"title": "New round",
-		"text": "Each round you draw [b]5 new cards[/b] from your deck. Played cards stay out until the match ends.",
+		"text": "Each round you draw *5 new cards* from your deck. Played cards stay out until the match ends.",
 	},
 	"lives": {
 		"title": "Lost a round",
-		"text": "The loser rips a [b]life card[/b]. Lose [b]2 rounds[/b] and you are out of the match.",
+		"text": "The loser rips a *life card*. Lose *2 rounds* and you are out of the match.",
 	},
 	"smoke": {
 		"title": "Smoking cards",
-		"text": "[b]Smoking cards[/b] are always [b]trump[/b]. Each *cigarette* smoked gives them [b]+1[/b] this round. No limit.",
+		"text": "*Smoking cards* are always *trump*. Each *cigarette* smoked gives them *+1* this round. No limit.",
 	},
 	"tie": {
 		"title": "Equal cards",
-		"text": "When two cards are [b]equal[/b], the one played [b]first[/b] wins.",
+		"text": "When two cards are *equal*, the one played *first* wins.",
 	},
 	"tiebreak": {
 		"title": "Tie-break",
-		"text": "Tied for fewest tricks? Each tied player draws a card. The [b]lowest number[/b] loses; suit and [b]trump[/b] don't count.",
+		"text": "Tied for fewest tricks? Each tied player draws a card. The *lowest number* loses; suit and *trump* don't count.",
 	},
 	"prize": {
 		"title": "Prize money",
-		"text": "The last loser pays the [b]prize[/b]. The [b]two winners[/b] of this match split it.",
+		"text": "The last loser pays the *prize*. The *two winners* of this match split it.",
 	},
 	"cigs": {
 		"title": "Cigarettes",
-		"text": "Tap your [b]pack[/b] to take a *cigarette*, then the [b]lighter[/b] to smoke it.",
+		"text": "Tap your *pack* to take a *cigarette*, then the *lighter* to smoke it.",
 	},
 	"wallet": {
 		"title": "Your money",
-		"text": "Winners share the [b]prize money[/b]. Spend it at the [b]bar[/b] on [b]boosters[/b] with new cards. More opens up later.",
+		"text": "Winners share the *prize money*. Spend it at the *bar* on *boosters* with new cards. More opens up later.",
 	},
 	"boosters": {
 		"title": "Boosters",
-		"text": "A [b]booster[/b] is a pack of new cards. Buy one, rip it open, and the cards go into your [b]collection[/b]. Hover a pack to see what's inside.",
+		"text": "A *booster* is a pack of new cards. Buy one, rip it open, and the cards go into your *collection*. Hover a pack to see what's inside.",
 	},
 	"deck_size": {
 		"title": "Your deck",
-		"text": "A deck needs [b]{min} to {max} cards[/b]. Tap cards to move them in or out.",
+		"text": "A deck needs *{min} to {max} cards*. Tap cards to move them in or out.",
 	},
 	"drinks": {
 		"title": "Round of drinks",
-		"text": "At the bar a [b]round of drinks[/b] costs [b]{drink_price}$[/b]. Everyone drinks: drinking cards [b]+1[/b], all others [b]-1[/b] for the match.",
+		"text": "At the bar a *round of drinks* costs *{drink_price}$*. Everyone drinks: drinking cards *+1*, all others *-1* for the match.",
 	},
 	"stamps": {
 		"title": "Stamps",
-		"text": "A [b]stamp[/b] changes one card [b]for good[/b]. Buy one, then pick the card. Each card takes one stamp, specials too.",
+		"text": "A *stamp* changes one card *for good*. Buy one, then pick the card. Each card takes one stamp, specials too.",
 	},
 	"alk": {
 		"title": "Drinking cards",
-		"text": "[b]Drinking cards[/b] are always [b]trump[/b] and get [b]+1[/b] for every drink.",
+		"text": "*Drinking cards* are always *trump* and get *+1* for every drink.",
 	},
 }
 
@@ -479,26 +479,10 @@ func _body(text: String, width: float) -> PanelContainer:
 	label.add_theme_color_override("default_color", ShopTooltip.TEXT)
 	label.add_theme_font_size_override("normal_font_size", InteractionManager.font_px(ShopTooltip.BODY_FONT_SIZE))
 	label.add_theme_font_size_override("bold_font_size", InteractionManager.font_px(ShopTooltip.BODY_FONT_SIZE))
-	label.text = highlight(text)
+	label.text = SpeechBubble.format_text(text, true)
 	inner.add_child(label)
 	return inner
 
-
-static func highlight(text: String) -> String:
-	var pattern := RegEx.create_from_string("\\[b\\](.*?)\\[/b\\]|\\*([^*]+)\\*|\\bspecial(?: cards?)?\\b")
-	var result := ""
-	var last := 0
-	for found in pattern.search_all(text):
-		result += text.substr(last, found.get_start() - last)
-		var inner := found.get_string(0)
-		if found.get_start(1) >= 0:
-			inner = found.get_string(1)
-		elif found.get_start(2) >= 0:
-			inner = found.get_string(2)
-		var color := "#" + ShopTooltip.SPECIAL if "special" in inner.to_lower() else SpeechBubble.HIGHLIGHT_COLOR
-		result += SpeechBubble.keyword(inner, color)
-		last = found.get_end()
-	return result + text.substr(last)
 
 func _input(event: InputEvent) -> void:
 	if _bubble == null or _overlay_open():

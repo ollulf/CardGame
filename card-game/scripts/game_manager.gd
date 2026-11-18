@@ -457,6 +457,10 @@ func _end_round(loosers: Array[int]) -> void:
 
 	#Check if somebody lost twice
 	var total_loosers := get_total_loosers()
+	if not total_loosers.is_empty():
+		await _reset_table_for_match_end()
+		if token != round_token:
+			return
 	for total_looser in total_loosers:
 		await _show_match_loser(total_looser)
 		if token != round_token:
@@ -480,6 +484,15 @@ func _end_round(loosers: Array[int]) -> void:
 			run_won.emit()
 		else:
 			match_finished.emit(total_loosers)
+
+func _reset_table_for_match_end() -> void:
+	await CardManager.clear_table()
+	CardManager.clear_all_cards()
+	var life_ui = get_tree().get_first_node_in_group(WON_ROUNDS_UI_GROUP)
+	if life_ui == null or life_ui.piles.all(func(pile): return pile.count == 0):
+		return
+	life_ui.reset_UI(true)
+	await get_tree().create_timer(Bierdeckel.FLY_TIME + WonPile.RETURN_STAGGER * (WonPile.MAX_LAYERS - 1), false).timeout
 
 func _show_match_loser(looser_id: int) -> void:
 	var life_ui = get_tree().get_first_node_in_group(WON_ROUNDS_UI_GROUP)

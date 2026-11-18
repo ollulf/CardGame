@@ -34,13 +34,18 @@ func _process(delta: float) -> void:
 		_indicator_time += delta
 		queue_redraw()
 
-static func format_text(text: String) -> String:
-	var highlight := RegEx.create_from_string("\\*([^*]+)\\*")
+static func format_text(text: String, special_words := false) -> String:
+	var pattern := "\\*([^*]+)\\*"
+	if special_words:
+		pattern += "|\\bspecial(?: cards?)?\\b"
+	var highlight := RegEx.create_from_string(pattern)
 	var result := ""
 	var last := 0
 	for m in highlight.search_all(text):
 		result += text.substr(last, m.get_start() - last)
-		result += keyword(m.get_string(1))
+		var word := m.get_string(1) if m.get_start(1) >= 0 else m.get_string(0)
+		var color := "#" + ShopTooltip.SPECIAL if special_words and "special" in word.to_lower() else HIGHLIGHT_COLOR
+		result += keyword(word, color)
 		last = m.get_end()
 	return result + text.substr(last)
 
