@@ -34,7 +34,7 @@ const PACK_SIZE := Vector2(86, 160)
 const SLIP_SIZE := Vector2i(46, 52)
 const HOVER_LIFT := Vector2(0, -10)
 const HOVER_SCALE := 1.15
-const HOVER_BORDER_PAD := 7.0
+const HOVER_TIP_PAD := 7.0
 const HOVER_SHADOW_LIFT := 8.0
 const HOVER_BOB := 3.0
 const HOVER_BOB_SPEED := 3.0
@@ -221,19 +221,6 @@ func _add_hover(item: CigaretteMachine, tilt: float, tip: Callable) -> void:
 	item.hover_offset = HOVER_LIFT
 	item.set_meta("tilt", tilt)
 	item.set_meta("tip", tip)
-	var border := Panel.new()
-	border.name = "HoverBorder"
-	border.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	border.visible = false
-	border.position = -Vector2.ONE * HOVER_BORDER_PAD
-	border.size = item.size + Vector2.ONE * HOVER_BORDER_PAD * 2.0
-	var style := StyleBoxFlat.new()
-	style.draw_center = false
-	style.border_color = ShopTooltip.EDGE
-	style.set_border_width_all(3)
-	style.set_corner_radius_all(6)
-	border.add_theme_stylebox_override("panel", style)
-	item.sprite.add_child(border)
 	item.mouse_entered.connect(_set_hover.bind(item, true))
 	item.mouse_exited.connect(_set_hover.bind(item, false))
 
@@ -250,7 +237,6 @@ func _set_hover(item: CigaretteMachine, on: bool) -> void:
 		return
 	_hovered = item if on else null
 	item.z_index = 1 if on else 0
-	item.sprite.get_node("HoverBorder").visible = on
 	var shadow := TableShadow.add_to(item.sprite)
 	if _hover_tweens.has(item):
 		(_hover_tweens[item] as Tween).kill()
@@ -272,7 +258,7 @@ func _refresh_hover_tip() -> void:
 	var tip: Array = (_hovered.get_meta("tip") as Callable).call()
 	if tip.is_empty():
 		return
-	var anchor := Rect2(_hovered.position, _hovered.size).grow(HOVER_BORDER_PAD * HOVER_SCALE)
+	var anchor := Rect2(_hovered.position, _hovered.size).grow(HOVER_TIP_PAD * HOVER_SCALE)
 	shop_tooltip.show_text(tip[0], tip[1], anchor)
 
 
