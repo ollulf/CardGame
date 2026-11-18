@@ -19,8 +19,7 @@ match: 1
 		turn: 1
 		lines:
 			cue: show_won_turns
-			1: First *Bierdeckel* acquired, nice.
-			2: Just wait...
+			1: First *Bierdeckel* is mine, nice.
 			wait_for_cards_played: 2
 			2: No *hearts* for me... again.
 
@@ -41,7 +40,6 @@ match: 1
 		turn: 2
 		lines: 
 			1: *{player}* you are doing great!
-			1: This is *fun*.
 			2: Shush, *Bernd*! *{player}* is not a child.
 			1: Yes, yes...
 
@@ -62,7 +60,7 @@ match: 1
 		lines:
 			wait_for_cards_played: 2
 			2: Finally...
-			2: I am drawing my smoke cards.
+			2: I am drawing my *smoking* cards.
 			1: Well, lucky you.
 
 		when: turn_start
@@ -71,24 +69,14 @@ match: 1
 		lines:
 			1: Well, beat *this*!
 			wait_for_cards_played: 1
-			2: Hold that thought, *Bernd*. This calls for a *cigarette*.
+			2: I will, *Bernd*. This calls for a *cigarette*.
 
 		when: match_won
 		lines:
 			cue: show_purse
 			1: Well, this was the first match and I lost...
 			2: Let's count this as the *trial round*, hehe.
-
-		when: match_lost
-		lines:
-			1: Ha! I won one! *Manfred*, write it down.
-			2: Next to the other one. From 1994.
-
-		when: run_lost
-		lines:
-			1: Hey, no shame, *{player}*. First game at this table.
-			2: First game is free. After that we take it personally.
-			1: Grab a drink and sit back down. The chair's not going anywhere.
+			2: Don't forget to buy stuff at the bar!
 
 match: 2
 	dialogues:

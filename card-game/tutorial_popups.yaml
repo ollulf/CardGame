@@ -20,8 +20,8 @@ id: bierdeckel
 
 id: deck
 	when: a new round deals new cards
-	title: New round
-	text: Each round you draw [b]5 new cards[/b] from your deck. Played cards stay out until the match ends.
+	title: Deck
+	text: Each round you draw [b]5 new cards[/b] from your [b]deck[/b]. Played cards stay out until the match ends.
 
 id: lives
 	when: a round is lost
@@ -55,8 +55,8 @@ id: cigs
 
 id: wallet
 	when: you first earn money
-	title: Your money
-	text: Winners share the [b]prize money[/b]. Spend it at the [b]bar[/b] on [b]boosters[/b] with new cards. More opens up later.
+	title: Money & Bar
+	text: This is your "wallet", it contains your *money*. Spend it at the [b]bar[/b] on [b]boosters[/b] and other stuff.
 
 id: boosters
 	when: first bar visit, points at the first booster pack
