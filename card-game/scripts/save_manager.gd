@@ -54,7 +54,24 @@ func continue_run(save: Dictionary) -> void:
 func write_save(state: Dictionary, game_start: Dictionary, between_matches: bool) -> void:
 	if not enabled:
 		return
-	var data := {
+	var data := build_snapshot(state, game_start, between_matches)
+	var temp_path := save_path + ".tmp"
+	var file := FileAccess.open(temp_path, FileAccess.WRITE)
+	if file == null:
+		push_warning("Could not write save file %s: %s" % [temp_path, error_string(FileAccess.get_open_error())])
+		return
+	file.store_string(JSON.stringify(data, "\t"))
+	file.close()
+	if DirAccess.rename_absolute(temp_path, save_path) != OK:
+		push_warning("Could not replace save file %s" % save_path)
+
+func current_snapshot() -> Dictionary:
+	var data := build_snapshot(GameManager._capture_state(), GameManager._game_start_state, not GameManager.match_active)
+	data.erase("player_name")
+	return data
+
+func build_snapshot(state: Dictionary, game_start: Dictionary, between_matches: bool) -> Dictionary:
+	return {
 		"version": SAVE_VERSION,
 		"saved_at": Time.get_datetime_string_from_system(),
 		"between_matches": between_matches,
@@ -65,15 +82,6 @@ func write_save(state: Dictionary, game_start: Dictionary, between_matches: bool
 		"state": state_to_data(state),
 		"game_start": state_to_data(game_start),
 	}
-	var temp_path := save_path + ".tmp"
-	var file := FileAccess.open(temp_path, FileAccess.WRITE)
-	if file == null:
-		push_warning("Could not write save file %s: %s" % [temp_path, error_string(FileAccess.get_open_error())])
-		return
-	file.store_string(JSON.stringify(data, "\t"))
-	file.close()
-	if DirAccess.rename_absolute(temp_path, save_path) != OK:
-		push_warning("Could not replace save file %s" % save_path)
 
 func delete_save() -> void:
 	if enabled and FileAccess.file_exists(save_path):

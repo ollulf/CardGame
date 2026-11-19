@@ -17,6 +17,7 @@ config/icon="res://icon.png"
 
 [autoload]
 
+DiagnosticsLog="*res://scripts/diagnostics_log.gd"
 Settings="*res://scripts/settings.gd"
 GameManager="*res://scripts/game_manager.gd"
 PlayerDataManager="*res://scripts/player_data_manager.gd"

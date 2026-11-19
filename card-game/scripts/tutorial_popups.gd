@@ -506,7 +506,7 @@ func _input(event: InputEvent) -> void:
 		_dismiss()
 
 func _overlay_open() -> bool:
-	if PauseMenu.is_open():
+	if PauseMenu.is_open() or ReportForm.is_open():
 		return true
 	var debug := get_tree().get_first_node_in_group(DebugMenu.GROUP)
 	return debug != null and debug.visible

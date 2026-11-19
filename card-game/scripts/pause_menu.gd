@@ -20,6 +20,8 @@ const PAUSED_TITLE := "Paused"
 const OPTIONS_TITLE := "Options"
 const RESUME_TEXT := "Resume"
 const BACK_TEXT := "Back"
+const REPORT_BUG_TEXT := "Report a Bug"
+const FEEDBACK_TEXT := "Send Feedback"
 
 var _content: Control
 var _sliders := {}
@@ -137,16 +139,27 @@ func _build() -> void:
 	box.add_child(grid)
 	for entry in SLIDERS:
 		_add_slider_row(grid, entry[0], entry[1])
-	_mute_toggle = _toggle("Mute all sound")
+	_mute_toggle = make_toggle("Mute all sound")
 	_mute_toggle.toggled.connect(func(on: bool) -> void: Settings.set_muted(on))
 	box.add_child(_mute_toggle)
 	var display_caption := _caps("Display")
 	box.add_child(display_caption)
-	_fullscreen_toggle = _toggle("Fullscreen")
+	_fullscreen_toggle = make_toggle("Fullscreen")
 	_fullscreen_toggle.toggled.connect(func(on: bool) -> void: Settings.set_fullscreen(on))
 	box.add_child(_fullscreen_toggle)
 	display_caption.visible = Settings.can_fullscreen()
 	_fullscreen_toggle.visible = Settings.can_fullscreen()
+	box.add_child(_caps("Help us"))
+	var report_row := HBoxContainer.new()
+	report_row.add_theme_constant_override("separation", 12)
+	box.add_child(report_row)
+	for entry in [[REPORT_BUG_TEXT, ReportForm.Kind.BUG], [FEEDBACK_TEXT, ReportForm.Kind.FEEDBACK]]:
+		var report_button := Button.new()
+		report_button.text = entry[0]
+		report_button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		report_button.custom_minimum_size = Vector2(0, 36)
+		report_button.pressed.connect(ReportForm.open_form.bind(entry[1]))
+		report_row.add_child(report_button)
 	var spacer := Control.new()
 	spacer.custom_minimum_size = Vector2(0, 6)
 	box.add_child(spacer)
@@ -171,7 +184,7 @@ func _caps(text: String) -> Label:
 	label.theme_type_variation = &"CapsLabel"
 	return label
 
-func _toggle(text: String) -> CheckButton:
+static func make_toggle(text: String) -> CheckButton:
 	var toggle := CheckButton.new()
 	toggle.text = text
 	toggle.focus_mode = Control.FOCUS_ALL
