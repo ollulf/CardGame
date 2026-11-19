@@ -4,6 +4,7 @@ class_name ReportForm
 enum Kind { BUG, FEEDBACK }
 
 const FORM_LAYER := 119
+const ACTION := "report_bug"
 const PANEL_WIDTH := 460.0
 const TEXT_HEIGHT := 110.0
 const FADE_TIME := 0.15
@@ -47,6 +48,7 @@ var _pause_menu_hidden := false
 var _pointer_parent: Node
 var _pointer_index := 0
 var _tween: Tween
+var _opening := false
 
 
 static func is_open() -> bool:
@@ -77,13 +79,14 @@ func _ready() -> void:
 func _input(event: InputEvent) -> void:
 	if not visible:
 		return
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE:
+	var is_escape: bool = event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_ESCAPE
+	if is_escape or event.is_action_pressed(ACTION, false, true):
 		get_viewport().set_input_as_handled()
 		close()
 
 
 func _open(form_kind: Kind) -> void:
-	if visible:
+	if visible or _opening:
 		return
 	kind = form_kind
 	InteractionManager.cancel_press()
@@ -91,7 +94,9 @@ func _open(form_kind: Kind) -> void:
 	InteractionManager.set_table_blocked(true)
 	_paused_game = not get_tree().paused
 	get_tree().paused = true
+	_opening = true
 	await _grab_screenshot()
+	_opening = false
 	_reset_fields()
 	_lift_pointer()
 	show()

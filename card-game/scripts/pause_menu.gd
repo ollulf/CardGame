@@ -20,7 +20,7 @@ const PAUSED_TITLE := "Paused"
 const OPTIONS_TITLE := "Options"
 const RESUME_TEXT := "Resume"
 const BACK_TEXT := "Back"
-const REPORT_BUG_TEXT := "Report a Bug"
+const REPORT_BUG_TEXT := "Report a Bug (F2)"
 const FEEDBACK_TEXT := "Send Feedback"
 
 var _content: Control
@@ -51,6 +51,10 @@ func is_open() -> bool:
 	return visible
 
 func _unhandled_input(event: InputEvent) -> void:
+	if event.is_action_pressed(ReportForm.ACTION, false, true):
+		get_viewport().set_input_as_handled()
+		ReportForm.open_form(ReportForm.Kind.BUG)
+		return
 	if not event is InputEventKey or not event.pressed or event.echo or event.keycode != KEY_ESCAPE:
 		return
 	if visible:
